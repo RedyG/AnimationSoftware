@@ -9,8 +9,10 @@ namespace Engine.Core
     public class Scene
     {
         public float FrameRate { get; set; }
-        public List<Layer> Layers { get; private init; } = new List<Layer>();
-        public Guid Id { get; private init; } = Guid.NewGuid();
+        public List<Layer> Layers { get; } = new();
+        public Guid Id { get; } = Guid.NewGuid();
+
+        public Timecode Time = Timecode.FromSeconds(0);
 
         public Scene(float frameRate)
         {

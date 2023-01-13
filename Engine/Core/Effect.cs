@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace Engine.Core
 {
-    public interface IEffect : ILayerItem
+    public class Effect
     {
-        public void Render();
+        public virtual void Render(Timecode time) { }
+        public virtual void Update(Timecode time) { }
     }
 }

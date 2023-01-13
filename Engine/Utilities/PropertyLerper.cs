@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Engine.Core;
 
 namespace Engine.Utilities
 {
@@ -13,27 +14,15 @@ namespace Engine.Utilities
 
         public static T Lerp(T value1, T value2, float amount)
         {
-            var value1PropetyValue = value1 as IPropertyValue<T>;
-
-            if (value1PropetyValue == null)
+            if (value1 is IPropertyValue<T> value1PropertyValue)
             {
-                if (method == null)
-                    throw new Exception("Couldn't find the Lerp method on type " + typeof(T).FullName);
-                else
-                    return method(value1, value2, amount);
+                return value1PropertyValue.Lerp(value2, amount);
             }
 
-            var value2PropertyValue = value2 as IPropertyValue<T>;
-            var lerpMethod = typeof(T).GetMethod("Lerp");
-
-            if (lerpMethod == null)
+            if (method == null)
                 throw new Exception("Couldn't find the Lerp method on type " + typeof(T).FullName);
 
-            var result = lerpMethod.Invoke(value1, new object[] { value2!, amount });
-            if (result == null)
-                throw new Exception("The result of the Lerp method is null.");
-
-            return (T)result;
+            return method(value1, value2, amount);
         }
 
         public static void RegisterMethod(LerpMethod _method)
@@ -44,17 +33,18 @@ namespace Engine.Utilities
         static PropertyLerper()
         {
             PropertyLerper<string>.RegisterMethod(
-                (string value1, string value2, float time) => value1
+                (string value1, string value2, float amount) => value1
             );
             PropertyLerper<float>.RegisterMethod(
-                (float value1, float value2, float time) => (value1 + (value2 - value1) * time)
+                (float value1, float value2, float amount) => (value1 + (value2 - value1) * amount)
             );
             PropertyLerper<int>.RegisterMethod(
-                (int value1, int value2, float time) => (int)(value1 + (value2 - value1) * time)
+                (int value1, int value2, float amount) => (int)(value1 + (value2 - value1) * amount)
             );
             PropertyLerper<double>.RegisterMethod(
-                (double value1, double value2, float time) => (double)(value1 + (value2 - value1) * time)
+                (double value1, double value2, float amount) => (double)(value1 + (value2 - value1) * amount)
             );
+
             // TODO: register way more types
         }
     }

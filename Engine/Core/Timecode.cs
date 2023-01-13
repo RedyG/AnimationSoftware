@@ -33,6 +33,7 @@ namespace Engine.Core
 
         public static Timecode FromFrames(int frames) => new Timecode { Frames = frames };
         public static Timecode FromMilliseconds(float milliseconds) => new Timecode { Milliseconds = milliseconds };
+        public static Timecode FromSeconds(float seconds) => new Timecode { Seconds = seconds };
 
         public override int GetHashCode() => Seconds.GetHashCode();
 

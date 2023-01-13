@@ -2,18 +2,28 @@
 {
     public class Project
     {
-        public List<Scene> Scenes { get; }
+        public List<Scene> Scenes { get; } = new();
 
         private Guid? _activeSceneId;
         public Scene? ActiveScene
         {
             get => Scenes.Find(scene => scene.Id == _activeSceneId);
-            set => _activeSceneId = value?.Id;
-        }
+            set
+            {
+                if (value == null)
+                {
+                    _activeSceneId = null;
+                    return;
+                }
 
-        public Project()
-        {
-            Scenes = new List<Scene>();
+                var scene = Scenes.Find(scene => scene.Id == value.Id);
+
+                if (scene == null)
+                    Scenes.Add(value);
+
+                _activeSceneId = value.Id;
+
+            }
         }
     }
 }

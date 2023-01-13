@@ -8,6 +8,6 @@ namespace Engine.Core
 {
     public class Layer
     {
-        public List<ILayerItem> Items { get; private init; } = new();
+        public List<Effect> Effects { get; } = new();
     }
 }
