@@ -13,7 +13,6 @@ namespace Engine.Core
 
             if (App.Project == null || App.Project.ActiveScene == null) throw new Exception("Scene or project is null");
 
-            // TODO: if an update is based on another this will give bad results -- https://stackoverflow.com/questions/5667816/get-types-used-inside-a-c-sharp-method-body
             foreach (var layer in App.Project.ActiveScene.Layers)
             {
                 foreach (Effect effect in layer.Effects)

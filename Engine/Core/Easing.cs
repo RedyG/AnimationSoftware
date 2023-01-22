@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Engine.Core
 {
-    public interface IPropertyValue<T>
+    public interface IEasing
     {
-        public T Lerp(T value2, float amount);
+        public float Evaluate(float t);
     }
 }

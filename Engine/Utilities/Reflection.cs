@@ -16,12 +16,5 @@ namespace Engine.Utilities
             var type = objectToCheck.GetType();
             return type.GetMethod(methodName, flags) != null;
         }
-
-        public static T GetValueAtTimeAsType<T>(IPropertyWrapper property, Timecode time)
-        {
-            var result = property.GetType().GetMethod("GetValueAtTime")!.Invoke(property, new object[] { time })!;
-
-            return (T)Convert.ChangeType(result, typeof(T));
-        }
     }
 }

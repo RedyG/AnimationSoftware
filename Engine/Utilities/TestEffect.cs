@@ -9,12 +9,12 @@ namespace Engine.Utilities
 {
     public class UtilityDouble : Effect
     {
-        public StaticProperty<float> Double { get; } = new();
-        public KeyframableProperty<float> In { get; } = new();
+        public Parameter<float> Double { get; } = new(20f);
+        public Parameter<float> In { get; } = new(20f);
 
         public override void Update(Timecode time)
         {
-            Double.Value = In.GetValueAtTime(time) * 2;
+            Double.SetValueAtTime(In.GetValueAtTime(time) * 2f, time);
         }
     }
 }

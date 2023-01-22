@@ -19,16 +19,16 @@ namespace Engine.Core
             }
         }
         public T Value { get; set; }
-        public Graph Graph { get; set; }
+        public IEasing Easing { get; set; }
 
-        public Keyframe(Timecode time, T value, Graph graph)
+        public Keyframe(Timecode time, T value, IEasing easing)
         { 
             Time = time;
             Value = value;
-            Graph = graph;
+            Easing = easing;
         }
 
-        public event EventHandler<EventArgs> TimeChanged;
+        public event EventHandler<EventArgs>? TimeChanged;
         private void OnTimeChanged(EventArgs e)
         {
             if (TimeChanged != null)

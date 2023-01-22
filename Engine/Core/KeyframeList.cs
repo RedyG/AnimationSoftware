@@ -10,7 +10,7 @@ namespace Engine.Core
 {
     public class KeyframeList<T> : ICollection<Keyframe<T>>
     {
-        private List<Keyframe<T>> list = new();
+        private readonly List<Keyframe<T>> list = new();
         private int GetClosest(int val1, int val2, Timecode time)
         {
             if (time - list[val1].Time >= list[val2].Time - time)
@@ -30,6 +30,7 @@ namespace Engine.Core
                 {
                     if (index < list.Count - 1)
                         (list[index], list[list.Count - 1]) = (list[list.Count - 1], list[index]);
+
                     list.RemoveAt(list.Count - 1);
                     index--;
                 }
@@ -152,7 +153,7 @@ namespace Engine.Core
             return list.GetEnumerator();
         }
 
-        private void Keyframe_TimeChanged(object sender, EventArgs e)
+        private void Keyframe_TimeChanged(object? sender, EventArgs e)
         {
             SortList();
         }
