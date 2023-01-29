@@ -3,38 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Engine.Core;
 
-namespace Engine.Utilities
+namespace Engine.Core
 {
     public static class ParameterValues<T>
     {
         public delegate T LerpMethod(T value1, T value2, float amount);
+        private static LerpMethod? _lerpMethod;
+
+        private static Type _blazorComponent;
         public static Type BlazorComponent
         {
-            get
-            {
-                if (is IParameterValue<T> value1ParameterValue)
-                {
-                    return value1ParameterValue.Lerp(value2, amount);
-                }
-
-                if (_lerpMethod == null)
-                    throw new Exception("Couldn't find the Lerp method on type " + typeof(T).FullName);
-
-                return _lerpMethod(value1, value2, amount);
-            }
+            get;
+            set;
         }
-
-        private static LerpMethod? _lerpMethod;
 
         public static T Lerp(T value1, T value2, float amount)
         {
-            if (value1 is IParameterValue<T> value1ParameterValue)
-            {
-                return value1ParameterValue.Lerp(value2, amount);
-            }
-
             if (_lerpMethod == null)
                 throw new Exception("Couldn't find the Lerp method on type " + typeof(T).FullName);
 
@@ -49,6 +34,7 @@ namespace Engine.Utilities
 
         static ParameterValues()
         {
+            ParameterValues<int>.RegisterType((value1, value2, amount) => value1 + Convert.ToInt32((value2 - value1) * amount), typeof(BezierEasing));
             /*ParameterValues<string>.RegisterMethod(
                 (string value1, string value2, float amount) => value1
             );
@@ -63,14 +49,6 @@ namespace Engine.Utilities
             );*/
 
             // TODO: register way more types
-        }
-    }
-
-    public class CustomType : IParameterValue<CustomType>
-    {
-        public CustomType Lerp(CustomType value2, float amount)
-        {
-            return this;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SkiaSharp;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,19 @@ namespace Engine.Core
 {
     public class Layer
     {
-        public List<Effect> Effects { get; } = new();
+        public List<ContentEffect> ContentEffects { get; set; } = new();
+        public List<FilterEffect> FilterEffects { get; set; } = new();
+        public List<Layer> Layers { get; set; } = new();
+        public bool IsGroup { get => Layers.Count > 0; }
+
+        public Parameter<SKPoint> Position { get; set; }
+        public Parameter<SKSize> Size { get; set; }
+        public SKRect Bounds => SKRect.Create(Position, Size);
+
+        public Layer(SKPoint position, SKSize size)
+        {
+            Position = new(position);
+            Size = new(size);
+        }
     }
 }

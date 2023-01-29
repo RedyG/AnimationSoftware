@@ -16,17 +16,15 @@ namespace Engine.Core
         {
             get
             {
-                if (App.Project == null || App.Project.ActiveScene == null) throw new Exception("Scene or project is null");
-                return (int)MathF.Round(Seconds * App.Project.ActiveScene.FrameRate);
+                return (int)MathF.Round(Seconds * App.Project!.ActiveScene!.FrameRate);
             }
             set
             {
-                if (App.Project == null || App.Project.ActiveScene == null) throw new Exception("Scene or project is null");
-                Seconds = (value / (float)App.Project.ActiveScene.FrameRate);
+                Seconds = (value / (float)App.Project!.ActiveScene!.FrameRate);
             }
         }
 
-        public Timecode(float seconds)
+        private Timecode(float seconds)
         {
             Seconds = seconds;
         }

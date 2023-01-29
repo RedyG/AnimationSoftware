@@ -2,6 +2,7 @@
 {
     public class Project
     {
+        public string Name { get; set; }
         public List<Scene> Scenes { get; } = new();
 
         private Guid? _activeSceneId;
@@ -24,6 +25,11 @@
                 _activeSceneId = value.Id;
 
             }
+        }
+
+        public Project(string name)
+        {
+            Name = name;
         }
     }
 }

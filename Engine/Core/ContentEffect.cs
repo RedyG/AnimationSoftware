@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace Engine.Core
 {
-    public abstract class Effect
+    public abstract class ContentEffect : Effect
     {
-        // TODO: add helpter method like Paramter? GetParamterByName(string name)
+        public abstract void Render(SKSurface surface);
     }
 }

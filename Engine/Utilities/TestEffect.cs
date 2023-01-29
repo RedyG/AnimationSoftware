@@ -4,17 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Engine.Core;
+using Engine.Attributes;
 
 namespace Engine.Utilities
 {
     public class UtilityDouble : Effect
     {
-        public Parameter<float> Double { get; } = new(20f);
+        public Parameter<float> Double { get; } = new(20f, true, true);
         public Parameter<float> In { get; } = new(20f);
 
-        public override void Update(Timecode time)
+        public UtilityDouble()
         {
-            Double.SetValueAtTime(In.GetValueAtTime(time) * 2f, time);
+            Double.ValueRequested += (object sender, ValueRequestedEventArgs args) => In.GetValueAtTime(args.Time) * 2f;
         }
     }
 }
