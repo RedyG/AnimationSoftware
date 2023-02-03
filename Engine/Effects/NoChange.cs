@@ -17,7 +17,7 @@ namespace Engine.Effects
             }";
 
         private static SKRuntimeEffect _effect = SKRuntimeEffect.Create(_src, out var errorText);
-        public override SKShader GetShader(SKShader input)
+        public override SKShader MakeShader(SKShader input, float[] layerSize)
         {
             var children = new SKRuntimeEffectChildren(_effect)
             {

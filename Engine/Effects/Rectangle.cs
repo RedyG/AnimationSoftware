@@ -10,11 +10,11 @@ namespace Engine.Effects
 {
     public class Rectangle : ContentEffect
     {
-        public Parameter<SKColor> Color { get; set; }
-        public Parameter<SKPoint> Position { get; set; }
-        public Parameter<SKSize> Size { get; set; }
-        public Parameter<bool> FitToLayer { get; set; }
-        public override void Render(SKSurface surface)
+        public Parameter<SKColor> Color { get; set; } = new(new SKColor(255, 255, 255));
+        public Parameter<SKPoint> Position { get; set; } = new(new SKPoint(0, 0));
+        public Parameter<SKSize> Size { get; set; } = new(new SKSize(100, 100));
+        public Parameter<bool> FitToLayer { get; set; } = new(true);
+        public override void Render(SKSurface surface, SKSize layerSize)
         {
             var canvas = surface.Canvas;
             if (!FitToLayer.Value)

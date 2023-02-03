@@ -10,7 +10,6 @@ namespace Engine.Core
     public class Scene
     {
         public List<Layer> Layers { get; } = new();
-        public Guid Id { get; } = Guid.NewGuid();
 
 
         public Timecode Time = Timecode.FromSeconds(0);

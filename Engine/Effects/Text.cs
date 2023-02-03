@@ -10,8 +10,8 @@ namespace Engine.Effects
 {
     public class Text : ContentEffect
     {
-        public Parameter<string> Content { get; set; } = "hello";
-        public override void Render(SKSurface surface)
+        public Parameter<string> Content { get; set; } = new("hello");
+        public override void Render(SKSurface surface, SKSize layerSize)
         {
             var canvas = surface.Canvas;
 
@@ -21,7 +21,7 @@ namespace Engine.Effects
                 Color = new SKColor(0, 0, 0)
             };
 
-            canvas.DrawText(Content, new SKPoint(0, -20), paint);
+            canvas.DrawText(Content.Value, new SKPoint(0, -20), paint);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection.Emit;
@@ -12,70 +13,54 @@ namespace Engine.Core
 {
     public static class Renderer
     {
-        /*Epublic static SKSurface? _renderSurface;
-        public static SKSurface? RenderSurface
-        {
-            get => _renderSurface;
-            set
-            {
-                if (value == null)
-                {
-                    _renderSurface = null;
-                    _offScreenSurface = null;
-                    return;
-                }
-
-                _renderSurface = value;
-                SKSurface.Create(value.Context, false, value.);
-            }
-        }
-        private static SKSurface? _offScreenSurface;*/
-        public static async void Render(SKSurface surface)
+        private static SKSurface _offScreenSurface;
+        public static void Render()
         {
             for (App.Project!.ActiveScene!.Time.Frames = 0; App.Project.ActiveScene.Time >= App.Project.ActiveScene.Duration; App.Project.ActiveScene.Time.Frames++)
             {
-                RenderFrame(surface);
-                //await Task.Delay(1000);
+                //RenderFrame();
                 // Export Frame
             }
             // Convert to video using FFMPEG
         }
-        public static void RenderFrame(SKSurface surface)
+
+        public static void RenderScene(Scene scene, SKSurface surface)
         {
             var canvas = surface.Canvas;
-            canvas.Clear(new SKColor(255, 255, 255));
-            foreach (var layer in App.Project!.ActiveScene!.Layers)
+            // TODO: make this line better
+            // TODO: fix potential bug if user tries to render layer from another scene, it might not fit into the _offScreenSurface 
+            _offScreenSurface = SKSurface.Create(surface.Context, false, new SKImageInfo((int)surface.Canvas.LocalClipBounds.Width - 2, (int)surface.Canvas.LocalClipBounds.Height - 2));
+            foreach (var layer in scene.Layers)
             {
-                var layerSurface = SKSurface.Create(surface.Context, false, new SKImageInfo(2000, 2000));
-                RenderLayer(layer, surface, layerSurface);
+                ResizeCanvas(canvas, layer.Bounds);
+                RenderLayer(layer, surface);
             }
         }
-
-        private static void RenderLayer(Layer layer, SKSurface mainSurface, SKSurface offScreenSurface)
+        public static void RenderLayer(Layer layer, SKSurface surface)
         {
-            // TODO: optimize if there is no duplictator on layer by drawing on SKPicture or by translating/clipping the canvas instead of creating a surface.
-            var canvas = mainSurface.Canvas;
-            using var layerSurface = SKSurface.Create(mainSurface.Context, false, new SKImageInfo((int)layer.Size.Value.Width, (int)layer.Size.Value.Height));
+            var canvas = surface.Canvas;
+            _offScreenSurface.Canvas.Clear();
 
             if (layer.IsGroup)
             {
                 foreach (Layer childLayer in layer.Layers) 
                 {
-                    RenderLayer(childLayer, layerSurface, offScreenSurface);
+                    ResizeCanvas(canvas, childLayer.Bounds);
+                    RenderLayer(childLayer, surface);
                 }
             }
             else
             {
                 foreach (ContentEffect contentEffect in layer.ContentEffects)
                 {
-                    contentEffect.Render(layerSurface);
+                    contentEffect.Render(_offScreenSurface!, layer.Size.Value);
                 }
             }
 
-            SKShader shader = layerSurface.Snapshot().ToShader();
+            SKShader shader = _offScreenSurface!.Snapshot(new SKRectI(0, 0, (int)layer.Size.Value.Width, (int)layer.Size.Value.Height)).ToShader();
             foreach (FilterEffect filterEffect in layer.FilterEffects)
             {
-                shader = filterEffect.GetShader(shader);
+                shader = filterEffect.MakeShader(shader, new float[2] {layer.Size.Value.Width, layer.Size.Value.Height});
             }
 
             using var paint = new SKPaint()
@@ -83,7 +68,12 @@ namespace Engine.Core
                 Shader = shader
             };
 
-            canvas.DrawRect(layer.Bounds, paint);
+            canvas.DrawPaint(paint);
+        }
+        private static void ResizeCanvas(SKCanvas canvas, SKRect bounds)
+        {
+            canvas.Translate(bounds.Location);
+            canvas.ClipRect(new SKRect(0, 0, bounds.Width, bounds.Height));
         }
     }
 }

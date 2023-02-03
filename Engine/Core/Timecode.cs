@@ -9,6 +9,7 @@ namespace Engine.Core
 {
     public struct Timecode : IEquatable<Timecode>, IComparable<Timecode>
     {
+        public Scene Scene { get; set; }
         public float Seconds { get; set; }
         public float Milliseconds { get => Seconds * 1000f; set => Seconds = (value / 1000f); }
 
@@ -16,22 +17,22 @@ namespace Engine.Core
         {
             get
             {
-                return (int)MathF.Round(Seconds * App.Project!.ActiveScene!.FrameRate);
+                return (int)MathF.Round(Seconds * Scene.FrameRate);
             }
             set
             {
-                Seconds = (value / (float)App.Project!.ActiveScene!.FrameRate);
+                Seconds = (value / (float)Scene.FrameRate);
             }
         }
 
-        private Timecode(float seconds)
-        {
-            Seconds = seconds;
-        }
+        public static Timecode FromFrames(int frames) => FromFrames(frames, App.Project!.ActiveScene!);
+        public static Timecode FromFrames(int frames, Scene scene) => new Timecode { Frames = frames, Scene = scene };
 
-        public static Timecode FromFrames(int frames) => new Timecode { Frames = frames };
-        public static Timecode FromMilliseconds(float milliseconds) => new Timecode { Milliseconds = milliseconds };
-        public static Timecode FromSeconds(float seconds) => new Timecode { Seconds = seconds };
+        public static Timecode FromMilliseconds(float milliseconds) => FromMilliseconds(milliseconds, App.Project!.ActiveScene!);
+        public static Timecode FromMilliseconds(float milliseconds, Scene scene) => new Timecode { Milliseconds = milliseconds, Scene = scene };
+
+        public static Timecode FromSeconds(float seconds) => FromSeconds(seconds, App.Project!.ActiveScene!);
+        public static Timecode FromSeconds(float seconds, Scene scene) => new Timecode { Seconds = seconds, Scene = scene };
 
         public override int GetHashCode() => Seconds.GetHashCode();
 
@@ -44,17 +45,20 @@ namespace Engine.Core
         public static bool operator >(Timecode a, Timecode b) => (a.Seconds > b.Seconds);
         public static bool operator <=(Timecode a, Timecode b) => (a.Seconds <= b.Seconds);
         public static bool operator >=(Timecode a, Timecode b) => (a.Seconds >= b.Seconds);
-        public static Timecode operator +(Timecode a, Timecode b) => new Timecode(a.Seconds + b.Seconds);
-        public static Timecode operator -(Timecode a, Timecode b) => new Timecode(a.Seconds - b.Seconds);
+        public static Timecode operator +(Timecode a, Timecode b) => Timecode.FromSeconds(a.Seconds + b.Seconds);
+        public static Timecode operator -(Timecode a, Timecode b) => Timecode.FromSeconds(a.Seconds - b.Seconds);
 
         public override string ToString()
         {
-            if (App.Project == null || App.Project.ActiveScene == null) throw new Exception("Scene or project is null");
-
             return $"{(int)(Seconds / 3600f)}:".PadLeft(3, '0') +
                    $"{(int)((Seconds / 60f) % 60)}:".PadLeft(3, '0') +
                    $"{(int)(Seconds % 60)}:".PadLeft(3, '0') +
-                   $"{Frames % App.Project.ActiveScene.FrameRate}".PadLeft(2, '0');
+                   $"{Frames % Scene.FrameRate}".PadLeft(2, '0');
+        }
+
+        public TimeSpan ToTimeSpan()
+        {
+            return TimeSpan.FromSeconds(Seconds);
         }
 
         public int CompareTo(Timecode other)

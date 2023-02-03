@@ -16,25 +16,27 @@ namespace Editor.Forms.Controls
         static PreviewControl()
         {
             App.Project = new Project("hey");
-            App.Project.ActiveScene = new Scene(30f, new SKSize(1920, 1080), Timecode.FromSeconds(0.1f));
+            App.Project.ActiveScene = new Scene(30f, new SKSize(427, 365), Timecode.FromSeconds(0.1f));
+            var layers = App.Project.ActiveScene.Layers;
 
-            var groupLayer = new Layer(new SKPoint(50, 50), new SKSize(1920, 1080));
-            groupLayer.FilterEffects.Add(new NoChange());
-            App.Project.ActiveScene.Layers.Add(groupLayer);
+            var groupLayer = new Layer(new SKPoint(0, 0), new SKSize(250, 250));
+            groupLayer.FilterEffects.Add(new BlackAndWhite());
+            layers.Add(groupLayer);
 
-            var firstLayer = new Layer(new SKPoint(0, 0), new SKSize(100, 100));
-            firstLayer.ContentEffects.Add(new Fill(new SKColor(255, 0, 0)));
+            var firstLayer = new Layer(new SKPoint(50, 50), new SKSize(100, 100));
+            firstLayer.ContentEffects.Add(new Engine.Effects.Video());
             groupLayer.Layers.Add(firstLayer);
-
-            var secondLayer = new Layer(new SKPoint(110, 110), new SKSize(100, 100));
-            secondLayer.ContentEffects.Add(new Fill(new SKColor(0, 255, 0)));
-            groupLayer.Layers.Add(secondLayer);
         }
 
         protected override void OnPaintSurface(SKPaintGLSurfaceEventArgs e)
         {
             base.OnPaintSurface(e);
-            Renderer.Render(e.Surface);
+
+            var watch = new Stopwatch();
+            watch.Start();
+            Renderer.RenderScene(App.Project!.ActiveScene!, e.Surface);
+            watch.Stop();
+            Debug.WriteLine("abc " + watch.ElapsedMilliseconds);
         }
     }
 }

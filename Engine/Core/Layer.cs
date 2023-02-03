@@ -16,7 +16,8 @@ namespace Engine.Core
 
         public Parameter<SKPoint> Position { get; set; }
         public Parameter<SKSize> Size { get; set; }
-        public SKRect Bounds => SKRect.Create(Position, Size);
+        // TODO: convert this to a parameter
+        public SKRect Bounds => SKRect.Create(Position.Value, Size.Value);
 
         public Layer(SKPoint position, SKSize size)
         {

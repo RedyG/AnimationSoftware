@@ -161,9 +161,6 @@ namespace Engine.Core
             CanBeKeyframed = canBeKeframed;
             CanBeLinked = canBeLinked;
         }
-
-        public static implicit operator T(Parameter<T> parameter) => parameter.Value;
-        public static implicit operator Parameter<T>(T value) => new Parameter<T>(value);
     }
     public class ValueRequestedEventArgs
     {
