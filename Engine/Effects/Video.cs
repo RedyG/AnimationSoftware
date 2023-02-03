@@ -16,13 +16,13 @@ namespace Engine.Effects
     public class Video : ContentEffect
     {
         SKBitmap bitmap = SKBitmap.Decode(@"C:\Users\minio\OneDrive\Images\Sans titre-1.png");
-        public override void Render(SKSurface surface, SKSize layerSize)
+        public override void Render(ContentEffectArgs args)
         {
             var watch = new Stopwatch();
-            watch.Start();;
-            var canvas = surface.Canvas;
+            watch.Start();
+            var canvas = args.Surface.Canvas;
 
-            canvas.DrawBitmap(bitmap.Resize(new SKImageInfo((int)layerSize.Width, (int)layerSize.Height), SKFilterQuality.Medium), new SKPoint(0, 0));
+            canvas.DrawBitmap(bitmap.Resize(new SKImageInfo((int)args.Size.Width, (int)args.Size.Height), SKFilterQuality.Medium), new SKPoint(0, 0));
             watch.Stop();
             Debug.WriteLine("aa: " + watch.ElapsedMilliseconds);
         }

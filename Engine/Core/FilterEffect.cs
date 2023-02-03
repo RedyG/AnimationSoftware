@@ -9,6 +9,6 @@ namespace Engine.Core
 {
     public abstract class FilterEffect : Effect
     {
-        public abstract SKShader MakeShader(SKShader input, float[] layerSize);
+        public abstract SKShader MakeShader(FilterEffectArgs args);
     }
 }

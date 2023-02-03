@@ -14,21 +14,25 @@ namespace Engine.Effects
         public Parameter<SKPoint> Position { get; set; } = new(new SKPoint(0, 0));
         public Parameter<SKSize> Size { get; set; } = new(new SKSize(100, 100));
         public Parameter<bool> FitToLayer { get; set; } = new(true);
-        public override void Render(SKSurface surface, SKSize layerSize)
+        public override void Render(ContentEffectArgs args)
         {
-            var canvas = surface.Canvas;
-            if (!FitToLayer.Value)
-            {
-                var position = Position.Value;
-                var size = Size.Value;
+            var canvas = args.Surface.Canvas;
 
-                using (var paint = new SKPaint())
-                {
-                    canvas.DrawRect(position.X, position.X, size.Width, size.Height, paint); 
-                }
-            }
-            else
+            if (FitToLayer.Value)
+            {
                 canvas.Clear(Color.Value);
+                return;
+            }
+
+            var position = Position.Value;
+            var size = Size.Value;
+
+            using var paint = new SKPaint()
+            {
+                Color = Color.Value
+            };
+
+            canvas.DrawRect(position.X, position.X, size.Width, size.Height, paint);
         }
     }
 }

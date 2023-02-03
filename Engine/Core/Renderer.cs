@@ -13,7 +13,10 @@ namespace Engine.Core
 {
     public static class Renderer
     {
+        public static SKSizeI PreviewSize { get; set; }
         private static SKSurface _offScreenSurface;
+        private static SKSize _previewRatio;
+
         public static void Render()
         {
             for (App.Project!.ActiveScene!.Time.Frames = 0; App.Project.ActiveScene.Time >= App.Project.ActiveScene.Duration; App.Project.ActiveScene.Time.Frames++)
@@ -28,11 +31,12 @@ namespace Engine.Core
         {
             var canvas = surface.Canvas;
             // TODO: make this line better
-            // TODO: fix potential bug if user tries to render layer from another scene, it might not fit into the _offScreenSurface 
-            _offScreenSurface = SKSurface.Create(surface.Context, false, new SKImageInfo((int)surface.Canvas.LocalClipBounds.Width - 2, (int)surface.Canvas.LocalClipBounds.Height - 2));
+            // TODO: fix potential bug if user tries to render layer from another scene, it might not fit into the _offScreenSurface and _previewRatio will be off
+            _offScreenSurface = SKSurface.Create(surface.Context, false, new SKImageInfo(PreviewSize.Width, PreviewSize.Height));
+            _previewRatio = new SKSize((float)PreviewSize.Width / scene.Size.Width, (float)PreviewSize.Height / scene.Size.Height);
             foreach (var layer in scene.Layers)
             {
-                ResizeCanvas(canvas, layer.Bounds);
+                canvas.Resize(layer.Bounds.ApplyRatio(_previewRatio));
                 RenderLayer(layer, surface);
             }
         }
@@ -41,11 +45,13 @@ namespace Engine.Core
             var canvas = surface.Canvas;
             _offScreenSurface.Canvas.Clear();
 
+            var layerPreviewSize = layer.Size.Value.ApplyRatio(_previewRatio);
+
             if (layer.IsGroup)
             {
                 foreach (Layer childLayer in layer.Layers) 
                 {
-                    ResizeCanvas(canvas, childLayer.Bounds);
+                    canvas.Resize(childLayer.Bounds.ApplyRatio(_previewRatio));
                     RenderLayer(childLayer, surface);
                 }
             }
@@ -53,14 +59,18 @@ namespace Engine.Core
             {
                 foreach (ContentEffect contentEffect in layer.ContentEffects)
                 {
-                    contentEffect.Render(_offScreenSurface!, layer.Size.Value);
+                    contentEffect.Render(new ContentEffectArgs(_offScreenSurface, layerPreviewSize));
                 }
             }
 
-            SKShader shader = _offScreenSurface!.Snapshot(new SKRectI(0, 0, (int)layer.Size.Value.Width, (int)layer.Size.Value.Height)).ToShader();
+
+            SKShader shader = _offScreenSurface
+                .Snapshot(new SKRectI(0, 0, (int)layerPreviewSize.Width, (int)layerPreviewSize.Height))
+                .ToShader();
+
             foreach (FilterEffect filterEffect in layer.FilterEffects)
             {
-                shader = filterEffect.MakeShader(shader, new float[2] {layer.Size.Value.Width, layer.Size.Value.Height});
+                shader = filterEffect.MakeShader(new FilterEffectArgs(shader, new float[2] { layerPreviewSize.Width, layerPreviewSize.Height }));
             }
 
             using var paint = new SKPaint()
@@ -70,7 +80,20 @@ namespace Engine.Core
 
             canvas.DrawPaint(paint);
         }
-        private static void ResizeCanvas(SKCanvas canvas, SKRect bounds)
+
+        public static SKRect ApplyRatio(this SKRect rect, SKSize ratio)
+        {
+            return new SKRect(rect.Left * ratio.Width,
+                              rect.Top * ratio.Height,
+                              rect.Right * ratio.Width,
+                              rect.Bottom * ratio.Height);
+        }
+        public static SKSize ApplyRatio(this SKSize size, SKSize ratio)
+        {
+            return new SKSize(size.Width * ratio.Width,
+                              size.Height * ratio.Height);
+        }
+        public static void Resize(this SKCanvas canvas, SKRect bounds)
         {
             canvas.Translate(bounds.Location);
             canvas.ClipRect(new SKRect(0, 0, bounds.Width, bounds.Height));

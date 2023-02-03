@@ -16,14 +16,14 @@ namespace Editor.Forms.Controls
         static PreviewControl()
         {
             App.Project = new Project("hey");
-            App.Project.ActiveScene = new Scene(30f, new SKSize(427, 365), Timecode.FromSeconds(0.1f));
+            App.Project.ActiveScene = new Scene(30f, new SKSize(1920, 1080), Timecode.FromSeconds(0.1f));
             var layers = App.Project.ActiveScene.Layers;
 
-            var groupLayer = new Layer(new SKPoint(0, 0), new SKSize(250, 250));
+            var groupLayer = new Layer(new SKPoint(0, 0), new SKSize(1920, 1080));
             groupLayer.FilterEffects.Add(new BlackAndWhite());
             layers.Add(groupLayer);
 
-            var firstLayer = new Layer(new SKPoint(50, 50), new SKSize(100, 100));
+            var firstLayer = new Layer(new SKPoint(0, 0), new SKSize(960, 1080));
             firstLayer.ContentEffects.Add(new Engine.Effects.Video());
             groupLayer.Layers.Add(firstLayer);
         }
@@ -34,6 +34,7 @@ namespace Editor.Forms.Controls
 
             var watch = new Stopwatch();
             watch.Start();
+            Renderer.PreviewSize = new SKSizeI(Width, Height);
             Renderer.RenderScene(App.Project!.ActiveScene!, e.Surface);
             watch.Stop();
             Debug.WriteLine("abc " + watch.ElapsedMilliseconds);

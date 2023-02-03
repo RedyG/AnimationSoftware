@@ -11,9 +11,9 @@ namespace Engine.Effects
     public class Text : ContentEffect
     {
         public Parameter<string> Content { get; set; } = new("hello");
-        public override void Render(SKSurface surface, SKSize layerSize)
+        public override void Render(ContentEffectArgs args)
         {
-            var canvas = surface.Canvas;
+            var canvas = args.Surface.Canvas;
 
             using var paint = new SKPaint()
             {

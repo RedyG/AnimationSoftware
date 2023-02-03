@@ -9,6 +9,6 @@ namespace Engine.Core
 {
     public abstract class ContentEffect : Effect
     {
-        public abstract void Render(SKSurface surface, SKSize layerSize);
+        public abstract void Render(ContentEffectArgs args);
     }
 }

@@ -17,11 +17,11 @@ namespace Engine.Effects
             }";
 
         private static SKRuntimeEffect _effect = SKRuntimeEffect.Create(_src, out var errorText);
-        public override SKShader MakeShader(SKShader input, float[] layerSize)
+        public override SKShader MakeShader(FilterEffectArgs args)
         {
             var children = new SKRuntimeEffectChildren(_effect)
             {
-                ["image"] = input
+                ["image"] = args.InputShader
             };
 
             var uniforms = new SKRuntimeEffectUniforms(_effect);
