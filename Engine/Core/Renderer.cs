@@ -30,19 +30,22 @@ namespace Engine.Core
         public static void RenderScene(Scene scene, SKSurface surface)
         {
             var canvas = surface.Canvas;
+            canvas.Clear();
             // TODO: make this line better
             // TODO: fix potential bug if user tries to render layer from another scene, it might not fit into the _offScreenSurface and _previewRatio will be off
             _offScreenSurface = SKSurface.Create(surface.Context, false, new SKImageInfo(PreviewSize.Width, PreviewSize.Height));
             _previewRatio = new SKSize((float)PreviewSize.Width / scene.Size.Width, (float)PreviewSize.Height / scene.Size.Height);
+
             foreach (var layer in scene.Layers)
             {
-                canvas.Resize(layer.Bounds.ApplyRatio(_previewRatio));
+                canvas.Resize(layer.Bounds.Value.ApplyRatio(_previewRatio));
                 RenderLayer(layer, surface);
             }
         }
         public static void RenderLayer(Layer layer, SKSurface surface)
         {
             var canvas = surface.Canvas;
+            
             _offScreenSurface.Canvas.Clear();
 
             var layerPreviewSize = layer.Size.Value.ApplyRatio(_previewRatio);
@@ -51,7 +54,7 @@ namespace Engine.Core
             {
                 foreach (Layer childLayer in layer.Layers) 
                 {
-                    canvas.Resize(childLayer.Bounds.ApplyRatio(_previewRatio));
+                    canvas.Resize(childLayer.Bounds.Value.ApplyRatio(_previewRatio));
                     RenderLayer(childLayer, surface);
                 }
             }
@@ -62,7 +65,6 @@ namespace Engine.Core
                     contentEffect.Render(new ContentEffectArgs(_offScreenSurface, layerPreviewSize));
                 }
             }
-
 
             SKShader shader = _offScreenSurface
                 .Snapshot(new SKRectI(0, 0, (int)layerPreviewSize.Width, (int)layerPreviewSize.Height))

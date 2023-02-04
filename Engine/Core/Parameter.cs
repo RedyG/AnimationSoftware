@@ -69,8 +69,11 @@ namespace Engine.Core
             }
         }
 
-        public delegate T ValueRequestedEventHandler(object sender, ValueRequestedEventArgs args);
-        public event ValueRequestedEventHandler? ValueRequested;
+        public delegate T ValueGetterEventHandler(object? sender, ValueGetterEventArgs args);
+        public event ValueGetterEventHandler? ValueGetter;
+
+        public event EventHandler<ValueSetterEventArgs<T>>? ValueSetter;
+
 
         private Parameter? _linkedParameter;
         public Parameter? LinkedParameter
@@ -105,7 +108,7 @@ namespace Engine.Core
         {
             get
             {
-                if (ValueRequested != null)
+                if (ValueGetter != null)
                     return false;
 
                 return _canBeLinked;
@@ -119,8 +122,8 @@ namespace Engine.Core
             if (IsLinked)
                 return LinkedParameter!.GetValueAtTimeAsType<T>(time);
 
-            if (ValueRequested != null)
-                return ValueRequested(this, new ValueRequestedEventArgs(time));
+            if (ValueGetter != null)
+                return ValueGetter(this, new ValueGetterEventArgs(time));
 
             if (!IsKeyframed)
                 return _unkeyframedValue;
@@ -141,14 +144,16 @@ namespace Engine.Core
         }
         public void SetValueAtTime(Timecode time, T value)
         {
+            if (ValueSetter != null)
+            {
+                ValueSetter(this, new ValueSetterEventArgs<T>(time, value));
+                return;
+            }
+
             if (IsKeyframed)
-            {
                 Keyframes!.Add(new Keyframe<T>(App.Project!.ActiveScene!.Time, value, EasingPresets.Linear));
-            }
             else
-            {
                 _unkeyframedValue = value;
-            }
         }
 
         public Parameter(T value)
@@ -162,13 +167,25 @@ namespace Engine.Core
             CanBeLinked = canBeLinked;
         }
     }
-    public class ValueRequestedEventArgs
+
+    public class ValueGetterEventArgs : EventArgs
     {
         public Timecode Time { get; }
 
-        public ValueRequestedEventArgs(Timecode time)
+        public ValueGetterEventArgs(Timecode time)
         {
             Time = time;
+        }
+    }
+    public class ValueSetterEventArgs<T> : EventArgs
+    {
+        public T Value { get; }
+        public Timecode Time { get; }
+
+        public ValueSetterEventArgs(Timecode time, T value)
+        {
+            Time = time;
+            Value = value;
         }
     }
 

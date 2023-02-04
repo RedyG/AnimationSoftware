@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace Engine.Core
 {
-    public struct ContentEffectArgs
+    public readonly struct ContentEffectArgs
     {
-        public SKSurface Surface { get; set; }
-        public SKSize Size { get; set; }
+        public SKSurface Surface { get; }
+        public SKSize Size { get; }
 
         public ContentEffectArgs(SKSurface surface, SKSize size)
         {

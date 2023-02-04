@@ -15,7 +15,7 @@ namespace Engine.Utilities
 
         public UtilityDouble()
         {
-            Double.ValueRequested += (object sender, ValueRequestedEventArgs args) => In.GetValueAtTime(args.Time) * 2f;
+            Double.ValueGetter += (object sender, ValueGetterEventArgs args) => In.GetValueAtTime(args.Time) * 2f;
         }
     }
 }

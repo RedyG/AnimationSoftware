@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace Engine.Core
 {
-    public struct FilterEffectArgs
+    public readonly struct FilterEffectArgs
     {
-        public SKShader InputShader { get; set; }
-        public float[] Size { get; set; }
+        public SKShader InputShader { get; }
+        public float[] Size { get;  }
 
         public FilterEffectArgs(SKShader inputShader, float[] size)
         {

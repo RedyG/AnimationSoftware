@@ -24,7 +24,15 @@ namespace Editor.Forms.Controls
             layers.Add(groupLayer);
 
             var firstLayer = new Layer(new SKPoint(0, 0), new SKSize(960, 1080));
-            firstLayer.ContentEffects.Add(new Engine.Effects.Video());
+            firstLayer.ContentEffects.Add(new Engine.Effects.Text());
+            /*var rectEffect = new Engine.Effects.Rectangle()
+            {
+                FitToLayer = new(false),
+                Position = new(new SKPoint(21.71f, 55.21f)),
+                Size = new(new SKSize(19.18f, 105.14f)),
+                Color = new(new SKColor(255, 0 , 0))
+            };
+            firstLayer.ContentEffects.Add(rectEffect);*/
             groupLayer.Layers.Add(firstLayer);
         }
 

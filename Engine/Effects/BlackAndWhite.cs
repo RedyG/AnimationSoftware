@@ -16,7 +16,7 @@ namespace Engine.Effects
         half4 main(float2 coord)
         {
             half4 color = sample(inputShader);
-            return half4(half3(color.r * 0.3 + color.g * 0.59 + color.b * 0.11), color.a);
+            return half3(color.r * 0.3 + color.g * 0.59 + color.b * 0.11).rgb1 * color.a;
         }
         ";
 
