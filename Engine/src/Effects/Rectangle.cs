@@ -16,6 +16,10 @@ namespace Engine.Effects
         public Parameter<bool> FitToLayer { get; set; } = new(true);
         public override void Render(ContentEffectArgs args)
         {
+            App.Project.ActiveScene.Time.Frames--;
+            Renderer.RenderLayer(new Layer(), args.Surface);
+
+            App.Project.ActiveScene.Time.Frames++;
             var canvas = args.Surface.Canvas;
 
             if (FitToLayer.Value)
@@ -36,3 +40,12 @@ namespace Engine.Effects
         }
     }
 }
+
+/*
+
+Fps 60
+Render precomp
+    Fps 30
+    Render layer back 5 frames with ActiveScene.Time--;
+
+*/

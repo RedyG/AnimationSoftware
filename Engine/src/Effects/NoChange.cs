@@ -12,6 +12,7 @@ namespace Engine.Effects
     {
         private static string _src = @"
             uniform shader image;
+
             half4 main(float2 coord) {
                 return sample(image) / 2;
             }";

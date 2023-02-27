@@ -16,23 +16,20 @@ namespace Engine.Core
 
         public Parameter<SKPoint> Position { get; set; }
         public Parameter<SKSize> Size { get; set; }
-        public Parameter<SKRect> Bounds { get; set; } 
+        public Parameter<SKRect> Bounds { get; set; } = new(SKRect.Empty, false, false);
+        public Parameter<SKPoint> Scale { get; set; } = new(new SKPoint(1f, 1f));
 
         public Layer(SKPoint position, SKSize size)
         {
             Position = new(position);
             Size = new(size);
-            Bounds = new(SKRect.Empty, false, false);
 
             Bounds.ValueSetter += (object? sender, ValueSetterEventArgs<SKRect> args) =>
             {
                 Position.SetValueAtTime(args.Time, args.Value.Location);
                 Size.SetValueAtTime(args.Time, args.Value.Size);
             };
-            Bounds.ValueGetter += (object? sender, ValueGetterEventArgs args) =>
-            {
-                return SKRect.Create(Position.GetValueAtTime(args.Time), Size.GetValueAtTime(args.Time));
-            };
+            Bounds.ValueGetter += (object? sender, ValueGetterEventArgs args) => SKRect.Create(Position.GetValueAtTime(args.Time), Size.GetValueAtTime(args.Time));
         }
     }
 }

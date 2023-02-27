@@ -7,18 +7,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Attributes\_Imports.razor" />
+    <None Remove="src\Attributes\_Imports.razor" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Attributes\_Imports.razor">
+    <Content Include="src\Attributes\_Imports.razor">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
     </Content>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FFMpegCore" Version="4.8.0" />
+    <PackageReference Include="OpenTK" Version="4.7.7" />
     <PackageReference Include="SkiaSharp" Version="2.88.3" />
+    <PackageReference Include="StbImageSharp" Version="2.27.13" />
   </ItemGroup>
 
 </Project>

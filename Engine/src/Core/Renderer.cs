@@ -65,7 +65,7 @@ namespace Engine.Core
                     contentEffect.Render(new ContentEffectArgs(_offScreenSurface, layerPreviewSize));
                 }
             }
-
+            // TODO: use canvas.SaveLayer() once this is resolved https://github.com/mono/SkiaSharp/issues/2373
             SKShader shader = _offScreenSurface
                 .Snapshot(new SKRectI(0, 0, (int)layerPreviewSize.Width, (int)layerPreviewSize.Height))
                 .ToShader();
@@ -74,13 +74,14 @@ namespace Engine.Core
             {
                 shader = filterEffect.MakeShader(new FilterEffectArgs(shader, new float[2] { layerPreviewSize.Width, layerPreviewSize.Height }));
             }
-
+            canvas.Skew(0.2f, 0f);
             using var paint = new SKPaint()
             {
                 Shader = shader
             };
 
             canvas.DrawPaint(paint);
+            //canvas.DrawSurface(_offScreenSurface, 0, 0, new SKPaint { ImageFilter = SKImageFilter.CreateBlur(3, 3) });
         }
 
         public static SKRect ApplyRatio(this SKRect rect, SKSize ratio)
@@ -97,6 +98,7 @@ namespace Engine.Core
         }
         public static void Resize(this SKCanvas canvas, SKRect bounds)
         {
+            canvas.ResetMatrix();
             canvas.Translate(bounds.Location);
             canvas.ClipRect(new SKRect(0, 0, bounds.Width, bounds.Height));
         }
