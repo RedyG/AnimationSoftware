@@ -15,6 +15,10 @@ namespace Engine.OpenGL
         {
             StbImage.stbi_set_flip_vertically_on_load(1);
         }
+        public Texture(int handle) : base(handle)
+        {
+        }
+
         public Texture() : base(GL.GenTexture())
         {
         }

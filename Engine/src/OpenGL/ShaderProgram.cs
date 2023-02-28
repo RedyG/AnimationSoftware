@@ -1,5 +1,4 @@
-﻿using NewTest;
-using OpenTK.Graphics.OpenGL4;
+﻿using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,7 +44,6 @@ namespace Engine.OpenGL
             GL.AttachShader(Handle, fragmentShader);
 
             GL.LinkProgram(Handle);
-
             GL.GetProgram(Handle, GetProgramParameterName.LinkStatus, out succes);
             if (succes == 0)
             {
@@ -79,10 +77,24 @@ namespace Engine.OpenGL
             return GL.GetUniformLocation(Handle, uniformName);
         }
 
-        public void Uniform1(int location, int v0)
-        {
-            GL.ProgramUniform1(Handle, location, v0);
-        }
+        public void Uniform1(int location, double v0) => GL.ProgramUniform1(Handle, location, v0);
+        public void Uniform1(int location, int count, double[] value) => GL.ProgramUniform1(Handle, location, count, value);
+        public void Uniform1(int location, int count, ref double value) => GL.ProgramUniform1(Handle, location, count, ref value);
+        public unsafe void Uniform1(int location, int count, double* value) => GL.ProgramUniform1(Handle, location, count, value);
+        public void Uniform1(int location, float v0) => GL.ProgramUniform1(Handle, location, v0);
+        public void Uniform1(int location, int count, float[] value) => GL.ProgramUniform1(Handle, location, count, value);
+        public void Uniform1(int location, int count, ref float value) => GL.ProgramUniform1(Handle, location, count, ref value);
+        public unsafe void Uniform1(int location, int count, float* value) => GL.ProgramUniform1(Handle, location, count, value);
+        public void Uniform1(int location, int v0) => GL.ProgramUniform1(Handle, location, v0);
+        public void Uniform1(int location, int count, int[] value) => GL.ProgramUniform1(Handle, location, count, value);
+        public void Uniform1(int location, int count, ref int value) => GL.ProgramUniform1(Handle, location, count, ref value);
+        public unsafe void Uniform1(int location, int count, int* value) => GL.ProgramUniform1(Handle, location, count, value);
+        public void Uniform1(int location, uint v0) => GL.ProgramUniform1(Handle, location, v0);
+        // TODO: test these
+        public void Uniform1(int location, int count, uint[] value) => GL.ProgramUniform1((uint)Handle, location, count, value);
+        public void Uniform1(int location, int count, ref uint value) => GL.ProgramUniform1((uint)Handle, location, count, ref value);
+        public unsafe void Uniform1(int location, int count, uint* value) => GL.ProgramUniform1((uint)Handle, location, count, value);
+
 
         public void Uniform2(int location, int v0, int v1)
         {

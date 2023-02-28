@@ -16,9 +16,8 @@ namespace Engine.OpenGL
 
         public void AttribPointer<T>(Buffer<T> buffer, int index, int size, VertexAttribPointerType type, bool normalized, int stride, int offset) where T : struct
         {
-            AssertBound();
-
-            buffer.Bind(BufferTarget.ArrayBuffer);
+            Bind();
+            buffer.Bind();
             GL.VertexAttribPointer(index, size, type, normalized, stride, offset);
             GL.EnableVertexAttribArray(index);
         }
@@ -30,9 +29,9 @@ namespace Engine.OpenGL
 
         public void AttribPointers<T>(Buffer<T> buffer, VertexAttribPointer[] attribs) where T : struct
         {
-            AssertBound();
+            Bind();
+            buffer.Bind();
 
-            buffer.Bind(BufferTarget.ArrayBuffer);
             foreach (var attrib in attribs)
             {
                 GL.VertexAttribPointer(attrib.Index, attrib.Size, attrib.Type, attrib.Normalized, attrib.Stride, attrib.Offset);

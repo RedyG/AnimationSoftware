@@ -6,15 +6,20 @@ using System.Text;
 using Engine.OpenGL;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Engine.src.Utilities;
+using Engine.Utilities;
 
-namespace NewTest
+namespace Engine.Graphics
 {
     public class ShaderEffect
     {
         public Dictionary<string, ShaderEffect> Children { get; set; } = new();
         public string Content { get; set; }
-        public Guid Id { get; }
+        public Guid Id { get; } = Guid.NewGuid();
+
+        public ShaderEffect(string content)
+        {
+            Content = content;
+        }
 
         private const string VertexShader = @"
             #version 330 core
@@ -33,7 +38,7 @@ namespace NewTest
         ";
 
         private const string TextureShaderEffect = @"
-            uniform sampler2D inputTexture            
+            uniform sampler2D s            
 
             vec4 main(in vec2 coord)
             {
@@ -41,14 +46,13 @@ namespace NewTest
             }
         ";
 
-        public static ShaderEffect FromTexture(Texture texture)
-        {
-            throw new NotImplementedException();
-        }
+        public static ShaderEffect TextureEffect = new ShaderEffect(TextureShaderEffect);
 
         public ShaderEffectProgram Compile()
         {
             // TODO: Resolution instead of TexCoord
+            // TODO: remove unused code if ShaderEffect has no child ( so all previous shader effects can be ignored ) or if ShaderEffect isn't used
+
             string result = @"
                 #version 330 core
 
@@ -88,10 +92,10 @@ namespace NewTest
                 result += child.ConcactChildren();
 
             // remove the shader "uniforms"
-            string parsedCode = Regex.Replace(Content, "uniform\\s*shader[^;;]+;", "");
+            string parsedCode = Regex.Replace(Content, "uniform\\s+shader[^;]+;", "");
 
             // replace "main" for the Hash
-            parsedCode = Regex.Replace(parsedCode, "\\smain\\s*\\(", $" _{Id.ToShaderFormat()}(");
+            parsedCode = Regex.Replace(parsedCode, "\\smain\\s+\\(", $" _{Id.ToShaderFormat()}(");
 
             foreach (var child in Children)
             {

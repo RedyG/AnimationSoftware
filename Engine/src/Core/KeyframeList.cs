@@ -22,20 +22,13 @@ namespace Engine.Core
         {
             list.Sort((a, b) => a.Time.Seconds.CompareTo(b.Time.Seconds));
 
-            // Remove duplicates inplace
-            int index = list.Count - 1;
-            while (index > 0)
-            {
-                if (list[index].Time == list[index - 1].Time)
-                {
-                    if (index < list.Count - 1)
-                        (list[index], list[list.Count - 1]) = (list[list.Count - 1], list[index]);
+            if (list.Count <= 1)
+                return;
 
-                    list.RemoveAt(list.Count - 1);
-                    index--;
-                }
-                else
-                    index--;
+            for (int i = 1; i < list.Count; i++)
+            {
+                if (list[i - 1].Time == list[i].Time)
+                    list.RemoveAt(i);
             }
         }
 

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NewTest
+namespace Engine.Graphics
 {
     public static class GraphicsApi
     {
@@ -33,10 +33,10 @@ namespace NewTest
         private static VertexArray vao;
         private static Buffer<float> vbo;
         private static Buffer<uint> ebo;
-        public static void DrawRect()
+        public static void DrawRect(float x, float y, float width, float height)
         {
             shader.Bind();
-            ebo.Bind(BufferTarget.ElementArrayBuffer);
+            ebo.Bind();
             vao.Bind();
             GL.DrawElements(BeginMode.Triangles, 6, DrawElementsType.UnsignedInt, 0);
         }

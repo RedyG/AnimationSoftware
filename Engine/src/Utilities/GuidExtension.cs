@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Engine.src.Utilities
+namespace Engine.Utilities
 {
     public static class GuidExtension
     {
         public static string ToShaderFormat(this Guid guid)
         {
-            return guid.ToString().Replace('-', '_');
+            return guid.ToString().Replace("-", "");
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using Engine.Core;
-using SkiaSharp;
+using Engine.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,23 +11,25 @@ namespace Engine.Effects
     public class NoChange : FilterEffect
     {
         private static string _src = @"
-            uniform shader image;
+            uniform shader input;
+            uniform float amount;
 
             half4 main(float2 coord) {
-                return sample(image) / 2;
-            }";
+                return sample(input) / amount;
+            }
+        ";
 
-        private static SKRuntimeEffect _effect = SKRuntimeEffect.Create(_src, out var errorText);
-        public override SKShader MakeShader(FilterEffectArgs args)
+        private static ShaderEffect _effect = new(_src);
+
+        public override ShaderEffect MakeShaderEffect(ShaderEffect input)
         {
-            var children = new SKRuntimeEffectChildren(_effect)
-            {
-                ["image"] = args.InputShader
-            };
+            _effect.Children["input"] = input;
+            return _effect;
+        }
 
-            var uniforms = new SKRuntimeEffectUniforms(_effect);
-
-            return _effect.ToShader(false, uniforms, children);
+        public override void UpdateUniforms(ShaderEffectProgram shaderEffectProgram)
+        {
+            shaderEffectProgram.Uniform1(_effect, "amount", 2f);
         }
     }
 }

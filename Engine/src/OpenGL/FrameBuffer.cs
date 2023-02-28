@@ -24,13 +24,25 @@ namespace Engine.OpenGL
             GL.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, depthrenderbuffer);*/
             //Texture.Unbind(TextureTarget.Texture2D);
             GL.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, texture.Handle, 0);
-
             GL.DrawBuffer(DrawBufferMode.ColorAttachment0);
 
             if (GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer) != FramebufferErrorCode.FramebufferComplete)
                 throw new Exception("Couldn't create framebuffer.");
 
             return framebuffer;
+        }
+
+        public Texture GetFirstTexture()
+        {
+            return new Texture(GetFramebufferAttachmentParameter(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, FramebufferParameterName.FramebufferAttachmentObjectName));
+        }
+
+
+        public int GetFramebufferAttachmentParameter(FramebufferTarget target, FramebufferAttachment attachment, FramebufferParameterName paramName)
+        {
+            Bind(target);
+            GL.GetFramebufferAttachmentParameter(target, attachment, paramName, out int textureId);
+            return textureId;
         }
 
         public void Bind(FramebufferTarget target)

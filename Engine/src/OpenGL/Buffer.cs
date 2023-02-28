@@ -11,29 +11,32 @@ namespace Engine.OpenGL
         : GLObject
         where T : struct
     {
-        public Buffer() : base(GL.GenBuffer())
+        private BufferTarget _target;
+
+        public Buffer(BufferTarget target) : base(GL.GenBuffer())
         {
+            _target = target;
         }
 
         public static Buffer<T> FromData(BufferTarget target, int size, T[] data, BufferUsageHint usageHint)
         {
-            var buffer = new Buffer<T>();
-            buffer.Bind(target);
-            buffer.Data(target, size, data, usageHint);
+            var buffer = new Buffer<T>(target);
+            buffer.Bind();
+            buffer.Data(size, data, usageHint);
 
             return buffer;
         }
 
-        public void Data(BufferTarget target, int size, T[] data, BufferUsageHint usageHint)
+        public void Data(int size, T[] data, BufferUsageHint usageHint)
         {
-            AssertBound(target);
+            Bind();
 
-            GL.BufferData(target, size, data, usageHint);
+            GL.BufferData(_target, size, data, usageHint);
         }
 
-        public void Bind(BufferTarget target)
+        public void Bind()
         {
-            GL.BindBuffer(target, Handle);
+            GL.BindBuffer(_target, Handle);
         }
 
         public static void Unbind(BufferTarget target)
@@ -41,32 +44,15 @@ namespace Engine.OpenGL
             GL.BindBuffer(target, 0);
         }
 
+        public void Unbind()
+        {
+            GL.BindBuffer(_target, 0);
+        }
+
         protected override void Dispose(bool manual)
         {
             if (!manual) return;
             GL.DeleteBuffer(Handle);
-        }
-
-        private static Dictionary<BufferTarget, GetPName> _assertDict = new()
-        {
-            // TODO: missing some
-            [BufferTarget.ParameterBuffer] = GetPName.ParameterBufferBinding,
-            [BufferTarget.ArrayBuffer] = GetPName.ArrayBufferBinding,
-            [BufferTarget.ElementArrayBuffer] = GetPName.ElementArrayBufferBinding,
-            [BufferTarget.PixelPackBuffer] = GetPName.PixelPackBufferBinding,
-            [BufferTarget.PixelUnpackBuffer] = GetPName.PixelUnpackBufferBinding,
-            [BufferTarget.TextureBuffer] = GetPName.TextureBindingBuffer,
-            [BufferTarget.TransformFeedbackBuffer] = GetPName.TransformFeedbackBinding,
-            [BufferTarget.DrawIndirectBuffer] = GetPName.DrawIndirectBufferBinding,
-        };
-
-        public void AssertBound(BufferTarget target)
-        {
-#if DEBUG
-            int activeHandle;
-            GL.GetInteger(_assertDict[target], out activeHandle);
-            if (activeHandle != Handle) throw new Exception("Buffer is not bound.");
-#endif
         }
     }
 }
