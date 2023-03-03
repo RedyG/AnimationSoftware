@@ -1,4 +1,6 @@
-﻿namespace Editor
+﻿using System.Drawing;
+
+namespace Editor
 {
     internal class Program
     {

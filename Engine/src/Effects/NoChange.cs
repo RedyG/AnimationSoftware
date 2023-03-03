@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Engine.Effects
 {
-    public class NoChange : FilterEffect
+    public class NoChange : Effect
     {
         private static string _src = @"
             uniform shader input;
@@ -19,17 +19,10 @@ namespace Engine.Effects
             }
         ";
 
-        private static ShaderEffect _effect = new(_src);
 
-        public override ShaderEffect MakeShaderEffect(ShaderEffect input)
+        public override RenderResult Render(Surface mainSurface, Surface secondSurface)
         {
-            _effect.Children["input"] = input;
-            return _effect;
-        }
-
-        public override void UpdateUniforms(ShaderEffectProgram shaderEffectProgram)
-        {
-            shaderEffectProgram.Uniform1(_effect, "amount", 2f);
+            return new RenderResult(true);
         }
     }
 }

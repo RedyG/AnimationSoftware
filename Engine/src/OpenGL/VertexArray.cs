@@ -55,15 +55,6 @@ namespace Engine.OpenGL
             if (!manual) return;
             GL.DeleteVertexArray(Handle);
         }
-
-        public void AssertBound()
-        {
-#if DEBUG
-            int activeHandle;
-            GL.GetInteger(GetPName.VertexArrayBinding, out activeHandle);
-            if (activeHandle != Handle) throw new Exception("Vertex array object is not bound.");
-#endif
-        }
     }
 
     public readonly struct VertexAttribPointer

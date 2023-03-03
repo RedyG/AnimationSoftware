@@ -9,8 +9,7 @@ namespace Engine.Core
 {
     public class Layer
     {
-        public List<ContentEffect> ContentEffects { get; set; } = new();
-        public List<FilterEffect> FilterEffects { get; set; } = new();
+        public List<Effect> Effects { get; set; } = new();
         public List<Layer> Layers { get; set; } = new();
         public bool IsGroup { get => Layers.Count > 0; }
 

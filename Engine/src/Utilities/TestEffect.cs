@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Engine.Core;
 using Engine.Attributes;
+using Engine.Graphics;
 
 namespace Engine.Utilities
 {
@@ -16,6 +17,11 @@ namespace Engine.Utilities
         public UtilityDouble()
         {
             Double.ValueGetter += (object? sender, ValueGetterEventArgs args) => In.GetValueAtTime(args.Time) * 2f;
+        }
+
+        public override RenderResult Render(Surface mainSurface, Surface secondSurface)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Engine.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,15 +28,18 @@ namespace Engine.OpenGL
             Handle = handle;
         }
 
-        public bool Equals(GLObject other)
+        public bool Equals(GLObject? other)
         {
             return other != null && Handle.Equals(other.Handle);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is GLObject && Equals((GLObject)obj);
         }
+
+        public static bool operator ==(GLObject a, GLObject b) => a.Equals(b);
+        public static bool operator !=(GLObject a, GLObject b) => !(a == b);
 
         public override int GetHashCode()
         {

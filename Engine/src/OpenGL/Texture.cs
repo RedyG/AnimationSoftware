@@ -23,14 +23,13 @@ namespace Engine.OpenGL
         {
         }
 
-        public static Texture FromImage(string path, TextureUnit unit, TextureTarget target,
+        public static Texture FromImage(string path, TextureTarget target,
             TextureMinFilter minFilter = TextureMinFilter.Linear, TextureMagFilter magFilter = TextureMagFilter.Linear,
             TextureWrapMode wrapModeS = TextureWrapMode.MirroredRepeat, TextureWrapMode wrapModeT = TextureWrapMode.MirroredRepeat,
             PixelInternalFormat pixelInternalFormat = PixelInternalFormat.Rgba, PixelFormat pixelFormat = PixelFormat.Rgba)
         {
             var texture = new Texture();
 
-            GL.ActiveTexture(unit);
             texture.Bind(target);
 
             GL.TexParameter(target, TextureParameterName.TextureMinFilter, (int)minFilter);
@@ -45,10 +44,10 @@ namespace Engine.OpenGL
             return texture;
         }
 
-        public static Texture Create(int width, int height, TextureUnit unit)
+        public static Texture Create(int width, int height)
         {
             return Create(
-                width, height, unit,
+                width, height,
                 IntPtr.Zero, PixelType.UnsignedByte, TextureTarget.Texture2D,
                 TextureMinFilter.Linear, TextureMagFilter.Linear,
                 TextureWrapMode.MirroredRepeat, TextureWrapMode.MirroredRepeat,
@@ -62,7 +61,7 @@ namespace Engine.OpenGL
             TextureWrapMode wrapModeS, TextureWrapMode wrapModeT,
             PixelInternalFormat pixelInternalFormat, PixelFormat pixelFormat) where T : struct
         {
-            var texture = CreateBase(unit, target, minFilter, magFilter, wrapModeS, wrapModeT);
+            var texture = CreateBase(target, minFilter, magFilter, wrapModeS, wrapModeT);
 
             GL.TexImage2D(target, 0, pixelInternalFormat, width, height, 0, pixelFormat, pixelType, data);
 
@@ -70,13 +69,13 @@ namespace Engine.OpenGL
         }
 
         public static Texture Create(
-            int width, int height, TextureUnit unit, IntPtr data,
+            int width, int height, IntPtr data,
             PixelType pixelType, TextureTarget target,
             TextureMinFilter minFilter, TextureMagFilter magFilter,
             TextureWrapMode wrapModeS, TextureWrapMode wrapModeT,
             PixelInternalFormat pixelInternalFormat, PixelFormat pixelFormat)
         {
-            var texture = CreateBase(unit, target, minFilter, magFilter, wrapModeS, wrapModeT);
+            var texture = CreateBase(target, minFilter, magFilter, wrapModeS, wrapModeT);
 
             GL.TexImage2D(target, 0, pixelInternalFormat, width, height, 0, pixelFormat, pixelType, data);
 
@@ -84,12 +83,12 @@ namespace Engine.OpenGL
         }
 
         private static Texture CreateBase(
-            TextureUnit unit, TextureTarget target,
+            TextureTarget target,
             TextureMinFilter minFilter, TextureMagFilter magFilter,
             TextureWrapMode wrapModeS, TextureWrapMode wrapModeT)
         {
             var texture = new Texture();
-            texture.Bind(target, unit);
+            texture.Bind(target);
 
             GL.TexParameter(target, TextureParameterName.TextureMinFilter, (int)minFilter);
             GL.TexParameter(target, TextureParameterName.TextureMagFilter, (int)magFilter);
@@ -103,12 +102,6 @@ namespace Engine.OpenGL
 
         public void Bind(TextureTarget textureTarget)
         {
-            GL.BindTexture(textureTarget, Handle);
-        }
-
-        public void Bind(TextureTarget textureTarget, TextureUnit textureUnit)
-        {
-            GL.ActiveTexture(textureUnit);
             GL.BindTexture(textureTarget, Handle);
         }
 

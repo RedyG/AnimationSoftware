@@ -22,8 +22,7 @@ namespace Engine.Core
         public float Evaluate(float x)
         {
             float t = FindTforX(x, P0.X, P1.X, P2.X, P3.X);
-            float y = FindYForT(t, P0.Y, P1.Y, P2.Y, P3.Y);
-            return y;
+            return FindYForT(t, P0.Y, P1.Y, P2.Y, P3.Y);
         }
 
         public BezierEasing(PointF p1, PointF p2)
@@ -37,7 +36,7 @@ namespace Engine.Core
             P2 = new PointF(p2x, p2y);
         }
 
-        // This is all Java code I translated to C#, I don't understand 99% of this
+        // I have no clue how any of this works
         private const double EPSILON = 1E-10;
         private static float FindYForT(float t, float p0y, float p1y, float p2y, float p3y) => MathF.Pow((1 - t), 3) * p0y + 3 * t * MathF.Pow((1 - t), 2) * p1y + 3 * (1 - t) * MathF.Pow(t, 2) * p2y + MathF.Pow(t, 3) * p3y;
         private static float FindTforX(float x, float pa, float pb, float pc, float pd)

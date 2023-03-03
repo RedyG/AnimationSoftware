@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Engine.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -16,6 +17,7 @@ namespace Engine.Core
         public Timecode Duration { get; set; }
         public float FrameRate { get; set; }
         public SizeF Size { get; set; }
+        public float AspectRatio => Size.GetAspectRatio();
 
 
         public Scene(float frameRate, SizeF size, Timecode duration)

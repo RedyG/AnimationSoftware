@@ -9,30 +9,22 @@ namespace Engine.Core
 {
     public struct Timecode : IEquatable<Timecode>, IComparable<Timecode>
     {
-        public Scene Scene { get; set; }
         public float Seconds { get; set; }
         public float Milliseconds { get => Seconds * 1000f; set => Seconds = (value / 1000f); }
 
-        public int Frames
+        public int GetFrames(float frameRate) => (int)MathF.Round(Seconds * frameRate);
+        public void SetFrames(int frames, float frameRate) => Seconds = (frames / (float)frameRate);
+
+        public static Timecode FromFrames(int frames, float frameRate)
         {
-            get
-            {
-                return (int)MathF.Round(Seconds * Scene.FrameRate);
-            }
-            set
-            {
-                Seconds = (value / (float)Scene.FrameRate);
-            }
+            var timecode = new Timecode();
+            timecode.SetFrames(frames, frameRate);
+            return timecode;
         }
 
-        public static Timecode FromFrames(int frames) => FromFrames(frames, App.Project!.ActiveScene!);
-        public static Timecode FromFrames(int frames, Scene scene) => new Timecode { Frames = frames, Scene = scene };
+        public static Timecode FromMilliseconds(float milliseconds) => new Timecode { Milliseconds = milliseconds};
 
-        public static Timecode FromMilliseconds(float milliseconds) => FromMilliseconds(milliseconds, App.Project!.ActiveScene!);
-        public static Timecode FromMilliseconds(float milliseconds, Scene scene) => new Timecode { Milliseconds = milliseconds, Scene = scene };
-
-        public static Timecode FromSeconds(float seconds) => FromSeconds(seconds, App.Project!.ActiveScene!);
-        public static Timecode FromSeconds(float seconds, Scene scene) => new Timecode { Seconds = seconds, Scene = scene };
+        public static Timecode FromSeconds(float seconds) => new Timecode { Seconds = seconds };
 
         public override int GetHashCode() => Seconds.GetHashCode();
 
@@ -50,10 +42,17 @@ namespace Engine.Core
 
         public override string ToString()
         {
+            // TODO: this uses ActiveItem which may not be what we want depending. ( might wanna remove frames and just use milliseconds or something )
+
+            return ToString(App.Project!.ActiveScene!.FrameRate);
+        }
+
+        public string ToString(float frameRate)
+        {
             return $"{(int)(Seconds / 3600f)}:".PadLeft(3, '0') +
                    $"{(int)((Seconds / 60f) % 60)}:".PadLeft(3, '0') +
                    $"{(int)(Seconds % 60)}:".PadLeft(3, '0') +
-                   $"{Frames % Scene.FrameRate}".PadLeft(2, '0');
+                   $"{GetFrames(frameRate) % frameRate}".PadLeft(2, '0');
         }
 
         public TimeSpan ToTimeSpan()

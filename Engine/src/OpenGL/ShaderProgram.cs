@@ -1,4 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -114,6 +115,11 @@ namespace Engine.OpenGL
         public void Uniform4(int location, float v0, float v1, float v2, float v3)
         {
             GL.ProgramUniform4(Handle, location, v0, v1, v2, v3);
+        }
+
+        public void UniformMatrix4(int location, ref Matrix4 matrix)
+        {
+            GL.ProgramUniformMatrix4(Handle, location, true, ref matrix);
         }
 
         protected override void Dispose(bool manual)
