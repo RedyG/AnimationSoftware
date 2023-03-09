@@ -55,7 +55,7 @@ namespace Engine.OpenGL
         }
 
         public static Texture Create<T>(
-            int width, int height, TextureUnit unit, T[] data,
+            int width, int height, T[] data,
             PixelType pixelType, TextureTarget target,
             TextureMinFilter minFilter, TextureMagFilter magFilter,
             TextureWrapMode wrapModeS, TextureWrapMode wrapModeT,

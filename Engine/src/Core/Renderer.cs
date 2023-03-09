@@ -11,12 +11,17 @@ using System.Threading.Tasks;
 using Engine.OpenGL;
 using Engine.Graphics;
 using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
+using Engine.Utilities;
 
 namespace Engine.Core
 {
     public static class Renderer
     {
-        private static List<Surface> _surfaces = new();
+        public static float PreviewRatio { get; set; } = 1f;
+
+        private static SizeF PreviewSizeF => App.Project.ActiveScene.Size * PreviewRatio;
+        private static Size PreviewSize => new Size((int)(App.Project.ActiveScene.Size.Width * PreviewRatio), (int)(App.Project.ActiveScene.Size.Height * PreviewRatio));
 
         private static Texture _textureA = Texture.Create(1920, 1080);
         private static Framebuffer _framebufferA = Framebuffer.FromTexture(_textureA);
@@ -31,11 +36,13 @@ namespace Engine.Core
         private static Surface _activeSurface => _surfacesSwapped ? _surfaceB : _surfaceA;
         private static Surface _secondSurface => _surfacesSwapped ? _surfaceA : _surfaceB;
 
-        public static void RenderScene(Scene scene, Surface surface)
+        public static void RenderActiveScene(Surface surface)
         {
-            //AssertEnoughSurfaces(scene);
-            
-            foreach (Layer layer in scene.Layers)
+            GL.Viewport(new Point(0, 0), PreviewSize);
+
+            GraphicsApi.Clear(App.Project.ActiveScene.BackgroundColor);
+
+            foreach (Layer layer in App.Project.ActiveScene.Layers)
             {
                 RenderLayer(layer, surface);
             }
@@ -66,18 +73,14 @@ namespace Engine.Core
                 if (result.SwapSurfaces)
                     _surfacesSwapped = !_surfacesSwapped;
             }
+
             surface.Framebuffer.Bind(FramebufferTarget.Framebuffer);
-            GraphicsApi.DrawTexture(_activeSurface.Texture);
+            GraphicsApi.DrawTexture(MatrixBuilder.CreateTransform(layer), _activeSurface.Texture);
         }
 
         public static void AssertEnoughSurfaces(Scene scene)
         {
             // TODO: implement this for real
-
-            // this is temporary
-            Texture texture = Texture.Create((int)scene.Size.Width, (int)scene.Size.Height);
-            Framebuffer framebuffer = Framebuffer.FromTexture(texture);
-            _surfaces.Add(new Surface(texture, framebuffer));
         }
     }
 }

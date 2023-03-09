@@ -32,11 +32,6 @@ namespace Engine.OpenGL
             return framebuffer;
         }
 
-        public Texture GetFirstTexture()
-        {
-            return new Texture(GetFramebufferAttachmentParameter(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, FramebufferParameterName.FramebufferAttachmentObjectName));
-        }
-
 
         public int GetFramebufferAttachmentParameter(FramebufferTarget target, FramebufferAttachment attachment, FramebufferParameterName paramName)
         {

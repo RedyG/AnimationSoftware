@@ -3,6 +3,7 @@ using Engine.Graphics;
 using Engine.OpenGL;
 using Engine.Utilities;
 using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -14,10 +15,19 @@ namespace Engine.Effects
 {
     public class Rectangle : Effect
     {
+        public Parameter<PointF> Position { get; set; } = new Parameter<PointF>(new PointF(0f, 0f));
+        public Parameter<SizeF> Size { get; set; } = new Parameter<SizeF>(new SizeF(100f, 100f));
+        public Parameter<Color4> Color { get; set; } = new Parameter<Color4>(Color4.White);
+        public Parameter<bool> FitToLayer { get; set; } = new Parameter<bool>(true);
 
-        public override RenderResult Render(Surface mainSurface, Surface secondSurface)
+
+        public override RenderResult Render(Surface mainSurface, Surface secondSurface, SizeF size)
         {
-            GraphicsApi.DrawRect(MatrixBuilder.CreateTransform(new PointF(0f, 0f), new SizeF(0.5f, 0.5f)), App.Project!.ActiveScene!.AspectRatio, Color.Red);
+            GraphicsApi.Clear(Color.Value);
+               if (FitToLayer.Value)
+                   GraphicsApi.Clear(Color.Value);
+               else
+                   GraphicsApi.DrawRect(MatrixBuilder.CreateTransform(Position.Value, Size.Value), Color.Value);
 
             return new(false);
         }

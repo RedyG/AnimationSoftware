@@ -13,18 +13,18 @@ namespace Engine.Graphics
 {
     public static class GraphicsApi
     {
-
-        public static void Clear(Color color)
+        public static float Time = 0f;
+        public static void Clear(Color4 color)
         {
             GL.ClearColor(color);
             GL.Clear(ClearBufferMask.ColorBufferBit);
         }
 
         private static float[] textureVertices = {
-             0.5f,  0.5f, 0.0f, 1.0f, 1.0f,   // top right
-             0.5f, -0.5f, 0.0f, 1.0f, 0.0f,   // bottom right
-            -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,   // bottom left
-            -0.5f,  0.5f, 0.0f, 0.0f, 1.0f    // top left
+             1f,  1f, 1.0f, 0.0f,   // bottom right
+             1f,  0f, 1.0f, 1.0f,   // top right
+             0f,  0f, 0.0f, 1.0f,   // top left
+             0f,  1f, 0.0f, 0.0f    // bottom left
         };
         private static uint[] textureIndices =
         {
@@ -36,20 +36,19 @@ namespace Engine.Graphics
         private static Buffer<float> textureVbo;
         private static Buffer<uint> textureEbo;
 
-        public static void DrawTexture(Texture texture)
+        public static void DrawTexture(Matrix4 transform, Texture texture)
         {
-            textureShader.Bind();
+            Matrix4 matrix = MatrixBuilder.ToTopLeft(transform);
             GL.ActiveTexture(TextureUnit.Texture0);
             texture.Bind(TextureTarget.Texture2D);
 
-            int textureLocation = textureShader.GetUniformLocation("tex");
-            textureShader.Uniform1(textureLocation, 0);
-
+            textureShader.Uniform1(textureShader.GetUniformLocation("tex"), 0);
+            textureShader.UniformMatrix4(textureShader.GetUniformLocation("transform"), ref matrix);
+            textureShader.Bind();
             textureEbo.Bind();
             textureVao.Bind();
             GL.DrawElements(BeginMode.Triangles, 6, DrawElementsType.UnsignedInt, 0);
         }
-
         public static void InitTexture()
         {
             string vertexShaderSource = @"
@@ -60,12 +59,14 @@ namespace Engine.Graphics
                 
                 out vec2 texCoord;
 
+                uniform mat4 transform;
+
                 void main()
                 {
                     texCoord = aTexCoord;
-                    gl_Position = vec4(aPos, 1.0);
+                    gl_Position = vec4(aPos, 1.0) * transform;
                 }
-            ";
+            ";// - vec3(0.5, 0.0, 0.0)
             string fragmentShaderSource = @"
                 #version 330 core
 
@@ -91,28 +92,22 @@ namespace Engine.Graphics
             textureEbo = Buffer<uint>.FromData(BufferTarget.ElementArrayBuffer, rectIndices.Length * sizeof(uint), rectIndices, BufferUsageHint.StaticDraw);
 
             VertexAttribPointer[] attribs = {
-                new(0, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0),
-                new(1, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float))
+                new(0, 2, VertexAttribPointerType.Float, false, 4 * sizeof(float), 0),
+                new(1, 2, VertexAttribPointerType.Float, false, 4 * sizeof(float), 2 * sizeof(float))
             };
 
             textureVao.AttribPointers(textureVbo, attribs);
         }
 
 
-        /*private static float[] rectVertices = {
-            -1f, -1f, 0.0f, // bottom left
-            -1f,  1f, 0.0f,// top left
-             1f,  1f, 0.0f,// top right
-             1f, -0.8f, 0.0f,// bottom right
-        };*/
+
         private static float[] rectVertices = {
-            0f, 0f, 0.0f, // bottom left
-            0f,  1f, 0.0f,// top left
-             1f,  1f, 0.0f,// top right
-             1f, 0f, 0.0f,// bottom right
+            0f, 0f, // bottom left
+            0f,  1f,// top left
+             1f,  1f,// top right
+             1f, 0f,// bottom right
         };
-        private static uint[] rectIndices =
-        {
+        private static uint[] rectIndices = {
             0, 1, 3, // left triange
             2, 1, 3, // right triangle
         };
@@ -120,12 +115,13 @@ namespace Engine.Graphics
         private static VertexArray rectVao;
         private static Buffer<float> rectVbo;
         private static Buffer<uint> rectEbo;
-        public static void DrawRect(Matrix4 transform, float aspectRatio, Color color)
+        public static void DrawRect(Matrix4 transform, Color4 color)
         {
-            Matrix4 matrix = transform * Matrix4.CreateScale(1f / aspectRatio, 1f, 1f) * MatrixBuilder.TopLeftMatrix;
-            rectShader.Bind();
+            Matrix4 matrix = MatrixBuilder.ToTopLeft(transform);
             rectShader.UniformMatrix4(rectShader.GetUniformLocation("transform"), ref matrix);
-            rectShader.Uniform4(rectShader.GetUniformLocation("color"), 1f, 0f, 0f, 1f);
+            rectShader.Uniform4(rectShader.GetUniformLocation("color"), color);
+
+            rectShader.Bind();
             rectEbo.Bind();
             rectVao.Bind();
             GL.DrawElements(BeginMode.Triangles, 6, DrawElementsType.UnsignedInt, 0);
@@ -166,7 +162,7 @@ namespace Engine.Graphics
 
             rectEbo = Buffer<uint>.FromData(BufferTarget.ElementArrayBuffer, rectIndices.Length * sizeof(uint), rectIndices, BufferUsageHint.StaticDraw);
 
-            VertexAttribPointer attrib = new(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+            VertexAttribPointer attrib = new(0, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
 
             rectVao.AttribPointer(rectVbo, attrib);
         }

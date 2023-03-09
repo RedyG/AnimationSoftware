@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,11 +15,13 @@ namespace Engine.Core
         public bool IsGroup { get => Layers.Count > 0; }
 
         public Parameter<PointF> Position { get; set; }
-        public Parameter<SizeF> Size { get; set; }
+        public Parameter<PointF> Origin { get; set; } = new(new PointF(0f, 0f));
+        public Parameter<Size> Size { get; set; }
         public Parameter<RectangleF> Bounds { get; set; } = new(RectangleF.Empty, false, false);
-        public Parameter<PointF> Scale { get; set; } = new(new PointF(1f, 1f));
+        public Parameter<Vector2> Scale { get; set; } = new(new Vector2(1f));
+        public Parameter<float> Rotation { get; set; } = new(0f);
 
-        public Layer(PointF position, SizeF size)
+        public Layer(PointF position, Size size)
         {
             Position = new(position);
             Size = new(size);
@@ -26,7 +29,7 @@ namespace Engine.Core
             Bounds.ValueSetter += (object? sender, ValueSetterEventArgs<RectangleF> args) =>
             {
                 Position.SetValueAtTime(args.Time, args.Value.Location);
-                Size.SetValueAtTime(args.Time, args.Value.Size);
+                Size.SetValueAtTime(args.Time, args.Value.Size.ToSize());
             };
             Bounds.ValueGetter += (object? sender, ValueGetterEventArgs args) => new RectangleF(Position.GetValueAtTime(args.Time), Size.GetValueAtTime(args.Time));
         }

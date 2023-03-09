@@ -1,7 +1,10 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -20,6 +23,7 @@ namespace Engine.OpenGL
 
         public static Buffer<T> FromData(BufferTarget target, int size, T[] data, BufferUsageHint usageHint)
         {
+
             var buffer = new Buffer<T>(target);
             buffer.Bind();
             buffer.Data(size, data, usageHint);

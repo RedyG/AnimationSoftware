@@ -9,8 +9,8 @@ namespace Engine.Core
 {
     public abstract class Parameter
     {
-        public T GetCurrentValueAsType<T>() => GetValueAtTimeAsType<T>(App.Project!.ActiveScene!.Time);
-        public void SetCurrentValueAsType<T>(T value) => SetValueAtTimeAsType<T>(value, App.Project!.ActiveScene!.Time);
+        public T GetCurrentValueAsType<T>() => GetValueAtTimeAsType<T>(App.Project.ActiveScene.Time);
+        public void SetCurrentValueAsType<T>(T value) => SetValueAtTimeAsType<T>(value, App.Project.ActiveScene.Time);
         public T GetValueAtTimeAsType<T>(Timecode time)
         {
             var result = GetType().GetMethod("GetValueAtTime")!.Invoke(this, new object[] { time })!;
@@ -40,8 +40,8 @@ namespace Engine.Core
         private T _unkeyframedValue;
         public T Value
         {
-            get => GetValueAtTime(App.Project!.ActiveScene!.Time);
-            set => SetValueAtTime(App.Project!.ActiveScene!.Time, value);
+            get => GetValueAtTime(App.Project.ActiveScene.Time);
+            set => SetValueAtTime(App.Project.ActiveScene.Time, value);
         }
 
         private KeyframeList<T> _keyframes = new();
@@ -92,7 +92,7 @@ namespace Engine.Core
 
                 try
                 {
-                    var temp = value.GetValueAtTimeAsType<T>(App.Project!.ActiveScene!.Time);
+                    var temp = value.GetValueAtTimeAsType<T>(App.Project.ActiveScene.Time);
                 }
                 catch
                 {
@@ -151,7 +151,7 @@ namespace Engine.Core
             }
 
             if (IsKeyframed)
-                Keyframes!.Add(new Keyframe<T>(App.Project!.ActiveScene!.Time, value, EasingPresets.Linear));
+                Keyframes!.Add(new Keyframe<T>(App.Project.ActiveScene.Time, value, EasingPresets.Linear));
             else
                 _unkeyframedValue = value;
         }

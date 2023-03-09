@@ -18,5 +18,10 @@ namespace Engine.Utilities
         {
             return size.Width / size.Height;
         }
+
+        public static float GetAspectRatio(this Size size)
+        {
+            return (float)size.Width / (float)size.Height;
+        }
     }
 }

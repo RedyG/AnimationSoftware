@@ -38,6 +38,7 @@ namespace Engine.Core
 
         // I have no clue how any of this works
         private const double EPSILON = 1E-10;
+        
         private static float FindYForT(float t, float p0y, float p1y, float p2y, float p3y) => MathF.Pow((1 - t), 3) * p0y + 3 * t * MathF.Pow((1 - t), 2) * p1y + 3 * (1 - t) * MathF.Pow(t, 2) * p2y + MathF.Pow(t, 3) * p3y;
         private static float FindTforX(float x, float pa, float pb, float pc, float pd)
         {

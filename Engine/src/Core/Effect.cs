@@ -2,6 +2,7 @@
 using Engine.OpenGL;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace Engine.Core
 
         // TODO: optimize if no need to ping pong
         // TDOO: make the API better
-        public abstract RenderResult Render(Surface activeSurface, Surface secondSurface);
+        public abstract RenderResult Render(Surface activeSurface, Surface secondSurface, SizeF size);
     }
 
     public readonly struct RenderResult

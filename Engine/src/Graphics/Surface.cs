@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 namespace Engine.Graphics
 {
 
-    public struct Surface : IEquatable<Surface>
+    public readonly struct Surface : IEquatable<Surface>
     {
-        public Texture Texture { get; set; }
-        public Framebuffer Framebuffer { get; set; }
+        public Texture Texture { get; }
+        public Framebuffer Framebuffer { get; }
 
         public Surface(Texture texture, Framebuffer framebuffer)
         {

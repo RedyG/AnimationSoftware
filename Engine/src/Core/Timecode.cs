@@ -44,7 +44,7 @@ namespace Engine.Core
         {
             // TODO: this uses ActiveItem which may not be what we want depending. ( might wanna remove frames and just use milliseconds or something )
 
-            return ToString(App.Project!.ActiveScene!.FrameRate);
+            return ToString(App.Project.ActiveScene.FrameRate);
         }
 
         public string ToString(float frameRate)

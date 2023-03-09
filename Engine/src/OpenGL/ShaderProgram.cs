@@ -111,7 +111,10 @@ namespace Engine.OpenGL
         {
             GL.ProgramUniform4(Handle, location, v0, v1, v2, v3);
         }
-
+        public void Uniform4(int location, Color4 color)
+        {
+            GL.ProgramUniform4(Handle, location, color);
+        }
         public void Uniform4(int location, float v0, float v1, float v2, float v3)
         {
             GL.ProgramUniform4(Handle, location, v0, v1, v2, v3);

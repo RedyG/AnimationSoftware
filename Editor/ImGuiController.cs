@@ -439,7 +439,6 @@ void main()
                     }
                     else
                     {
-                        GL.ActiveTexture(TextureUnit.Texture0);
                         GL.BindTexture(TextureTarget.Texture2D, (int)pcmd.TextureId);
                         CheckGLError("Texture");
 

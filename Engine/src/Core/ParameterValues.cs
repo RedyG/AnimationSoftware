@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -35,6 +37,9 @@ namespace Engine.Core
         static ParameterValues()
         {
             ParameterValues<int>.RegisterType((value1, value2, amount) => value1 + Convert.ToInt32((value2 - value1) * amount), typeof(BezierEasing));
+            ParameterValues<float>.RegisterType((value1, value2, amount) => value1 + ((value2 - value1) * amount), typeof(BezierEasing));
+            ParameterValues<PointF>.RegisterType((value1, value2, amount) => new PointF(ParameterValues<float>.Lerp(value1.X, value2.X, amount), ParameterValues<float>.Lerp(value1.Y, value2.Y, amount)), typeof(BezierEasing));
+            ParameterValues<Vector2>.RegisterType((value1, value2, amount) => new Vector2(ParameterValues<float>.Lerp(value1.X, value2.X, amount), ParameterValues<float>.Lerp(value1.Y, value2.Y, amount)), typeof(BezierEasing));
             /*ParameterValues<string>.RegisterMethod(
                 (string value1, string value2, float amount) => value1
             );

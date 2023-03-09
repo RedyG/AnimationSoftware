@@ -8,6 +8,7 @@ namespace Engine.Core
 {
     public static class EasingPresets
     {
+        public static readonly Hold Hold = new Hold();
         public static readonly Linear Linear = new Linear();
         public static readonly InQuad InQuad = new InQuad();
         public static readonly OutQuad OutQuad = new OutQuad();
@@ -39,6 +40,14 @@ namespace Engine.Core
         public static readonly OutBounce OutBounce = new OutBounce();
         public static readonly InBounce InBounce = new InBounce();
         public static readonly InOutBounce InOutBounce = new InOutBounce();
+    }
+
+    public class Hold : IEasing
+    {
+        public float Evaluate(float t)
+        {
+            return 0f;
+        }
     }
 
     public class Linear : IEasing
