@@ -9,8 +9,8 @@ namespace Engine.Core
 {
     public abstract class Parameter
     {
-        public T GetCurrentValueAsType<T>() => GetValueAtTimeAsType<T>(App.Project.ActiveScene.Time);
-        public void SetCurrentValueAsType<T>(T value) => SetValueAtTimeAsType<T>(value, App.Project.ActiveScene.Time);
+        public T GetCurrentValueAsType<T>() => GetValueAtTimeAsType<T>(App.Project.Time);
+        public void SetCurrentValueAsType<T>(T value) => SetValueAtTimeAsType<T>(value, App.Project.Time);
         public T GetValueAtTimeAsType<T>(Timecode time)
         {
             var result = GetType().GetMethod("GetValueAtTime")!.Invoke(this, new object[] { time })!;
@@ -40,8 +40,8 @@ namespace Engine.Core
         private T _unkeyframedValue;
         public T Value
         {
-            get => GetValueAtTime(App.Project.ActiveScene.Time);
-            set => SetValueAtTime(App.Project.ActiveScene.Time, value);
+            get => GetValueAtTime(App.Project.Time);
+            set => SetValueAtTime(App.Project.Time, value);
         }
 
         private KeyframeList<T> _keyframes = new();
@@ -92,7 +92,7 @@ namespace Engine.Core
 
                 try
                 {
-                    var temp = value.GetValueAtTimeAsType<T>(App.Project.ActiveScene.Time);
+                    var temp = value.GetValueAtTimeAsType<T>(App.Project.Time);
                 }
                 catch
                 {
@@ -137,7 +137,7 @@ namespace Engine.Core
                 {
                     var timeBetweenKeyframes = MathF.Max(MathUtilities.Map(time.Seconds, firstKeyframe.Time.Seconds, secondKeyframe.Time.Seconds, 0, 1), 0f);
                     var easedTime = firstKeyframe.Easing.Evaluate(timeBetweenKeyframes);
-                    return ParameterValues<T>.Lerp(firstKeyframe.Value, secondKeyframe.Value, easedTime);
+                    return Parameters<T>.Lerp(firstKeyframe.Value, secondKeyframe.Value, easedTime);
                 }
             }
             return Keyframes[Keyframes.Count - 1].Value;
@@ -151,7 +151,7 @@ namespace Engine.Core
             }
 
             if (IsKeyframed)
-                Keyframes!.Add(new Keyframe<T>(App.Project.ActiveScene.Time, value, EasingPresets.Linear));
+                Keyframes!.Add(new Keyframe<T>(App.Project.Time, value, EasingPresets.Linear));
             else
                 _unkeyframedValue = value;
         }

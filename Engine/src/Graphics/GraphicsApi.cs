@@ -13,7 +13,6 @@ namespace Engine.Graphics
 {
     public static class GraphicsApi
     {
-        public static float Time = 0f;
         public static void Clear(Color4 color)
         {
             GL.ClearColor(color);
@@ -25,11 +24,6 @@ namespace Engine.Graphics
              1f,  0f, 1.0f, 1.0f,   // top right
              0f,  0f, 0.0f, 1.0f,   // top left
              0f,  1f, 0.0f, 0.0f    // bottom left
-        };
-        private static uint[] textureIndices =
-        {
-            0, 1, 3, // right triange
-            2, 1, 3, // left triangle
         };
         private static ShaderProgram textureShader;
         private static VertexArray textureVao;

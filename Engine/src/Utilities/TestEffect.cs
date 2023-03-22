@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Engine.Core;
 using Engine.Attributes;
 using Engine.Graphics;
+using System.Drawing;
 
 namespace Engine.Utilities
 {
@@ -19,7 +20,7 @@ namespace Engine.Utilities
             Double.ValueGetter += (object? sender, ValueGetterEventArgs args) => In.GetValueAtTime(args.Time) * 2f;
         }
 
-        public override RenderResult Render(Surface mainSurface, Surface secondSurface)
+        public override RenderResult Render(Surface mainSurface, Surface secondSurface, SizeF size)
         {
             throw new NotImplementedException();
         }

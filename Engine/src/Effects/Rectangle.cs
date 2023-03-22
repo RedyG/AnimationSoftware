@@ -23,12 +23,12 @@ namespace Engine.Effects
 
         public override RenderResult Render(Surface mainSurface, Surface secondSurface, SizeF size)
         {
-            GraphicsApi.Clear(Color.Value);
+           // GraphicsApi.Clear(Color.Value);
                if (FitToLayer.Value)
                    GraphicsApi.Clear(Color.Value);
-               else
+               /*else
                    GraphicsApi.DrawRect(MatrixBuilder.CreateTransform(Position.Value, Size.Value), Color.Value);
-
+               */
             return new(false);
         }
     }

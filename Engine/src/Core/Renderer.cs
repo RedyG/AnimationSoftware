@@ -13,6 +13,8 @@ using Engine.Graphics;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using Engine.Utilities;
+using System.Drawing.Drawing2D;
+using System.Security.AccessControl;
 
 namespace Engine.Core
 {
@@ -23,6 +25,8 @@ namespace Engine.Core
         private static SizeF PreviewSizeF => App.Project.ActiveScene.Size * PreviewRatio;
         private static Size PreviewSize => new Size((int)(App.Project.ActiveScene.Size.Width * PreviewRatio), (int)(App.Project.ActiveScene.Size.Height * PreviewRatio));
 
+        private static Texture testTexture = Texture.FromImage("Z:\\bliss brother.png", TextureTarget.Texture2D);
+
         private static Texture _textureA = Texture.Create(1920, 1080);
         private static Framebuffer _framebufferA = Framebuffer.FromTexture(_textureA);
         private static Surface _surfaceA = new(_textureA, _framebufferA);
@@ -31,56 +35,81 @@ namespace Engine.Core
         private static Framebuffer _framebufferB = Framebuffer.FromTexture(_textureB);
         private static Surface _surfaceB = new(_textureB, _framebufferB);
 
-        private static bool _surfacesSwapped = false;
 
-        private static Surface _activeSurface => _surfacesSwapped ? _surfaceB : _surfaceA;
-        private static Surface _secondSurface => _surfacesSwapped ? _surfaceA : _surfaceB;
+        private static Dictionary<Layer, Surface> _layerSurfaces = new Dictionary<Layer, Surface>();
 
-        public static void RenderActiveScene(Surface surface)
+        private static Surface GetSurface(Layer layer)
         {
-            GL.Viewport(new Point(0, 0), PreviewSize);
+            if (_layerSurfaces.TryGetValue(layer, out Surface surface))
+                return surface;
 
-            GraphicsApi.Clear(App.Project.ActiveScene.BackgroundColor);
+            var texture = Texture.Create(App.Project.ActiveScene.Size.Width, App.Project.ActiveScene.Size.Height);
+            var framebuffer = Framebuffer.FromTexture(texture);
+            var newSurface = new Surface(texture, framebuffer);
+            _layerSurfaces.Add(layer, newSurface);
 
-            foreach (Layer layer in App.Project.ActiveScene.Layers)
-            {
-                RenderLayer(layer, surface);
-            }
+            return newSurface;
         }
 
-        public static void RenderLayer(Layer layer, Surface surface)
+
+        private static Layer _mainLayer = new Layer(new(0f, 0f), new Size(0, 0));
+
+        public static Texture RenderActiveScene()
+        {
+            _mainLayer.Layers = App.Project.ActiveScene.Layers;
+            _mainLayer.Size.Value = App.Project.ActiveScene.Size;
+
+            GL.Viewport(new Point(0, 0), PreviewSize);
+            return RenderLayer(_mainLayer, _surfaceA, _surfaceB);
+        }
+
+        public static Texture RenderLayer(Layer layer, Surface surfaceA, Surface surfaceB)
         {
             // TODO: reuse groups surfaces
             // TODO: optimize if only content effects by drawing directly on surface or stuff like that
+            Surface firstSurface = surfaceA;
+
             if (layer.IsGroup)
             {
-                SizeF layerSize = layer.Size.Value;
-                Texture texture = Texture.Create((int)layerSize.Width, (int)layerSize.Height);
-                Framebuffer framebuffer = Framebuffer.FromTexture(texture);
-                Surface groupSurface = new(texture, framebuffer);
-
+                firstSurface = GetSurface(layer);
                 foreach (Layer childLayer in layer.Layers)
                 {
-                    RenderLayer(childLayer, groupSurface);
+                    Texture childTexture = RenderLayer(childLayer, surfaceA, surfaceB);
+
+                    firstSurface.Framebuffer.Bind(FramebufferTarget.Framebuffer);
+                    GL.BlendFunc(BlendingFactor.One, BlendingFactor.OneMinusSrcAlpha);
+
+                    GraphicsApi.DrawTexture(MatrixBuilder.CreateTransform(layer.Size.Value, childLayer), childTexture);
                 }
             }
 
-            _surfacesSwapped = false;
+            bool swapSurfaces = false;
             foreach (Effect effect in layer.Effects)
             {
-                _activeSurface.Framebuffer.Bind(FramebufferTarget.Framebuffer);
-                var result = effect.Render(_activeSurface, _secondSurface);
+                Surface activeSurface = swapSurfaces ? surfaceB: firstSurface;
+                Surface secondSurface = swapSurfaces ? firstSurface : surfaceB;
+
+                activeSurface.Framebuffer.Bind(FramebufferTarget.Framebuffer);
+                //GL.Viewport(layer.Size.Value.ToSize());
+                var result = effect.Render(activeSurface, secondSurface, layer.Size.Value);
                 if (result.SwapSurfaces)
-                    _surfacesSwapped = !_surfacesSwapped;
+                    swapSurfaces = !swapSurfaces;
             }
 
-            surface.Framebuffer.Bind(FramebufferTarget.Framebuffer);
-            GraphicsApi.DrawTexture(MatrixBuilder.CreateTransform(layer), _activeSurface.Texture);
+
+            return swapSurfaces ? surfaceB.Texture : firstSurface.Texture;
         }
 
-        public static void AssertEnoughSurfaces(Scene scene)
+        private static int MaxDepth(Layer layer)
         {
-            // TODO: implement this for real
+            if (!layer.IsGroup)
+                return 0;
+
+            int maxDepth = 0;
+            foreach (Layer childLayer in layer.Layers)
+                maxDepth = Math.Max(maxDepth, MaxDepth(childLayer));
+
+            return maxDepth + 1;
         }
     }
 }

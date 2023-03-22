@@ -40,24 +40,26 @@ namespace Editor
             App.Project = new Project("a");
             scene = new Scene(60f, new Size(1920, 1080), Timecode.FromSeconds(100f));
             App.Project.ActiveScene = scene;
+
+            var group = new Layer(new PointF(0, 0), new Size(500, 500));
+
             var layer = new Layer(new PointF(250f, 250f), new Size(500, 500));
-            layer.Rotation.Keyframes!.Add(new Keyframe<float>(Timecode.FromSeconds(0f), 0f, new BezierEasing(0.8f, 0, 0, 0.8f)));
-            layer.Rotation.Keyframes.Add(new Keyframe<float>(Timecode.FromSeconds(4f), 360f, new OutElastic()));
-            layer.Rotation.Keyframes.Add(new Keyframe<float>(Timecode.FromSeconds(7f), 315f, new OutElastic()));
+            layer.Position.Keyframes!.Add(new Keyframe<PointF>(Timecode.FromSeconds(0f), new PointF(500, 250f), EasingPresets.OutCirc));
+            layer.Position.Keyframes!.Add(new Keyframe<PointF>(Timecode.FromSeconds(4f), new PointF(0, 250f), EasingPresets.InOutCirc));
+            layer.Position.Keyframes!.Add(new Keyframe<PointF>(Timecode.FromSeconds(8f), new PointF(0, 0), EasingPresets.Linear));
 
+            layer.Size.Keyframes!.Add(new Keyframe<SizeF>(Timecode.FromSeconds(8f), new SizeF(500, 500), new BezierEasing(new(1f, 0f), new(0f, 1f))));
+            layer.Size.Keyframes!.Add(new Keyframe<SizeF>(Timecode.FromSeconds(12f), new SizeF(500, 250), EasingPresets.InCirc));
+            layer.Size.Keyframes!.Add(new Keyframe<SizeF>(Timecode.FromSeconds(16f), new SizeF(250, 250), EasingPresets.InCirc));
 
-            //layer.Position.Keyframes!.Add(new Keyframe<PointF>(Timecode.FromSeconds(0f), new PointF(0f, 0f), new BezierEasing(0, 1, 0, 1)));
-            layer.Position.Keyframes.Add(new Keyframe<PointF>(Timecode.FromSeconds(4f), new PointF(600f, 600f), new BezierEasing(0, 1, 0, 1)));
-
-            layer.Origin.Value = new PointF(250f, 250f);
-
-            layer.Scale.Keyframes!.Add(new Keyframe<System.Numerics.Vector2>(Timecode.FromSeconds(4f), new System.Numerics.Vector2(1f, 1f), new OutElastic()));
-            layer.Scale.Keyframes!.Add(new Keyframe<System.Numerics.Vector2>(Timecode.FromSeconds(7f), new System.Numerics.Vector2(1f, 2f), new BezierEasing(0, 1, 0, 1)));
             var rect = new Engine.Effects.Rectangle();
-            rect.Color.Value = Color.Red;
-            rect.FitToLayer.Value = true;
+            rect.Color.Value = Color4.Orange;
+
             layer.Effects.Add(rect);
-            scene.Layers.Add(layer);
+
+            group.Layers.Add(layer);
+
+            App.Project.ActiveScene.Layers.Add(group);
 
 
             _controller = new ImGuiController(ClientSize.X, ClientSize.Y);
@@ -109,13 +111,13 @@ namespace Editor
             //GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
             //GraphicsApi.DrawRect(0, 0, 0, 0);
             //Framebuffer.Unbind(FramebufferTarget.Framebuffer);
-            GraphicsApi.Time += 1f;
+            
             _controller.Update(this, (float)e.Time);
             Texture.Unbind(TextureTarget.Texture2D);
             Texture.Unbind(TextureTarget.Texture2DMultisample);
             framebuffer.Bind(FramebufferTarget.Framebuffer);
             GL.Viewport(0, 0, 1920, 1080);
-            Renderer.RenderActiveScene(new Surface(texture, framebuffer));
+            Texture result = Renderer.RenderActiveScene();
             //GraphicsApi.DrawTexture(Matrix4.CreateRotationZ(0f), textureImage);
             //GraphicsApi.DrawRect(MatrixBuilder.CreateTransform(new PointF(0.2f, 0.2f), new SizeF(0.7f, 0.7f)), App.Project.ActiveScene.AspectRatio, Color4.Pink);
 
@@ -123,7 +125,7 @@ namespace Editor
             GL.Viewport(0, 0, ClientSize.X, ClientSize.Y);
             GL.ClearColor(new Color4(0, 32, 48, 255));
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
-            GraphicsApi.DrawTexture(MatrixBuilder.CreateTransform(App.Project.ActiveScene.Layers[0]), textureImage);
+   
             //GraphicsApi.DrawRect(0.5f, 0.5f, 0.5f, 0.5f, new Transform(), App.Project.ActiveScene.AspectRatio);
             //GraphicsApi.DrawTexture(textureImage);
             ImGui.ShowDemoWindow();
@@ -131,7 +133,7 @@ namespace Editor
             if(ImGui.Begin("window"))
             {
                 ImGui.Button("hey");
-                ImGui.Image((IntPtr)texture.Handle, new System.Numerics.Vector2(App.Project.ActiveScene.Size.Width, App.Project.ActiveScene.Size.Height), new System.Numerics.Vector2(0,1), new System.Numerics.Vector2(1, 0));
+                ImGui.Image((IntPtr)result.Handle, new System.Numerics.Vector2(App.Project.ActiveScene.Size.Width, App.Project.ActiveScene.Size.Height), new System.Numerics.Vector2(0,1), new System.Numerics.Vector2(1, 0));
             }
             ImGui.End();
 
@@ -139,6 +141,8 @@ namespace Editor
 
             ImGuiController.CheckGLError("End of frame");
             App.Project.Time.Seconds += (float)e.Time;
+            if (App.Project.Time.Seconds > 16f)
+                App.Project.Time.Seconds = 0;
             SwapBuffers();
         }
 
