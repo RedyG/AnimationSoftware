@@ -72,6 +72,8 @@ namespace Engine.Core
             if (layer.IsGroup)
             {
                 firstSurface = GetSurface(layer);
+                firstSurface.Framebuffer.Bind(FramebufferTarget.Framebuffer);
+                GraphicsApi.Clear(new Color4(1f, 0f, 0f, 1f));
                 foreach (Layer childLayer in layer.Layers)
                 {
                     Texture childTexture = RenderLayer(childLayer, surfaceA, surfaceB);

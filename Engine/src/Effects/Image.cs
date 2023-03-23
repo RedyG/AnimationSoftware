@@ -12,9 +12,11 @@ using OpenTK.Graphics.OpenGL4;
 
 namespace Engine.Effects
 {
-    public class Image : Effect
+    public class Image : Effect, IDisposable
     {
         Texture texture;
+
+        public Parameter<string> testName;
 
         public override RenderResult Render(Surface activeSurface, Surface secondSurface, SizeF size)
         {
@@ -23,9 +25,16 @@ namespace Engine.Effects
 
             return new RenderResult(false);
         }
+
+        public void Dispose()
+        {
+            texture.Dispose();
+        }
+
         public Image()
         {
             texture = Texture.FromImage("Z:\\1.jpg", TextureTarget.Texture2D);
         }
+
     }
 }

@@ -15,6 +15,7 @@ using Engine.OpenGL;
 using System.Numerics;
 using Engine.Graphics;
 using Engine.Core;
+using System.Drawing.Drawing2D;
 
 namespace Editor
 {
@@ -41,26 +42,29 @@ namespace Editor
             scene = new Scene(60f, new Size(1920, 1080), Timecode.FromSeconds(100f));
             App.Project.ActiveScene = scene;
 
-            var group = new Layer(new PointF(0, 0), new Size(500, 500));
+            /* var group = new Layer(new PointF(0, 0), new Size(500, 500));
+             group.Size.Keyframes!.Add(new Keyframe<SizeF>(Timecode.FromSeconds(0), new SizeF(500, 500), EasingPresets.Linear));
+             group.Size.Keyframes!.Add(new Keyframe<SizeF>(Timecode.FromSeconds(5), new SizeF(1920, 1080), EasingPresets.Linear));
 
-            var layer = new Layer(new PointF(250f, 250f), new Size(500, 500));
-            layer.Position.Keyframes!.Add(new Keyframe<PointF>(Timecode.FromSeconds(0f), new PointF(500, 250f), EasingPresets.OutCirc));
-            layer.Position.Keyframes!.Add(new Keyframe<PointF>(Timecode.FromSeconds(4f), new PointF(0, 250f), EasingPresets.InOutCirc));
-            layer.Position.Keyframes!.Add(new Keyframe<PointF>(Timecode.FromSeconds(8f), new PointF(0, 0), EasingPresets.Linear));
+             var layer = new Layer(new PointF(0, 0), new Size(250, 250));
+             layer.Position.Keyframes!.Add(new Keyframe<PointF>(Timecode.FromSeconds(0), new PointF(1920, 0), EasingPresets.Linear));
+             layer.Position.Keyframes!.Add(new Keyframe<PointF>(Timecode.FromSeconds(5), new PointF(0, 0), EasingPresets.Linear));
+             layer.Effects.Add(new Engine.Effects.Rectangle());
 
-            layer.Size.Keyframes!.Add(new Keyframe<SizeF>(Timecode.FromSeconds(8f), new SizeF(500, 500), new BezierEasing(new(1f, 0f), new(0f, 1f))));
-            layer.Size.Keyframes!.Add(new Keyframe<SizeF>(Timecode.FromSeconds(12f), new SizeF(500, 250), EasingPresets.InCirc));
-            layer.Size.Keyframes!.Add(new Keyframe<SizeF>(Timecode.FromSeconds(16f), new SizeF(250, 250), EasingPresets.InCirc));
+             group.Layers.Add(layer);
+             App.Project.ActiveScene.Layers.Add(group);*/
 
-            var rect = new Engine.Effects.Rectangle();
-            rect.Color.Value = Color4.Orange;
+            var layer1 = new Layer(new PointF(0f, 0f), new System.Drawing.Size(1920, 1080));
+            layer1.Effects.Add(new Engine.Effects.Rectangle());
+            var layer2 = new Layer(new PointF(50f, 50f), new System.Drawing.Size(1000, 1000));
+            layer2.Effects.Add(new Engine.Effects.Image());
+            var layer3 = new Layer(new PointF(50f, 50f), new System.Drawing.Size(500, 500));
+            layer3.Effects.Add(new NoChange());
+            layer3.Effects.Add(new Engine.Effects.Image());
 
-            layer.Effects.Add(rect);
-
-            group.Layers.Add(layer);
-
-            App.Project.ActiveScene.Layers.Add(group);
-
+            App.Project.ActiveScene.Layers.Add(layer1);
+            App.Project.ActiveScene.Layers.Add(layer2);
+            App.Project.ActiveScene.Layers.Add(layer3);
 
             _controller = new ImGuiController(ClientSize.X, ClientSize.Y);
             framebuffer = new Framebuffer();
@@ -132,8 +136,22 @@ namespace Editor
 
             if(ImGui.Begin("window"))
             {
-                ImGui.Button("hey");
-                ImGui.Image((IntPtr)result.Handle, new System.Numerics.Vector2(App.Project.ActiveScene.Size.Width, App.Project.ActiveScene.Size.Height), new System.Numerics.Vector2(0,1), new System.Numerics.Vector2(1, 0));
+                //ImGui.Button("hey");
+                //ImGui.Image((IntPtr)result.Handle, new System.Numerics.Vector2(App.Project.ActiveScene.Size.Width, App.Project.ActiveScene.Size.Height), new System.Numerics.Vector2(0,1), new System.Numerics.Vector2(1, 0));
+                foreach (Layer layer in App.Project.ActiveScene.Layers)
+                {
+                    ImGui.Button("layer: " + layer.GetHashCode().ToString());
+                    foreach (Effect effect in layer.Effects)
+                    {
+                        ImGui.Button("Effect: " + effect.Name);
+                        
+                        foreach(string name in effect.Parameters.Keys)
+                        {
+                            ImGui.Button("parameter: " + name);
+                        }
+                    }
+                    ImGui.Separator();
+                }
             }
             ImGui.End();
 
