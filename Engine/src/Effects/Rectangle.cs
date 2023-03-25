@@ -29,6 +29,9 @@ namespace Engine.Effects
         [Param(3)]
         public Parameter<bool> FitToLayer { get; set; } = new Parameter<bool>(true);
 
+        [Param(5)]
+        public Parameter<float> idk  { get; set; } = new Parameter<float>(20f);
+
 
         public override RenderResult Render(Surface mainSurface, Surface secondSurface, SizeF size)
         {

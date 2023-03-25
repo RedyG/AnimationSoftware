@@ -145,15 +145,19 @@ namespace Editor
                         
                         foreach(var namedParam in effect.Parameters)
                         {
-                            ImGui.Button("parameter: " + namedParam.Name);
-                            Console.WriteLine(namedParam.Parameter.GenericType == typeof(PointF));
+                            ImGui.Text(namedParam.Name);
+                            ImGui.SameLine();
+                            ImGui.PushID(namedParam.Name);
+                            namedParam.Parameter.DrawUI();
+                            ImGui.PopID();
+                            //ImGui.Button("parameter: " + namedParam.Name);
                         }
                     }
                     ImGui.Separator();
                 }
             }
             ImGui.End();
-
+            ImGui.ShowStackToolWindow();
             _controller.Render();
 
             ImGuiController.CheckGLError("End of frame");

@@ -16,7 +16,6 @@ namespace Engine.Effects
     {
         Texture texture;
 
-        public Parameter<string> testName;
 
         public override RenderResult Render(Surface activeSurface, Surface secondSurface, SizeF size)
         {

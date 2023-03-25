@@ -58,6 +58,10 @@ namespace Engine.Core
         private ReadOnlyCollection<NamedParameter> GetParameters()
         {
             // TODO: maybe optimize this code a little so we don't query the attribute "Param" twice.
+            // TODO: cache this per-Type so that we don't this work multiple times for the same types.
+            // TODO: add parameter groups or a way to nest them.
+            // TODO: handle duplicate names.
+
             List<NamedParameter> parameters = new();
 
             var properties = _type

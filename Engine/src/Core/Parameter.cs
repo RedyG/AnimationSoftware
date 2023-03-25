@@ -9,6 +9,7 @@ namespace Engine.Core
 {
     public abstract class Parameter
     {
+        // TODO: cache the methods using delegates or just the MethodInfo
         public T GetValueAsType<T>() => GetValueAtTimeAsType<T>(App.Project.Time);
         public void SetValueAsType<T>(T value) => SetValueAtTimeAsType<T>(value, App.Project.Time);
         public T GetValueAtTimeAsType<T>(Timecode time)
@@ -24,6 +25,7 @@ namespace Engine.Core
 
         public KeyframeList<T> GetKeyframesAsType<T>()
         {
+            // TODO: check this
             var result = GetType().GetProperty("Keyframes")!.GetValue(this)!;
             return (KeyframeList<T>)Convert.ChangeType(result, typeof(KeyframeList<T>));
         }
@@ -48,19 +50,8 @@ namespace Engine.Core
             set => SetValueAtTime(App.Project.Time, value);
         }
 
-        private KeyframeList<T> _keyframes = new();
-        public KeyframeList<T>? Keyframes
-        {
-            get
-            {
-                if (CanBeKeyframed)
-                {
-                    return _keyframes;
-                }
+        public KeyframeList<T> Keyframes { get; } = new();
 
-                return null;
-            }
-        }
         public override bool CanBeKeyframed { get; } = true;
         public override bool IsKeyframed
         {
@@ -121,7 +112,7 @@ namespace Engine.Core
         }
         public override bool IsLinked => LinkedParameter != null;
 
-        public T GetValueAtTime(Timecode time)
+        public virtual T GetValueAtTime(Timecode time)
         {
             if (IsLinked)
                 return LinkedParameter!.GetValueAtTimeAsType<T>(time);
@@ -133,7 +124,7 @@ namespace Engine.Core
                 return _unkeyframedValue;
 
             // TODO: optimize with binary search or something
-            for (int i = 0; i < Keyframes!.Count - 1; i++)
+            for (int i = 0; i < Keyframes.Count - 1; i++)
             {
                 var firstKeyframe = Keyframes[i];
                 var secondKeyframe = Keyframes[i + 1];
@@ -156,7 +147,7 @@ namespace Engine.Core
             }
 
             if (IsKeyframed)
-                Keyframes!.Add(new Keyframe<T>(App.Project.Time, value, EasingPresets.Linear));
+                Keyframes.Add(new Keyframe<T>(App.Project.Time, value, EasingPresets.Linear));
             else
                 _unkeyframedValue = value;
         }
@@ -172,19 +163,39 @@ namespace Engine.Core
             CanBeLinked = canBeLinked;
         }
 
-        private static Action<T>? _drawUI;
+        public delegate T Lerp(T a, T b, float t);
+
+        public delegate void UI(ref T value);
+
+
+        private static UI? _drawUI;
         public override void DrawUI()
         {
+            var value = Value;
             // TODO: will crash if no method is found
-            Parameter<T>._drawUI!(Value);
+            Parameter<T>._drawUI!(ref value);
+            Value = value;
         }
 
-        private static Func<T, T, float, T>? _lerp;
+        private static Lerp? _lerp;
 
-        public static void RegisterType(Func<T, T, float, T> lerp, Action<T> drawUI)
+        public static void RegisterType(Lerp lerp, UI drawUI)
         {
             _lerp = lerp;
             _drawUI = drawUI;
+        }
+    }
+
+    public class SplitableParameter<PointF> : Parameter<PointF>
+    {
+        public override PointF GetValueAtTime(Timecode time)
+        {
+            Console.WriteLine("caca");
+            return base.GetValueAtTime(time);
+        }
+
+        public SplitableParameter(PointF value) : base(value)
+        {
         }
     }
 

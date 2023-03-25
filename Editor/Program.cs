@@ -11,13 +11,8 @@ namespace Editor
             App.Project = new Project("hey");
             App.Project.ActiveScene = new Scene(50f, new(0, 0), Timecode.FromSeconds(20));
 
-            var list = new List<KeyValuePair<string, Parameter>>
-            {
-                new KeyValuePair<string, Parameter>("caca", new Parameter<float>(20f)),
-                new KeyValuePair<string, Parameter>("pipi", new Parameter<float>(50f)),
-                new KeyValuePair<string, Parameter>("okay", new Parameter<float>(1f))
-            };
-
+            Parameter<PointF> param = new SplitableParameter<PointF>(new PointF(20f, 20f));
+            var a = param.Value;
 
             Window window = new Window("Editor", 1920, 1080);
             window.Run();
