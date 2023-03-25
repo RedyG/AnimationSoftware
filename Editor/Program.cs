@@ -1,4 +1,4 @@
-﻿using Engine.src.Core;
+﻿using Engine.Core;
 using Engine.Utilities;
 using System.Drawing;
 
@@ -8,23 +8,19 @@ namespace Editor
     {
         static void Main(string[] args)
         {
-            var dict = new IndexedDictionary<string, int>();
-            dict["pipi"] = 1;
-            dict.Add(new("hey", 2333));
-            dict.Add(new("allo", 233));
-            dict.Add(new("bonjour", 23));
-            dict["pipi"] = 2;
+            App.Project = new Project("hey");
+            App.Project.ActiveScene = new Scene(50f, new(0, 0), Timecode.FromSeconds(20));
 
-            Console.WriteLine(dict["pipi"]);
-            Console.WriteLine(dict.Count);
-            Console.WriteLine("start");
-
-            foreach (var value in dict.Values)
+            var list = new List<KeyValuePair<string, Parameter>>
             {
-                Console.WriteLine(value);
-            }
-            //Window window = new Window("Editor", 1920, 1080);
-            //window.Run();
+                new KeyValuePair<string, Parameter>("caca", new Parameter<float>(20f)),
+                new KeyValuePair<string, Parameter>("pipi", new Parameter<float>(50f)),
+                new KeyValuePair<string, Parameter>("okay", new Parameter<float>(1f))
+            };
+
+
+            Window window = new Window("Editor", 1920, 1080);
+            window.Run();
         }
     }
 }

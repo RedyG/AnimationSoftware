@@ -2,30 +2,39 @@
 using Engine.Graphics;
 using Engine.OpenGL;
 using Engine.Utilities;
-using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Engine.Core
 {
     public abstract class Effect
     {
-        // TODO: add helpter method like Paramter? GetParamterByName(string name)
         private Type _type;
 
         public string Name { get; }
 
-        public Dictionary<string, Parameter> Parameters { get; }
+        public ReadOnlyCollection<NamedParameter> Parameters { get; }
 
 
         // TODO: optimize if no need to ping pong
         // TDOO: make the API better
         public abstract RenderResult Render(Surface activeSurface, Surface secondSurface, SizeF size);
+
+        public Parameter? GetParameter(string name)
+        {
+            foreach (var namedParameter in Parameters)
+            {
+                if (namedParameter.Name == name)
+                    return namedParameter.Parameter;
+            }
+            return null;
+        }
+
 
         public Effect()
         {
@@ -46,24 +55,23 @@ namespace Engine.Core
             return StringUtilities.UnPascalCase(_type.Name);
         }
 
-        private Dictionary<string, Parameter> GetParameters()
+        private ReadOnlyCollection<NamedParameter> GetParameters()
         {
-            Dictionary<string, Parameter> parameters = new();
-            foreach (var property in GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public))
+            // TODO: maybe optimize this code a little so we don't query the attribute "Param" twice.
+            List<NamedParameter> parameters = new();
+
+            var properties = _type
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Where(property => Attribute.IsDefined(property, typeof(Param)) && typeof(Parameter).IsAssignableFrom(property.PropertyType))
+                .OrderBy(property => ((Param)property.GetCustomAttributes(typeof(Param), false).Single()).Order);
+
+            foreach (var property in properties)
             {
-                if (typeof(Parameter).IsAssignableFrom(property.PropertyType))
-                {
-                    parameters.Add(StringUtilities.UnPascalCase(property.Name), (Parameter)property.GetValue(this)!);
-                }
+                var name = ((Param)property.GetCustomAttributes(typeof(Param), false).Single()).CustomName ?? StringUtilities.UnPascalCase(property.Name);
+                parameters.Add(new NamedParameter(name, (Parameter)property.GetValue(this)!));
             }
-            foreach (var field in GetType().GetFields(BindingFlags.Instance | BindingFlags.Public))
-            {
-                if (typeof(Parameter).IsAssignableFrom(field.FieldType))
-                {
-                    parameters.Add(StringUtilities.UnPascalCase(field.Name), (Parameter)field.GetValue(this)!);
-                }
-            }
-            return parameters;
+
+            return parameters.AsReadOnly();
         }
     }
 

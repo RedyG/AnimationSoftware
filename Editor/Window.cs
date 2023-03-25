@@ -53,7 +53,7 @@ namespace Editor
 
              group.Layers.Add(layer);
              App.Project.ActiveScene.Layers.Add(group);*/
-
+            var p = new Parameter<float>(20f);
             var layer1 = new Layer(new PointF(0f, 0f), new System.Drawing.Size(1920, 1080));
             layer1.Effects.Add(new Engine.Effects.Rectangle());
             var layer2 = new Layer(new PointF(50f, 50f), new System.Drawing.Size(1000, 1000));
@@ -103,8 +103,6 @@ namespace Editor
         Texture texture;
         Framebuffer framebuffer;
         Engine.Effects.Rectangle rectangle;
-
-        float time = 0f;
         protected override void OnRenderFrame(FrameEventArgs e)
         {
             base.OnRenderFrame(e);
@@ -145,9 +143,10 @@ namespace Editor
                     {
                         ImGui.Button("Effect: " + effect.Name);
                         
-                        foreach(string name in effect.Parameters.Keys)
+                        foreach(var namedParam in effect.Parameters)
                         {
-                            ImGui.Button("parameter: " + name);
+                            ImGui.Button("parameter: " + namedParam.Name);
+                            Console.WriteLine(namedParam.Parameter.GenericType == typeof(PointF));
                         }
                     }
                     ImGui.Separator();

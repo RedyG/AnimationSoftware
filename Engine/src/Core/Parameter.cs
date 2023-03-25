@@ -9,8 +9,8 @@ namespace Engine.Core
 {
     public abstract class Parameter
     {
-        public T GetCurrentValueAsType<T>() => GetValueAtTimeAsType<T>(App.Project.Time);
-        public void SetCurrentValueAsType<T>(T value) => SetValueAtTimeAsType<T>(value, App.Project.Time);
+        public T GetValueAsType<T>() => GetValueAtTimeAsType<T>(App.Project.Time);
+        public void SetValueAsType<T>(T value) => SetValueAtTimeAsType<T>(value, App.Project.Time);
         public T GetValueAtTimeAsType<T>(Timecode time)
         {
             var result = GetType().GetMethod("GetValueAtTime")!.Invoke(this, new object[] { time })!;
@@ -29,11 +29,15 @@ namespace Engine.Core
         }
 
 
+        public abstract void DrawUI();
         public abstract bool CanBeKeyframed { get; }
         public abstract bool IsKeyframed { get; }
         public abstract bool CanBeLinked { get; init; }
         public abstract bool IsLinked { get; }
 
+        public Parameter()
+        {
+        }
     }
     public class Parameter<T> : Parameter
     {
@@ -128,7 +132,7 @@ namespace Engine.Core
             if (!IsKeyframed)
                 return _unkeyframedValue;
 
-            // TODO : optimize with binary search or something
+            // TODO: optimize with binary search or something
             for (int i = 0; i < Keyframes!.Count - 1; i++)
             {
                 var firstKeyframe = Keyframes[i];
@@ -137,7 +141,8 @@ namespace Engine.Core
                 {
                     var timeBetweenKeyframes = MathF.Max(MathUtilities.Map(time.Seconds, firstKeyframe.Time.Seconds, secondKeyframe.Time.Seconds, 0, 1), 0f);
                     var easedTime = firstKeyframe.Easing.Evaluate(timeBetweenKeyframes);
-                    return Parameters<T>.Lerp(firstKeyframe.Value, secondKeyframe.Value, easedTime);
+                    // TODO: _lerp!() will crash if no method is found
+                    return _lerp!(firstKeyframe.Value, secondKeyframe.Value, easedTime);
                 }
             }
             return Keyframes[Keyframes.Count - 1].Value;
@@ -165,6 +170,21 @@ namespace Engine.Core
             _unkeyframedValue = value;
             CanBeKeyframed = canBeKeframed;
             CanBeLinked = canBeLinked;
+        }
+
+        private static Action<T>? _drawUI;
+        public override void DrawUI()
+        {
+            // TODO: will crash if no method is found
+            Parameter<T>._drawUI!(Value);
+        }
+
+        private static Func<T, T, float, T>? _lerp;
+
+        public static void RegisterType(Func<T, T, float, T> lerp, Action<T> drawUI)
+        {
+            _lerp = lerp;
+            _drawUI = drawUI;
         }
     }
 
