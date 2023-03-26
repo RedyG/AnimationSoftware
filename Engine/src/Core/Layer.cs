@@ -14,6 +14,8 @@ namespace Engine.Core
         public List<Layer> Layers { get; set; } = new();
         public bool IsGroup { get => Layers.Count > 0; }
 
+        public string Name { get; set; }
+
         public Parameter<PointF> Position { get; set; }
         public Parameter<PointF> Origin { get; set; } = new(new PointF(0f, 0f));
         public Parameter<SizeF> Size { get; set; }
@@ -21,8 +23,9 @@ namespace Engine.Core
         public Parameter<Vector2> Scale { get; set; } = new(new Vector2(1f));
         public Parameter<float> Rotation { get; set; } = new(0f);
 
-        public Layer(PointF position, Size size)
+        public Layer(string name, PointF position, Size size)
         {
+            Name = name;
             Position = new(position);
             Size = new(size);
 

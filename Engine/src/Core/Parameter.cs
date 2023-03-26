@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -30,7 +31,9 @@ namespace Engine.Core
             return (KeyframeList<T>)Convert.ChangeType(result, typeof(KeyframeList<T>));
         }
 
-
+        public abstract void RemoveNearestKeyframeAtTime(Timecode time);
+        public abstract void AddKeyframeAtTime(Timecode time);
+        public abstract bool IsKeyframedAtTime(Timecode time);
         public abstract void DrawUI();
         public abstract bool CanBeKeyframed { get; }
         public abstract bool IsKeyframed { get; }
@@ -43,6 +46,8 @@ namespace Engine.Core
     }
     public class Parameter<T> : Parameter
     {
+        private Func<T, T>? _validateMethod;
+
         private T _unkeyframedValue;
         public T Value
         {
@@ -53,16 +58,8 @@ namespace Engine.Core
         public KeyframeList<T> Keyframes { get; } = new();
 
         public override bool CanBeKeyframed { get; } = true;
-        public override bool IsKeyframed
-        {
-            get
-            {
-                if (Keyframes == null)
-                    return false;
+        public override bool IsKeyframed => Keyframes.Count != 0;
 
-                return Keyframes.Count != 0;
-            }
-        }
 
         public delegate T ValueGetterEventHandler(object? sender, ValueGetterEventArgs args);
         public event ValueGetterEventHandler? ValueGetter;
@@ -147,9 +144,34 @@ namespace Engine.Core
             }
 
             if (IsKeyframed)
-                Keyframes.Add(new Keyframe<T>(App.Project.Time, value, EasingPresets.Linear));
+                Keyframes.Add(new Keyframe<T>(time, value, EasingPresets.Linear));
             else
-                _unkeyframedValue = value;
+            {
+                if (_validateMethod == null)
+                    _unkeyframedValue = value;
+                else
+                    _unkeyframedValue = _validateMethod(value);
+            }
+        }
+
+        public override bool IsKeyframedAtTime(Timecode time)
+        {
+            foreach (var keyframe in Keyframes)
+            {
+                if (keyframe.Time == time)
+                    return true;
+            }
+            return false;
+        }
+
+        public override void AddKeyframeAtTime(Timecode time)
+        {
+            Keyframes.Add(new Keyframe<T>(time, GetValueAtTime(time), EasingPresets.Linear));
+        }
+
+        public override void RemoveNearestKeyframeAtTime(Timecode time)
+        {
+            Keyframes.RemoveNearestAtTime(time);
         }
 
         public Parameter(T value)
@@ -163,6 +185,16 @@ namespace Engine.Core
             CanBeLinked = canBeLinked;
         }
 
+        public Parameter(T value, bool canBeKeframed, bool canBeLinked, Func<T, T> validateMethod)
+        {
+            _unkeyframedValue = value;
+            CanBeKeyframed = canBeKeframed;
+            CanBeLinked = canBeLinked;
+
+            _validateMethod = validateMethod;
+            Keyframes = new(validateMethod);
+        }
+
         public delegate T Lerp(T a, T b, float t);
 
         public delegate void UI(ref T value);
@@ -171,10 +203,14 @@ namespace Engine.Core
         private static UI? _drawUI;
         public override void DrawUI()
         {
-            var value = Value;
+            T initialValue = Value;
+            T afterValue = initialValue;
             // TODO: will crash if no method is found
-            Parameter<T>._drawUI!(ref value);
-            Value = value;
+            Parameter<T>._drawUI!(ref afterValue);
+            if (!initialValue!.Equals(afterValue))
+            {
+                Value = afterValue;
+            }
         }
 
         private static Lerp? _lerp;
@@ -184,6 +220,7 @@ namespace Engine.Core
             _lerp = lerp;
             _drawUI = drawUI;
         }
+
     }
 
     public class SplitableParameter<PointF> : Parameter<PointF>

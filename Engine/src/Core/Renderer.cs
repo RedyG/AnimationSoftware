@@ -52,7 +52,7 @@ namespace Engine.Core
         }
 
 
-        private static Layer _mainLayer = new Layer(new(0f, 0f), new Size(0, 0));
+        private static Layer _mainLayer = new Layer("__mainLayer__", new(0f, 0f), new Size(0, 0));
 
         public static Texture RenderActiveScene()
         {

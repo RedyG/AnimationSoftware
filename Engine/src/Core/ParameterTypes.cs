@@ -46,7 +46,8 @@ namespace Engine.Core
                 (ref Color4 value) =>
                 {
                     var vec = new System.Numerics.Vector4(value.R, value.G, value.B, value.A);
-                    ImGui.ColorPicker4("", ref vec);
+                    //ImGui.DragFloat4("", ref vec);
+                    ImGui.ColorEdit4("", ref vec);
                     value = new Color4(vec.X, vec.Y, vec.Z, vec.W);
                 }
             );

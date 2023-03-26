@@ -17,19 +17,19 @@ namespace Engine.Effects
 {
     public class Rectangle : Effect
     {
-        [Param("aa", 1)]
+        [Param("aa")]
         public Parameter<PointF> Position { get; set; } = new Parameter<PointF>(new PointF(0f, 0f));
 
-        [Param(2)]
+        [Param()]
         public Parameter<SizeF> Size { get; set; } = new Parameter<SizeF>(new SizeF(100f, 100f));
 
-        [Param(4)]
+        [Param()]
         public Parameter<Color4> Color { get; set; } = new Parameter<Color4>(Color4.White);
 
-        [Param(3)]
+        [Param()]
         public Parameter<bool> FitToLayer { get; set; } = new Parameter<bool>(true);
 
-        [Param(5)]
+        [Param()]
         public Parameter<float> idk  { get; set; } = new Parameter<float>(20f);
 
 

@@ -10,6 +10,8 @@ namespace Engine.Core
 {
     public class KeyframeList<T> : ICollection<Keyframe<T>>
     {
+        private Func<T, T>? _validateMethod { get; set; }
+
         private readonly List<Keyframe<T>> list = new();
         private int GetClosest(int val1, int val2, Timecode time)
         {
@@ -28,7 +30,7 @@ namespace Engine.Core
             for (int i = 1; i < list.Count; i++)
             {
                 if (list[i - 1].Time == list[i].Time)
-                    list.RemoveAt(i);
+                    list.RemoveAt(i - 1);
             }
         }
 
@@ -116,6 +118,11 @@ namespace Engine.Core
         public bool IsReadOnly => false;
         public void Add(Keyframe<T> keyframe)
         {
+            keyframe.ValidateMethod = _validateMethod;
+
+            // we do that so the validate method is used
+            keyframe.Value = keyframe.Value;
+
             list.Add(keyframe);
             SortList();
             keyframe.TimeChanged += new EventHandler<EventArgs>(Keyframe_TimeChanged);
@@ -149,6 +156,15 @@ namespace Engine.Core
         private void Keyframe_TimeChanged(object? sender, EventArgs e)
         {
             SortList();
+        }
+
+        public KeyframeList()
+        { 
+        }
+
+        public KeyframeList(Func<T, T> validateMethod)
+        {
+            _validateMethod = validateMethod;
         }
     }
 }

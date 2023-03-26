@@ -8,6 +8,8 @@ namespace Engine.Core
 {
     public class Keyframe<T>
     {
+        internal Func<T, T>? ValidateMethod { get; set; }
+
         private Timecode _time;
         public Timecode Time
         {
@@ -18,13 +20,27 @@ namespace Engine.Core
                 OnTimeChanged(EventArgs.Empty);
             }
         }
-        public T Value { get; set; }
+
+        private T _value;
+        public T Value
+        {
+            get => _value;
+            set
+            {
+                if (ValidateMethod == null)
+                    _value = value;
+                else
+                    _value = ValidateMethod(value);
+            }
+        }
         public IEasing Easing { get; set; }
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public Keyframe(Timecode time, T value, IEasing easing)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         { 
-            Time = time;
             Value = value;
+            Time = time;
             Easing = easing;
         }
 
