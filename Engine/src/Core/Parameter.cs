@@ -11,26 +11,10 @@ namespace Engine.Core
     public abstract class Parameter
     {
         // TODO: cache the methods using delegates or just the MethodInfo
-        public T GetValueAsType<T>() => GetValueAtTimeAsType<T>(App.Project.Time);
-        public void SetValueAsType<T>(T value) => SetValueAtTimeAsType<T>(value, App.Project.Time);
-        public T GetValueAtTimeAsType<T>(Timecode time)
-        {
-            var result = GetType().GetMethod("GetValueAtTime")!.Invoke(this, new object[] { time })!;
-            return (T)Convert.ChangeType(result, typeof(T));
-        }
-        public void SetValueAtTimeAsType<T>(T value, Timecode time)
-        {
-            var castedValue = (T)Convert.ChangeType(value, typeof(T))!;
-            GetType().GetMethod("SetValueAtTime")!.Invoke(this, new object[] { castedValue, time });
-        }
-
-        public KeyframeList<T> GetKeyframesAsType<T>()
-        {
-            // TODO: check this
-            var result = GetType().GetProperty("Keyframes")!.GetValue(this)!;
-            return (KeyframeList<T>)Convert.ChangeType(result, typeof(KeyframeList<T>));
-        }
-
+        public abstract T GetValueAsType<T>();
+        public abstract void SetValueAsType<T>(T value);
+        public abstract T GetValueAtTimeAsType<T>(Timecode time);
+        public abstract void SetValueAtTimeAsType<T>(Timecode time, T value);
         public abstract void RemoveNearestKeyframeAtTime(Timecode time);
         public abstract void AddKeyframeAtTime(Timecode time);
         public abstract bool IsKeyframedAtTime(Timecode time);
@@ -174,6 +158,16 @@ namespace Engine.Core
             Keyframes.RemoveNearestAtTime(time);
         }
 
+        public override T1 GetValueAsType<T1>() => GetValueAtTimeAsType<T1>(App.Project.Time);
+
+        public override void SetValueAsType<T1>(T1 value) => SetValueAtTimeAsType(App.Project.Time, value);
+
+        // TODO: will crash
+        public override T1 GetValueAtTimeAsType<T1>(Timecode time) => (T1)Convert.ChangeType(GetValueAtTime(time), typeof(T1))!;
+
+        // TODO: will crash
+        public override void SetValueAtTimeAsType<T1>(Timecode time, T1 value) => SetValueAtTime(time, (T)Convert.ChangeType(value, typeof(T))!);
+
         public Parameter(T value)
         {
             _unkeyframedValue = value;
@@ -220,7 +214,6 @@ namespace Engine.Core
             _lerp = lerp;
             _drawUI = drawUI;
         }
-
     }
 
     public class SplitableParameter<PointF> : Parameter<PointF>

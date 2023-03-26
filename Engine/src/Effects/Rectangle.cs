@@ -3,6 +3,7 @@ using Engine.Core;
 using Engine.Graphics;
 using Engine.OpenGL;
 using Engine.Utilities;
+using ImGuiNET;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System;
@@ -20,17 +21,20 @@ namespace Engine.Effects
         [Param("aa")]
         public Parameter<PointF> Position { get; set; } = new Parameter<PointF>(new PointF(0f, 0f));
 
-        [Param()]
+        [Param]
         public Parameter<SizeF> Size { get; set; } = new Parameter<SizeF>(new SizeF(100f, 100f));
 
-        [Param()]
+        [Param]
         public Parameter<Color4> Color { get; set; } = new Parameter<Color4>(Color4.White);
 
-        [Param()]
+        [Param]
         public Parameter<bool> FitToLayer { get; set; } = new Parameter<bool>(true);
 
-        [Param()]
-        public Parameter<float> idk  { get; set; } = new Parameter<float>(20f);
+        [Param]
+        public Parameter<float> idk  { get; set; } = new Parameter<float>(20f, true, true, (value) => Math.Max(Math.Min(value, 100f), 0f));
+
+        [Param]
+        public Parameter<int> secondIdk { get; set; } = new Parameter<int>(20);
 
 
         public override RenderResult Render(Surface mainSurface, Surface secondSurface, SizeF size)
@@ -42,6 +46,11 @@ namespace Engine.Effects
                    GraphicsApi.DrawRect(MatrixBuilder.CreateTransform(Position.Value, Size.Value), Color.Value);
                */
             return new(false);
+        }
+
+        public Rectangle()
+        {
+            secondIdk.LinkedParameter = idk;
         }
     }
 }
