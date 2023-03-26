@@ -16,6 +16,7 @@ using System.Numerics;
 using Engine.Graphics;
 using Engine.Core;
 using System.Drawing.Drawing2D;
+using OpenTK.Audio.OpenAL.Extensions.Creative.EFX;
 
 namespace Editor
 {
@@ -54,11 +55,11 @@ namespace Editor
              group.Layers.Add(layer);
              App.Project.ActiveScene.Layers.Add(group);*/
             var p = new Parameter<float>(20f);
-            var layer1 = new Layer(new PointF(0f, 0f), new System.Drawing.Size(1920, 1080));
+            var layer1 = new Layer("layer1", new PointF(0f, 0f), new System.Drawing.Size(1920, 1080));
             layer1.Effects.Add(new Engine.Effects.Rectangle());
-            var layer2 = new Layer(new PointF(50f, 50f), new System.Drawing.Size(1000, 1000));
+            var layer2 = new Layer("second one", new PointF(50f, 50f), new System.Drawing.Size(1000, 1000));
             layer2.Effects.Add(new Engine.Effects.Image());
-            var layer3 = new Layer(new PointF(50f, 50f), new System.Drawing.Size(500, 500));
+            var layer3 = new Layer("333", new PointF(50f, 50f), new System.Drawing.Size(500, 500));
             layer3.Effects.Add(new NoChange());
             layer3.Effects.Add(new Engine.Effects.Image());
 
@@ -85,6 +86,60 @@ namespace Editor
             Texture.Unbind(TextureTarget.Texture2D);
             Texture.Unbind(TextureTarget.Texture2DMultisample);
             Framebuffer.Unbind(FramebufferTarget.Framebuffer);
+
+            // TODO: make my own style, I just copy pasted all that.
+            var style = ImGui.GetStyle();
+            style.Colors[(int)ImGuiCol.Text] = new System.Numerics.Vector4(1.00f, 1.00f, 1.00f, 1.00f);
+            style.Colors[(int)ImGuiCol.TextDisabled] = new System.Numerics.Vector4(0.50f, 0.50f, 0.50f, 1.00f);
+            style.Colors[(int)ImGuiCol.WindowBg] = new System.Numerics.Vector4(0.13f, 0.14f, 0.15f, 1.00f);
+            style.Colors[(int)ImGuiCol.ChildBg] = new System.Numerics.Vector4(0.13f, 0.14f, 0.15f, 1.00f);
+            style.Colors[(int)ImGuiCol.PopupBg] = new System.Numerics.Vector4(0.13f, 0.14f, 0.15f, 1.00f);
+            style.Colors[(int)ImGuiCol.Border] = new System.Numerics.Vector4(0.43f, 0.43f, 0.50f, 0.50f);
+            style.Colors[(int)ImGuiCol.BorderShadow] = new System.Numerics.Vector4(0.00f, 0.00f, 0.00f, 0.00f);
+            style.Colors[(int)ImGuiCol.FrameBg] = new System.Numerics.Vector4(0.25f, 0.25f, 0.25f, 1.00f);
+            style.Colors[(int)ImGuiCol.FrameBgHovered] = new System.Numerics.Vector4(0.38f, 0.38f, 0.38f, 1.00f);
+            style.Colors[(int)ImGuiCol.FrameBgActive] = new System.Numerics.Vector4(0.67f, 0.67f, 0.67f, 0.39f);
+            style.Colors[(int)ImGuiCol.TitleBg] = new System.Numerics.Vector4(0.08f, 0.08f, 0.09f, 1.00f);
+            style.Colors[(int)ImGuiCol.TitleBgActive] = new System.Numerics.Vector4(0.08f, 0.08f, 0.09f, 1.00f);
+            style.Colors[(int)ImGuiCol.TitleBgCollapsed] = new System.Numerics.Vector4(0.00f, 0.00f, 0.00f, 0.51f);
+            style.Colors[(int)ImGuiCol.MenuBarBg] = new System.Numerics.Vector4(0.14f, 0.14f, 0.14f, 1.00f);
+            style.Colors[(int)ImGuiCol.ScrollbarBg] = new System.Numerics.Vector4(0.02f, 0.02f, 0.02f, 0.53f);
+            style.Colors[(int)ImGuiCol.ScrollbarGrab] = new System.Numerics.Vector4(0.31f, 0.31f, 0.31f, 1.00f);
+            style.Colors[(int)ImGuiCol.ScrollbarGrabHovered] = new System.Numerics.Vector4(0.41f, 0.41f, 0.41f, 1.00f);
+            style.Colors[(int)ImGuiCol.ScrollbarGrabActive] = new System.Numerics.Vector4(0.51f, 0.51f, 0.51f, 1.00f);
+            style.Colors[(int)ImGuiCol.CheckMark] = new System.Numerics.Vector4(0.26f, 0.59f, 0.98f, 0.95f);
+            style.Colors[(int)ImGuiCol.SliderGrab] = new System.Numerics.Vector4(0.11f, 0.64f, 0.92f, 1.00f);
+            style.Colors[(int)ImGuiCol.SliderGrabActive] = new System.Numerics.Vector4(0.08f, 0.50f, 0.72f, 1.00f);
+            style.Colors[(int)ImGuiCol.Button] = new System.Numerics.Vector4(0.25f, 0.25f, 0.25f, 1.00f);
+            style.Colors[(int)ImGuiCol.ButtonHovered] = new System.Numerics.Vector4(0.38f, 0.38f, 0.38f, 1.00f);
+            style.Colors[(int)ImGuiCol.ButtonActive] = new System.Numerics.Vector4(0.67f, 0.67f, 0.67f, 0.39f);
+            style.Colors[(int)ImGuiCol.Header] = new System.Numerics.Vector4(0.22f, 0.22f, 0.22f, 1.00f);
+            style.Colors[(int)ImGuiCol.HeaderHovered] = new System.Numerics.Vector4(0.25f, 0.25f, 0.25f, 1.00f);
+            style.Colors[(int)ImGuiCol.HeaderActive] = new System.Numerics.Vector4(0.67f, 0.67f, 0.67f, 0.39f);
+            style.Colors[(int)ImGuiCol.Separator] = style.Colors[(int)ImGuiCol.Border];
+            style.Colors[(int)ImGuiCol.SeparatorHovered] = new System.Numerics.Vector4(0.41f, 0.42f, 0.44f, 1.00f);
+            style.Colors[(int)ImGuiCol.SeparatorActive] = new System.Numerics.Vector4(0.26f, 0.59f, 0.98f, 0.95f);
+            style.Colors[(int)ImGuiCol.ResizeGrip] = new System.Numerics.Vector4(0.00f, 0.00f, 0.00f, 0.00f);
+            style.Colors[(int)ImGuiCol.ResizeGripHovered] = new System.Numerics.Vector4(0.29f, 0.30f, 0.31f, 0.67f);
+            style.Colors[(int)ImGuiCol.ResizeGripActive] = new System.Numerics.Vector4(0.26f, 0.59f, 0.98f, 0.95f);
+            style.Colors[(int)ImGuiCol.Tab] = new System.Numerics.Vector4(0.08f, 0.08f, 0.09f, 0.83f);
+            style.Colors[(int)ImGuiCol.TabHovered] = new System.Numerics.Vector4(0.33f, 0.34f, 0.36f, 0.83f);
+            style.Colors[(int)ImGuiCol.TabActive] = new System.Numerics.Vector4(0.23f, 0.23f, 0.24f, 1.00f);
+            style.Colors[(int)ImGuiCol.TabUnfocused] = new System.Numerics.Vector4(0.08f, 0.08f, 0.09f, 1.00f);
+            style.Colors[(int)ImGuiCol.TabUnfocusedActive] = new System.Numerics.Vector4(0.13f, 0.14f, 0.15f, 1.00f);
+            style.Colors[(int)ImGuiCol.DockingPreview] = new System.Numerics.Vector4(0.26f, 0.59f, 0.98f, 0.70f);
+            style.Colors[(int)ImGuiCol.DockingEmptyBg] = new System.Numerics.Vector4(0.20f, 0.20f, 0.20f, 1.00f);
+            style.Colors[(int)ImGuiCol.PlotLines] = new System.Numerics.Vector4(0.61f, 0.61f, 0.61f, 1.00f);
+            style.Colors[(int)ImGuiCol.PlotLinesHovered] = new System.Numerics.Vector4(1.00f, 0.43f, 0.35f, 1.00f);
+            style.Colors[(int)ImGuiCol.PlotHistogram] = new System.Numerics.Vector4(0.90f, 0.70f, 0.00f, 1.00f);
+            style.Colors[(int)ImGuiCol.PlotHistogramHovered] = new System.Numerics.Vector4(1.00f, 0.60f, 0.00f, 1.00f);
+            style.Colors[(int)ImGuiCol.TextSelectedBg] = new System.Numerics.Vector4(0.26f, 0.59f, 0.98f, 0.35f);
+            style.Colors[(int)ImGuiCol.DragDropTarget] = new System.Numerics.Vector4(0.11f, 0.64f, 0.92f, 1.00f);
+            style.Colors[(int)ImGuiCol.NavHighlight] = new System.Numerics.Vector4(0.26f, 0.59f, 0.98f, 1.00f);
+            style.Colors[(int)ImGuiCol.NavWindowingHighlight] = new System.Numerics.Vector4(1.00f, 1.00f, 1.00f, 0.70f);
+            style.Colors[(int)ImGuiCol.NavWindowingDimBg] = new System.Numerics.Vector4(0.80f, 0.80f, 0.80f, 0.20f);
+            style.Colors[(int)ImGuiCol.ModalWindowDimBg] = new System.Numerics.Vector4(0.80f, 0.80f, 0.80f, 0.35f);
+            style.GrabRounding = style.FrameRounding = 2.3f;
         }
 
         protected override void OnResize(ResizeEventArgs e)
@@ -130,40 +185,52 @@ namespace Editor
    
             //GraphicsApi.DrawRect(0.5f, 0.5f, 0.5f, 0.5f, new Transform(), App.Project.ActiveScene.AspectRatio);
             //GraphicsApi.DrawTexture(textureImage);
+            ImGui.DockSpaceOverViewport();
             ImGui.ShowDemoWindow();
 
-            if(ImGui.Begin("window"))
+            if (ImGui.Begin("Effects panel"))
             {
-                //ImGui.Button("hey");
-                //ImGui.Image((IntPtr)result.Handle, new System.Numerics.Vector2(App.Project.ActiveScene.Size.Width, App.Project.ActiveScene.Size.Height), new System.Numerics.Vector2(0,1), new System.Numerics.Vector2(1, 0));
+                // TODO: only for selected layers
                 foreach (Layer layer in App.Project.ActiveScene.Layers)
                 {
-                    ImGui.Button("layer: " + layer.GetHashCode().ToString());
+                    ImGui.Text("layer: " + layer.Name);
                     foreach (Effect effect in layer.Effects)
                     {
-                        ImGui.Button("Effect: " + effect.Name);
-                        
-                        foreach(var namedParam in effect.Parameters)
+                        if (ImGui.CollapsingHeader(effect.Name))
                         {
-                            ImGui.Text(namedParam.Name);
-                            ImGui.SameLine();
-                            ImGui.PushID(namedParam.Name);
-                            namedParam.Parameter.DrawUI();
-                            ImGui.PopID();
-                            //ImGui.Button("parameter: " + namedParam.Name);
+                            ImGui.Columns(2, "params columns");
+                            foreach (NamedParameter namedParameter in effect.Parameters)
+                            {
+                                var cursorPos = ImGui.GetCursorScreenPos();
+                                //UI.MoveCursorBy(0f, 3f);
+                                UI.KeyframeIcon(namedParameter.Parameter);
+                                ImGui.SameLine();
+                                //UI.MoveCursorBy(0f, -2f);
+                                //UI.MoveCursorBy(new System.Numerics.Vector2(0, -150));
+
+                                ImGui.Text(namedParameter.Name);
+                                ImGui.NextColumn();
+
+                                ImGui.PushID(namedParameter.Name);
+                                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+                                namedParameter.Parameter.DrawUI();
+                                ImGui.PopID();
+                                ImGui.NextColumn();
+                            }
+                            ImGui.Columns();
                         }
                     }
-                    ImGui.Separator();
                 }
             }
             ImGui.End();
             ImGui.ShowStackToolWindow();
+
             _controller.Render();
 
             ImGuiController.CheckGLError("End of frame");
-            App.Project.Time.Seconds += (float)e.Time;
-            if (App.Project.Time.Seconds > 16f)
-                App.Project.Time.Seconds = 0;
+            //App.Project.Time.Seconds += (float)e.Time;
+            //if (App.Project.Time.Seconds > 16f)
+                //App.Project.Time.Seconds = 0;
             SwapBuffers();
         }
 
