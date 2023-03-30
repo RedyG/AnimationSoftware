@@ -17,10 +17,10 @@ namespace Engine.Effects
         Texture texture;
 
 
-        public override RenderResult Render(Surface activeSurface, Surface secondSurface, SizeF size)
+        public override RenderResult Render(RenderArgs args)
         {
-            GraphicsApi.Clear(Color4.Azure);
-            //GraphicsApi.DrawTexture(MatrixBuilder.Empty, texture);
+            //GraphicsApi.Clear(Color4.Azure);
+            GraphicsApi.DrawTexture(MatrixBuilder.Empty, texture);
 
             return new RenderResult(false);
         }

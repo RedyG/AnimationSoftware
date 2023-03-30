@@ -23,6 +23,13 @@ namespace Engine.Core
                 (ref int value) => ImGui.DragInt("", ref value)
             );
 
+            Parameter<System.Numerics.Vector2>.RegisterType(
+                (a, b, t) => new System.Numerics.Vector2(Lerp(a.X, b.X, t), Lerp(a.Y, b.Y, t)),
+                (ref System.Numerics.Vector2 value) =>
+                {
+                    ImGui.DragFloat2("", ref value);
+                }
+            );
             Parameter<PointF>.RegisterType(
                 (a, b, t) => new PointF(Lerp(a.X, b.X, t), Lerp(a.Y, b.Y, t)),
                 (ref PointF value) =>

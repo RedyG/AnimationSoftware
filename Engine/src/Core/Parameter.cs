@@ -11,8 +11,10 @@ namespace Engine.Core
     public abstract class Parameter
     {
         // TODO: cache the methods using delegates or just the MethodInfo
-        public abstract T GetValueAsType<T>();
-        public abstract void SetValueAsType<T>(T value);
+        public T1 GetValueAsType<T1>() => GetValueAtTimeAsType<T1>(App.Project.Time);
+
+        public void SetValueAsType<T1>(T1 value) => SetValueAtTimeAsType(App.Project.Time, value);
+
         public abstract T GetValueAtTimeAsType<T>(Timecode time);
         public abstract void SetValueAtTimeAsType<T>(Timecode time, T value);
         public abstract void RemoveNearestKeyframeAtTime(Timecode time);
@@ -158,9 +160,6 @@ namespace Engine.Core
             Keyframes.RemoveNearestAtTime(time);
         }
 
-        public override T1 GetValueAsType<T1>() => GetValueAtTimeAsType<T1>(App.Project.Time);
-
-        public override void SetValueAsType<T1>(T1 value) => SetValueAtTimeAsType(App.Project.Time, value);
 
         // TODO: will crash
         public override T1 GetValueAtTimeAsType<T1>(Timecode time) => (T1)Convert.ChangeType(GetValueAtTime(time), typeof(T1))!;

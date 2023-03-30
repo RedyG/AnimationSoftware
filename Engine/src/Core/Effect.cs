@@ -23,7 +23,7 @@ namespace Engine.Core
 
         // TODO: optimize if no need to ping pong
         // TDOO: make the API better
-        public abstract RenderResult Render(Surface activeSurface, Surface secondSurface, SizeF size);
+        public abstract RenderResult Render(RenderArgs args);
 
         public Parameter? GetParameter(string name)
         {
@@ -42,7 +42,7 @@ namespace Engine.Core
 
             Name = GetEffectName();
 
-            Parameters = GetParameters();
+            Parameters = this.GetParameters();
         }
 
         private string GetEffectName()
@@ -54,28 +54,21 @@ namespace Engine.Core
 
             return StringUtilities.UnPascalCase(_type.Name);
         }
+    }
 
-        private ReadOnlyCollection<NamedParameter> GetParameters()
+    public readonly struct RenderArgs
+    {
+        public Timecode Time { get; }
+        public Surface SurfaceA { get; }
+        public Surface SurfaceB { get; }
+        public Layer Layer { get; }
+
+        public RenderArgs(Timecode time, Layer layer, Surface surfaceA, Surface surfaceB)
         {
-            // TODO: maybe optimize this code a little so we don't query the attribute "Param" twice.
-            // TODO: cache this per-Type so that we don't this work multiple times for the same types.
-            // TODO: add parameter groups or a way to nest them.
-            // TODO: handle duplicate names.
-
-            List<NamedParameter> parameters = new();
-
-            var properties = _type
-                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(property => Attribute.IsDefined(property, typeof(Param)) && typeof(Parameter).IsAssignableFrom(property.PropertyType))
-                .OrderBy(property => ((Param)property.GetCustomAttributes(typeof(Param), false).Single()).Order);
-
-            foreach (var property in properties)
-            {
-                var name = ((Param)property.GetCustomAttributes(typeof(Param), false).Single()).CustomName ?? StringUtilities.UnPascalCase(property.Name);
-                parameters.Add(new NamedParameter(name, (Parameter)property.GetValue(this)!));
-            }
-
-            return parameters.AsReadOnly();
+            Time = time;
+            SurfaceA = surfaceA;
+            SurfaceB = surfaceB;
+            Layer = layer;
         }
     }
 

@@ -34,14 +34,14 @@ namespace Engine.Effects
         private static Buffer<uint> textureEbo;
 
 
-        public override RenderResult Render(Surface mainSurface, Surface secondSurface, SizeF size)
+        public override RenderResult Render(RenderArgs args)
         {
-            secondSurface.Framebuffer.Bind(FramebufferTarget.Framebuffer);
+            args.SurfaceB.Framebuffer.Bind(FramebufferTarget.Framebuffer);
             GraphicsApi.Clear(Color4.PapayaWhip);
             var matrix = MatrixBuilder.TopLeft;
 
             GL.ActiveTexture(TextureUnit.Texture0);
-            mainSurface.Texture.Bind(TextureTarget.Texture2D);
+            args.SurfaceA.Texture.Bind(TextureTarget.Texture2D);
 
             textureShader.Uniform1(textureShader.GetUniformLocation("tex"), 0);
             textureShader.UniformMatrix4(textureShader.GetUniformLocation("transform"), ref matrix);

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Engine.Attributes;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -16,12 +17,50 @@ namespace Engine.Core
 
         public string Name { get; set; }
 
+        public Timecode StartTime = Timecode.FromSeconds(0);
+
+        private Timecode _inPointOffset = Timecode.FromSeconds(0);
+        public Timecode InPoint
+        {
+            get => _inPointOffset + StartTime;
+            set => _inPointOffset = value - StartTime;
+        }
+
+        private Timecode _outPointOffset = App.Project.ActiveScene.Duration;
+        public Timecode OutPoint
+        {
+            get => _outPointOffset + StartTime;
+            set => _outPointOffset = value - StartTime;
+        }
+
+        public Timecode Duration
+        {
+            get => OutPoint - InPoint;
+            set => OutPoint = value + InPoint;
+        }
+
+        public bool IsActiveAtTime(Timecode time)
+        {
+            return time >= InPoint && time < OutPoint;
+        }
+
+        [Param]
         public Parameter<PointF> Position { get; set; }
+
+        [Param]
         public Parameter<PointF> Origin { get; set; } = new(new PointF(0f, 0f));
+
+        [Param]
         public Parameter<SizeF> Size { get; set; }
-        public Parameter<RectangleF> Bounds { get; set; } = new(RectangleF.Empty, false, false);
+
+        [Param]
         public Parameter<Vector2> Scale { get; set; } = new(new Vector2(1f));
+
+        [Param]
         public Parameter<float> Rotation { get; set; } = new(0f);
+
+        public Parameter<RectangleF> Bounds { get; set; } = new(RectangleF.Empty, false, false);
+
 
         public Layer(string name, PointF position, Size size)
         {

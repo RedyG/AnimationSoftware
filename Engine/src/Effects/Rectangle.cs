@@ -37,11 +37,11 @@ namespace Engine.Effects
         public Parameter<int> secondIdk { get; set; } = new Parameter<int>(20);
 
 
-        public override RenderResult Render(Surface mainSurface, Surface secondSurface, SizeF size)
+        public override RenderResult Render(RenderArgs args)
         {
            // GraphicsApi.Clear(Color.Value);
-               if (FitToLayer.Value)
-                   GraphicsApi.Clear(Color.Value);
+               if (FitToLayer.GetValueAtTime(args.Time))
+                   GraphicsApi.Clear(Color.GetValueAtTime(args.Time));
                /*else
                    GraphicsApi.DrawRect(MatrixBuilder.CreateTransform(Position.Value, Size.Value), Color.Value);
                */

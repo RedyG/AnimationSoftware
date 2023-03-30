@@ -9,6 +9,8 @@ namespace Engine.Core
 {
     public struct Timecode : IEquatable<Timecode>, IComparable<Timecode>
     {
+        public static Timecode Zero = Timecode.FromSeconds(0);
+
         public float Seconds { get; set; }
         public float Milliseconds { get => Seconds * 1000f; set => Seconds = (value / 1000f); }
 
@@ -39,6 +41,8 @@ namespace Engine.Core
         public static bool operator >=(Timecode a, Timecode b) => (a.Seconds >= b.Seconds);
         public static Timecode operator +(Timecode a, Timecode b) => Timecode.FromSeconds(a.Seconds + b.Seconds);
         public static Timecode operator -(Timecode a, Timecode b) => Timecode.FromSeconds(a.Seconds - b.Seconds);
+        public static Timecode operator *(Timecode a, Timecode b) => Timecode.FromSeconds(a.Seconds* b.Seconds);
+        public static Timecode operator /(Timecode a, Timecode b) => Timecode.FromSeconds(a.Seconds / b.Seconds);
 
         public override string ToString()
         {

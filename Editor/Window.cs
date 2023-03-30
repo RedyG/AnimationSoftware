@@ -40,52 +40,35 @@ namespace Editor
             Console.WriteLine(a);
             //GL.Enable(EnableCap.Multisample);
             App.Project = new Project("a");
-            scene = new Scene(60f, new Size(1920, 1080), Timecode.FromSeconds(100f));
+            scene = new Scene(60f, new Size(1920, 1080), Timecode.FromSeconds(20f));
             App.Project.ActiveScene = scene;
 
-            /* var group = new Layer(new PointF(0, 0), new Size(500, 500));
-             group.Size.Keyframes!.Add(new Keyframe<SizeF>(Timecode.FromSeconds(0), new SizeF(500, 500), EasingPresets.Linear));
-             group.Size.Keyframes!.Add(new Keyframe<SizeF>(Timecode.FromSeconds(5), new SizeF(1920, 1080), EasingPresets.Linear));
+            var group1 = new Layer("group1", new PointF(100, 100), new Size(500, 500));
+            group1.StartTime = Timecode.FromSeconds(3f);
+            group1.Position.Keyframes.Add(new Keyframe<PointF>(Timecode.FromSeconds(0), new PointF(100f, 100f), new BezierEasing(new PointF(1f, 0f), new PointF(0f, 1f))));
+            group1.Position.Keyframes.Add(new Keyframe<PointF>(Timecode.FromSeconds(5), new PointF(500f, 500f), EasingPresets.Linear));
+            group1.Effects.Add(new RenderChildren());
+            group1.Effects.Add(new NoChange());
 
-             var layer = new Layer(new PointF(0, 0), new Size(250, 250));
-             layer.Position.Keyframes!.Add(new Keyframe<PointF>(Timecode.FromSeconds(0), new PointF(1920, 0), EasingPresets.Linear));
-             layer.Position.Keyframes!.Add(new Keyframe<PointF>(Timecode.FromSeconds(5), new PointF(0, 0), EasingPresets.Linear));
-             layer.Effects.Add(new Engine.Effects.Rectangle());
+            var layer1 = new Layer("layer1", new PointF(0f, 0f), new Size(200, 200));
+            layer1.Effects.Add(new Engine.Effects.Image());
+            group1.Layers.Add(layer1);
 
-             group.Layers.Add(layer);
-             App.Project.ActiveScene.Layers.Add(group);*/
-            var p = new Parameter<float>(20f);
-            var layer1 = new Layer("layer1", new PointF(0f, 0f), new System.Drawing.Size(1920, 1080));
-            layer1.Effects.Add(new Engine.Effects.Rectangle());
-            var layer2 = new Layer("second one", new PointF(50f, 50f), new System.Drawing.Size(1000, 1000));
-            layer2.Effects.Add(new Engine.Effects.Image());
-            var layer3 = new Layer("333", new PointF(50f, 50f), new System.Drawing.Size(500, 500));
-            layer3.Effects.Add(new NoChange());
-            layer3.Effects.Add(new Engine.Effects.Image());
+            var layer2 = new Layer("layer2", new PointF(250f, 250f), new Size(200, 200));
+            layer2.Effects.Add(new Engine.Effects.Rectangle());
+            group1.Layers.Add(layer2);
 
-            App.Project.ActiveScene.Layers.Add(layer1);
-            App.Project.ActiveScene.Layers.Add(layer2);
-            App.Project.ActiveScene.Layers.Add(layer3);
+            var group2 = new Layer("group2", new PointF(0f, 0f), new System.Drawing.Size(100, 100));
+            group2.Duration = Timecode.FromSeconds(1.5f);
+            group2.StartTime = Timecode.FromSeconds(0.5f);
+            group2.Effects.Add(new Engine.Effects.Rectangle());
 
-            _controller = new ImGuiController(ClientSize.X, ClientSize.Y);
-            framebuffer = new Framebuffer();
-            texture = Texture.Create(1920, 1080, IntPtr.Zero, PixelType.UnsignedByte, TextureTarget.Texture2D, TextureMinFilter.Linear, TextureMagFilter.Linear, TextureWrapMode.Repeat, TextureWrapMode.Repeat, PixelInternalFormat.Rgba, PixelFormat.Rgba);
-            Texture.Unbind(TextureTarget.Texture2D);
-            framebuffer.Bind(FramebufferTarget.Framebuffer);
-
+            App.Project.ActiveScene.Layers.Add(group1);
+            App.Project.ActiveScene.Layers.Add(group2);
+            
             textureImage = Texture.FromImage("Z:\\1.jpg", TextureTarget.Texture2D);
 
-            /*int depthrenderbuffer = GL.GenRenderbuffer();
-            GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, depthrenderbuffer);
-            GL.RenderbufferStorage(RenderbufferTarget.Renderbuffer, RenderbufferStorage.DepthComponent, 225, 225);
-            GL.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, depthrenderbuffer);*/
-            //Texture.Unbind(TextureTarget.Texture2D);
-            GL.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, texture.Handle, 0);
-            GL.DrawBuffer(DrawBufferMode.ColorAttachment0);
-            rectangle = new();
-            Texture.Unbind(TextureTarget.Texture2D);
-            Texture.Unbind(TextureTarget.Texture2DMultisample);
-            Framebuffer.Unbind(FramebufferTarget.Framebuffer);
+            _controller = new ImGuiController(ClientSize.X, ClientSize.Y);
 
             // TODO: make my own style, I just copy pasted all that.
             var style = ImGui.GetStyle();
@@ -155,74 +138,23 @@ namespace Editor
 
         Scene scene;
         Texture textureImage;
-        Texture texture;
-        Framebuffer framebuffer;
-        Engine.Effects.Rectangle rectangle;
         protected override void OnRenderFrame(FrameEventArgs e)
         {
             base.OnRenderFrame(e);
 
-            //Texture.Unbind(TextureTarget.Texture2D);
-            //framebuffer.Bind(FramebufferTarget.Framebuffer);
-            //GL.ClearColor(new Color4(255, 255, 48, 255));
-            //GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
-            //GraphicsApi.DrawRect(0, 0, 0, 0);
-            //Framebuffer.Unbind(FramebufferTarget.Framebuffer);
-            
+            App.Project.Time.Seconds += (float)e.Time;
+
             _controller.Update(this, (float)e.Time);
-            Texture.Unbind(TextureTarget.Texture2D);
-            Texture.Unbind(TextureTarget.Texture2DMultisample);
-            framebuffer.Bind(FramebufferTarget.Framebuffer);
-            GL.Viewport(0, 0, 1920, 1080);
-            Texture result = Renderer.RenderActiveScene();
-            //GraphicsApi.DrawTexture(Matrix4.CreateRotationZ(0f), textureImage);
-            //GraphicsApi.DrawRect(MatrixBuilder.CreateTransform(new PointF(0.2f, 0.2f), new SizeF(0.7f, 0.7f)), App.Project.ActiveScene.AspectRatio, Color4.Pink);
 
             Framebuffer.Unbind(FramebufferTarget.Framebuffer);
-            GL.Viewport(0, 0, ClientSize.X, ClientSize.Y);
-            GL.ClearColor(new Color4(0, 32, 48, 255));
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
-   
-            //GraphicsApi.DrawRect(0.5f, 0.5f, 0.5f, 0.5f, new Transform(), App.Project.ActiveScene.AspectRatio);
-            //GraphicsApi.DrawTexture(textureImage);
+            //GL.Viewport(0, 0, ClientSize.X, ClientSize.Y);
+            GraphicsApi.Clear(Color4.Black);
+            
             ImGui.DockSpaceOverViewport();
             ImGui.ShowDemoWindow();
-
-            if (ImGui.Begin("Effects panel"))
-            {
-                // TODO: only for selected layers
-                foreach (Layer layer in App.Project.ActiveScene.Layers)
-                {
-                    ImGui.Text("layer: " + layer.Name);
-                    foreach (Effect effect in layer.Effects)
-                    {
-                        if (ImGui.CollapsingHeader(effect.Name))
-                        {
-                            ImGui.Columns(2, "params columns");
-                            foreach (NamedParameter namedParameter in effect.Parameters)
-                            {
-                                var cursorPos = ImGui.GetCursorScreenPos();
-                                //UI.MoveCursorBy(0f, 3f);
-                                UI.KeyframeIcon(namedParameter.Parameter);
-                                ImGui.SameLine();
-                                //UI.MoveCursorBy(0f, -2f);
-                                //UI.MoveCursorBy(new System.Numerics.Vector2(0, -150));
-
-                                ImGui.Text(namedParameter.Name);
-                                ImGui.NextColumn();
-
-                                ImGui.PushID(namedParameter.Name);
-                                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-                                namedParameter.Parameter.DrawUI();
-                                ImGui.PopID();
-                                ImGui.NextColumn();
-                            }
-                            ImGui.Columns();
-                        }
-                    }
-                }
-            }
-            ImGui.End();
+            UI.EffectsWindow();
+            UI.PreviewWindow();
+            UI.TimelineWindow();
             ImGui.ShowStackToolWindow();
 
             _controller.Render();

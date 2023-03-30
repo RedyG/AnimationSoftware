@@ -18,10 +18,8 @@ namespace Engine.Graphics
 
         public static Matrix4 ToTopLeft(Matrix4 matrix) => matrix * TopLeft;
 
-        public static Matrix4 CreateTransform(SizeF containerSize, Layer layer)
-        {
-            return CreateTransform(containerSize, layer.Position.Value, layer.Size.Value, layer.Origin.Value, layer.Scale.Value, layer.Rotation.Value);
-        }
+        public static Matrix4 CreateTransform(Timecode time, SizeF containerSize, Layer layer)
+            => CreateTransform(containerSize, layer.Position.GetValueAtTime(time), layer.Size.GetValueAtTime(time), layer.Origin.GetValueAtTime(time), layer.Scale.GetValueAtTime(time), layer.Rotation.GetValueAtTime(time));
 
         public static Matrix4 CreateTransform(SizeF containerSize, PointF position, SizeF size, PointF origin, System.Numerics.Vector2 scale, float rotation)
         {
