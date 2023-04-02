@@ -8,6 +8,7 @@ using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Drawing;
 using System.Linq;
@@ -37,6 +38,8 @@ namespace Engine.Effects
         public Parameter<int> secondIdk { get; set; } = new Parameter<int>(20);
 
 
+
+
         public override RenderResult Render(RenderArgs args)
         {
            // GraphicsApi.Clear(Color.Value);
@@ -47,6 +50,15 @@ namespace Engine.Effects
                */
             return new(false);
         }
+
+        protected override ParameterList InitParameters() => new ParameterList(
+            new("Position", Position),
+            new("Size", Size),
+            new("Color", Color),
+            new("Fit To Layer", FitToLayer),
+            new("idk", idk),
+            new("second Idk", secondIdk)
+        );
 
         public Rectangle()
         {

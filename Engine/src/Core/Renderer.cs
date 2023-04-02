@@ -23,6 +23,9 @@ namespace Engine.Core
     {
         public static float PreviewRatio { get; set; } = 1f;
 
+        public static Size ToPreviewSize(Size size) => new Size((int)(size.Width * PreviewRatio), (int)(size.Height * PreviewRatio));
+        public static Size ToPreviewSize(SizeF size) => new Size((int)(size.Width * PreviewRatio), (int)(size.Height * PreviewRatio));
+
         private static SizeF PreviewSizeF => App.Project.ActiveScene.Size * PreviewRatio;
         private static Size PreviewSize => new Size((int)(App.Project.ActiveScene.Size.Width * PreviewRatio), (int)(App.Project.ActiveScene.Size.Height * PreviewRatio));
 
@@ -30,27 +33,11 @@ namespace Engine.Core
 
         private static Texture _textureA = Texture.Create(1920, 1080);
         private static Framebuffer _framebufferA = Framebuffer.FromTexture(_textureA);
-        private static Surface _surfaceA = new(_textureA, _framebufferA);
+        private static Surface _surfaceA = new(_textureA, _framebufferA, new Size(1920, 1080), new Size(1920, 1080));
 
         private static Texture _textureB = Texture.Create(1920, 1080);
         private static Framebuffer _framebufferB = Framebuffer.FromTexture(_textureB);
-        private static Surface _surfaceB = new(_textureB, _framebufferB);
-
-
-        private static Dictionary<Layer, Surface> _layerSurfaces = new Dictionary<Layer, Surface>();
-
-        private static Surface GetSurface(Layer layer)
-        {
-            if (_layerSurfaces.TryGetValue(layer, out Surface surface))
-                return surface;
-
-            var texture = Texture.Create(App.Project.ActiveScene.Size.Width, App.Project.ActiveScene.Size.Height);
-            var framebuffer = Framebuffer.FromTexture(texture);
-            var newSurface = new Surface(texture, framebuffer);
-            _layerSurfaces.Add(layer, newSurface);
-
-            return newSurface;
-        }
+        private static Surface _surfaceB = new(_textureB, _framebufferB, new Size(1920, 1080), new Size(1920, 1080));
 
 
         private static Layer _mainLayer = new Layer("__mainLayer__", new(0f, 0f), new Size(0, 0));
@@ -60,7 +47,7 @@ namespace Engine.Core
             _mainLayer.Effects.Add(new RenderChildren());
         }
 
-        public static Texture RenderActiveScene()
+        public static Surface RenderActiveScene()
         {
  
             _mainLayer.Layers = App.Project.ActiveScene.Layers;
@@ -70,24 +57,27 @@ namespace Engine.Core
             return RenderLayer(new RenderArgs(App.Project.Time, _mainLayer, _surfaceA, _surfaceB));
         }
 
-        public static Texture RenderLayer(RenderArgs args)
+        public static Surface RenderLayer(RenderArgs args)
         {
             // TODO: reuse groups surfaces
             // TODO: optimize if only content effects by drawing directly on surface or stuff like that
+            args.SurfaceA.Viewport = Renderer.ToPreviewSize(args.Layer.Size.GetValueAtTime(args.Time));
+            args.SurfaceB.Viewport = Renderer.ToPreviewSize(args.Layer.Size.GetValueAtTime(args.Time));
+
 
             bool swapSurfaces = false;
             foreach (Effect effect in args.Layer.Effects)
             {
                 Surface activeSurface = swapSurfaces ? args.SurfaceB : args.SurfaceA;
                 Surface secondSurface = swapSurfaces ? args.SurfaceA : args.SurfaceB;
-                activeSurface.Framebuffer.Bind(FramebufferTarget.Framebuffer);
+                activeSurface.Bind(FramebufferTarget.Framebuffer);
                 //GL.Viewport(layer.Size.Value.ToSize());
                 var result = effect.Render(new RenderArgs(args.Time, args.Layer, activeSurface, secondSurface));
                 if (result.SwapSurfaces)
                     swapSurfaces = !swapSurfaces;
             }
 
-            return swapSurfaces ? args.SurfaceB.Texture : args.SurfaceA.Texture;
+            return swapSurfaces ? args.SurfaceB : args.SurfaceA;
         }
     }
 }

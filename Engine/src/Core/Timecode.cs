@@ -13,10 +13,19 @@ namespace Engine.Core
 
         public float Seconds { get; set; }
         public float Milliseconds { get => Seconds * 1000f; set => Seconds = (value / 1000f); }
+        public int Frames
+        {
+            get => GetFrames(App.Project.ActiveScene.FrameRate);
+            set => SetFrames(value, App.Project.ActiveScene.FrameRate);
+        }
 
         public int GetFrames(float frameRate) => (int)MathF.Round(Seconds * frameRate);
         public void SetFrames(int frames, float frameRate) => Seconds = (frames / (float)frameRate);
 
+        public static Timecode FromFrames(int frames)
+        {
+            return FromFrames(frames, App.Project.ActiveScene.FrameRate);
+        }
         public static Timecode FromFrames(int frames, float frameRate)
         {
             var timecode = new Timecode();

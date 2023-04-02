@@ -11,6 +11,7 @@ using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System.Drawing.Drawing2D;
 using Engine.Attributes;
+using System.Collections.ObjectModel;
 
 namespace Engine.Effects
 {
@@ -53,6 +54,8 @@ namespace Engine.Effects
 
             return new RenderResult(true);
         }
+
+        protected override ParameterList InitParameters() => new ParameterList();
 
         public NoChange()
         {

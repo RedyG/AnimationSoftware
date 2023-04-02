@@ -14,45 +14,21 @@ namespace Engine.Core
 {
     public abstract class Effect
     {
-        private Type _type;
-
         public string Name { get; }
 
-        public ReadOnlyCollection<NamedParameter> Parameters { get; }
-
+        public ParameterList Parameters { get; }
 
         // TODO: optimize if no need to ping pong
         // TDOO: make the API better
         public abstract RenderResult Render(RenderArgs args);
-
-        public Parameter? GetParameter(string name)
-        {
-            foreach (var namedParameter in Parameters)
-            {
-                if (namedParameter.Name == name)
-                    return namedParameter.Parameter;
-            }
-            return null;
-        }
-
+        protected abstract ParameterList InitParameters();
+        protected virtual string GetName() => StringUtilities.UnPascalCase(GetType().Name);
 
         public Effect()
         {
-            _type = GetType();
+            Name = GetName();
 
-            Name = GetEffectName();
-
-            Parameters = this.GetParameters();
-        }
-
-        private string GetEffectName()
-        {
-            var customName = _type.GetCustomAttribute(typeof(CustomName)) as CustomName;
-
-            if (customName != null)
-                return customName.Name;
-
-            return StringUtilities.UnPascalCase(_type.Name);
+            Parameters = InitParameters();
         }
     }
 

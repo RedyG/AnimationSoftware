@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using OpenTK.Mathematics;
 using Engine.OpenGL;
 using OpenTK.Graphics.OpenGL4;
+using System.Collections.ObjectModel;
 
 namespace Engine.Effects
 {
@@ -19,7 +20,7 @@ namespace Engine.Effects
 
         public override RenderResult Render(RenderArgs args)
         {
-            //GraphicsApi.Clear(Color4.Azure);
+            GraphicsApi.Clear(Color4.Azure);
             GraphicsApi.DrawTexture(MatrixBuilder.Empty, texture);
 
             return new RenderResult(false);
@@ -29,6 +30,8 @@ namespace Engine.Effects
         {
             texture.Dispose();
         }
+
+        protected override ParameterList InitParameters() => new ParameterList();
 
         public Image()
         {

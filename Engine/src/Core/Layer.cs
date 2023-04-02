@@ -17,20 +17,20 @@ namespace Engine.Core
 
         public string Name { get; set; }
 
-        public Timecode StartTime = Timecode.FromSeconds(0);
+        public Timecode Offset = Timecode.FromSeconds(0);
 
-        private Timecode _inPointOffset = Timecode.FromSeconds(0);
+        private Timecode _inPoint = Timecode.FromSeconds(0);
         public Timecode InPoint
         {
-            get => _inPointOffset + StartTime;
-            set => _inPointOffset = value - StartTime;
+            get => _inPoint + Offset;
+            set => _inPoint = value - Offset;
         }
 
-        private Timecode _outPointOffset = App.Project.ActiveScene.Duration;
+        private Timecode _outPoint = App.Project.ActiveScene.Duration;
         public Timecode OutPoint
         {
-            get => _outPointOffset + StartTime;
-            set => _outPointOffset = value - StartTime;
+            get => _outPoint + Offset;
+            set => _outPoint = value - Offset;
         }
 
         public Timecode Duration

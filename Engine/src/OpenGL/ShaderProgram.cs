@@ -101,6 +101,10 @@ namespace Engine.OpenGL
         {
             GL.ProgramUniform2(Handle, location, v0, v1);
         }
+        public void Uniform2(int location, Vector2 vector)
+        {
+            GL.ProgramUniform2(Handle, location, vector);
+        }
 
         public void Uniform3(int location, int v0, int v1, int v2)
         {

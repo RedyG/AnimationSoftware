@@ -10,11 +10,15 @@ using Engine.OpenGL;
 using OpenTK.Graphics.OpenGL4;
 using System.Collections.ObjectModel;
 using Engine.Utilities;
+using Engine.Graphics;
+using System.Drawing;
 
 namespace Editor
 {
     public static class UI
     {
+        public static Window Window { get; set; }
+
         public static void EffectsWindow()
         {
             if (ImGui.Begin("Effects"))
@@ -45,7 +49,7 @@ namespace Editor
             ImGui.End();
         }
 
-        public static void Parameters(ICollection<NamedParameter> namedParameters)
+        public static void Parameters(ParameterList namedParameters)
         {
             ImGui.Columns(2, "Parameters");
             foreach (NamedParameter namedParameter in namedParameters)
@@ -81,19 +85,20 @@ namespace Editor
                 ImGui.InvisibleButton("a", new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetFrameHeight()));
                 var drawList = ImGui.GetWindowDrawList();
 
-                int frames = App.Project.ActiveScene.Duration.GetFrames(App.Project.ActiveScene.FrameRate);
-                float spacing = ImGui.GetContentRegionAvail().X / (float)frames;
-                for (int i = 0; i <= frames; i++)
+                int frames = App.Project.ActiveScene.Duration.Frames;
+                float ratio = ImGui.GetContentRegionAvail().X / (float)frames;
+                int step = 2;
+                for (int i = 0; i < frames; i += step)
                 {
                     if (i % 5 == 0)
                     {
-                        Vector2 labelSize = ImGui.CalcTextSize("999");
-                        drawList.AddText(cursorPos + new Vector2(i * spacing + 2, 0), Color(255, 255, 255, 255), i.ToString());
-                        drawList.AddLine(cursorPos + new Vector2(i * spacing, 0), cursorPos + new Vector2(i * spacing, 20), Color(255, 255, 255, 255));
+                        //Vector2 labelSize = ImGui.CalcTextSize("999");
+                        //drawList.AddText(cursorPos + new Vector2(i * ratio + 2, 0), Color(255, 255, 255, 255), i.ToString());
+                        drawList.AddLine(cursorPos + new Vector2(i * ratio / step, 0), cursorPos + new Vector2(i * ratio / step, 20), Color(255, 255, 255, 255));
                     }
                     else
                     {
-                        drawList.AddLine(cursorPos + new Vector2(i * spacing, 16), cursorPos + new Vector2(i * spacing, 20), Color(255, 255, 255, 255));
+                        drawList.AddLine(cursorPos + new Vector2(i * ratio / step, 16), cursorPos + new Vector2(i * ratio / step, 20), Color(255, 255, 255, 255));
                     }
                 }
 
@@ -122,11 +127,11 @@ namespace Editor
                         float layerX = (layer.InPoint.Seconds / App.Project.ActiveScene.Duration.Seconds) * frameSize.X * _timelineZoom;
                         float layerWidth = (layer.Duration.Seconds / App.Project.ActiveScene.Duration.Seconds) * frameSize.X * _timelineZoom;
                         Vector2 layerScreenPos = ImGui.GetCursorScreenPos() + new Vector2(layerX, 0f);
+                        Vector2 layerScreenMax = layerScreenPos + new Vector2(layerWidth, frameSize.Y);
 
                         ImGui.SetCursorScreenPos(layerScreenPos);
                         ImGui.InvisibleButton("layer", new Vector2(layerWidth, frameSize.Y));
-                        drawList = ImGui.GetWindowDrawList();
-                        drawList.AddRectFilled(layerScreenPos, layerScreenPos + new Vector2(layerWidth, frameSize.Y), Color(255, 255, 255, 255), 3f);
+                        drawList.AddRectFilled(layerScreenPos, layerScreenMax, Color(255, 255, 255, 255), 3f);
 
                         bool isMouseDown = ImGui.IsMouseDown(ImGuiMouseButton.Left);
                         if (ImGui.IsItemHovered())
@@ -135,11 +140,13 @@ namespace Editor
                             float mouseX = ImGui.GetMousePos().X;
                             if (mouseX - layerScreenPos.X <= 5f)
                             {
+                                drawList.AddRectFilled(layerScreenPos, layerScreenPos + new Vector2(5, frameSize.Y), Color(66, 150, 250, 255), 3f);
                                 ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEW);
                                 layerMouseState = LayerMouseState.InPoint;
                             }
                             else if ((layerScreenPos.X + layerWidth) - mouseX <= 5f)
                             {
+                                drawList.AddRectFilled(layerScreenMax - new Vector2(5, frameSize.Y), layerScreenMax, Color(66, 150, 250, 255), 3f);
                                 ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEW);
                                 layerMouseState = LayerMouseState.OutPoint;
                             }
@@ -161,14 +168,18 @@ namespace Editor
                                 Timecode diffTime = Timecode.FromSeconds(deltaX) * App.Project.ActiveScene.Duration;
                                 if (_layerMouseState == LayerMouseState.Center)
                                 {
-                                    layer.StartTime += diffTime;
+                                    layer.Offset += diffTime;
                                 }
                                 else if (_layerMouseState == LayerMouseState.InPoint)
                                 {
+                                    drawList.AddRectFilled(layerScreenPos, layerScreenPos + new Vector2(5, frameSize.Y), Color(66, 150, 250, 255), 3f);
+                                    ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEW);
                                     layer.InPoint += diffTime;
                                 }
                                 else if (_layerMouseState == LayerMouseState.OutPoint)
                                 {
+                                    drawList.AddRectFilled(layerScreenMax - new Vector2(5, frameSize.Y), layerScreenMax, Color(66, 150, 250, 255), 3f);
+                                    ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEW);
                                     layer.OutPoint += diffTime;
                                 }
                                 if (deltaX != 0f)
@@ -199,10 +210,14 @@ namespace Editor
         {
             if (ImGui.Begin("Preview"))
             {
-                var texture = Renderer.RenderActiveScene();
+                float a =  Renderer.PreviewRatio;
+                ImGui.DragFloat("qualit", ref a, 0.01f);
+                Renderer.PreviewRatio = a;
+                Surface surface = Renderer.RenderActiveScene();
+                GL.Viewport((Size)Window.ClientSize);
                 Framebuffer.Unbind(FramebufferTarget.Framebuffer);
 
-                Vector2 windowSize = ImGui.GetContentRegionAvail();
+                Vector2 windowSize = ImGui.GetContentRegionAvail() - new Vector2(0, 30);
                 float windowAspectRatio = windowSize.GetAspectRatio();
                 float sceneAspectRatio = App.Project.ActiveScene.AspectRatio;
                 Vector2 previewSize;
@@ -221,7 +236,8 @@ namespace Editor
                 }
 
                 UI.MoveCursorBy(offset);
-                ImGui.Image((IntPtr)texture.Handle, previewSize, new Vector2(0f, 1f), new Vector2(1f, 0f));
+                ImGui.Image((IntPtr)surface.Texture.Handle, previewSize, new Vector2(0f, 1f), new Vector2(1f, 0f));
+
 
             }
             ImGui.End();

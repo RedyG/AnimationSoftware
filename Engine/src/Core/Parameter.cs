@@ -1,6 +1,7 @@
 ﻿using Engine.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
@@ -10,6 +11,9 @@ namespace Engine.Core
 {
     public abstract class Parameter
     {
+        public static Parameter<ParameterList> CreateGroup(params NamedParameter[] parameters) => new Parameter<ParameterList>(new ParameterList(parameters));
+        public static Parameter<ParameterList> CreateGroup(IList<NamedParameter> parameters) => new Parameter<ParameterList>(new ParameterList(parameters));
+
         // TODO: cache the methods using delegates or just the MethodInfo
         public T1 GetValueAsType<T1>() => GetValueAtTimeAsType<T1>(App.Project.Time);
 
@@ -41,10 +45,10 @@ namespace Engine.Core
             set => SetValueAtTime(App.Project.Time, value);
         }
 
-        public KeyframeList<T> Keyframes { get; } = new();
+        public KeyframeList<T>? Keyframes { get; }
 
         public override bool CanBeKeyframed { get; } = true;
-        public override bool IsKeyframed => Keyframes.Count != 0;
+        public override bool IsKeyframed => Keyframes != null && Keyframes.Count != 0;
 
 
         public delegate T ValueGetterEventHandler(object? sender, ValueGetterEventArgs args);
@@ -107,7 +111,7 @@ namespace Engine.Core
                 return _unkeyframedValue;
 
             // TODO: optimize with binary search or something
-            for (int i = 0; i < Keyframes.Count - 1; i++)
+            for (int i = 0; i < Keyframes!.Count - 1; i++)
             {
                 var firstKeyframe = Keyframes[i];
                 var secondKeyframe = Keyframes[i + 1];
@@ -130,7 +134,7 @@ namespace Engine.Core
             }
 
             if (IsKeyframed)
-                Keyframes.Add(new Keyframe<T>(time, value, EasingPresets.Linear));
+                Keyframes!.Add(new Keyframe<T>(time, value, IEasing.Linear));
             else
             {
                 if (_validateMethod == null)
@@ -152,7 +156,8 @@ namespace Engine.Core
 
         public override void AddKeyframeAtTime(Timecode time)
         {
-            Keyframes.Add(new Keyframe<T>(time, GetValueAtTime(time), EasingPresets.Linear));
+            // TODO: will crash
+            Keyframes!.Add(new Keyframe<T>(time, GetValueAtTime(time), IEasing.Linear));
         }
 
         public override void RemoveNearestKeyframeAtTime(Timecode time)
@@ -169,10 +174,13 @@ namespace Engine.Core
 
         public Parameter(T value)
         {
+            Keyframes = new();
             _unkeyframedValue = value;
         }
         public Parameter(T value, bool canBeKeframed, bool canBeLinked)
         {
+            if (canBeKeframed)
+                Keyframes = new();
             _unkeyframedValue = value;
             CanBeKeyframed = canBeKeframed;
             CanBeLinked = canBeLinked;
@@ -185,7 +193,8 @@ namespace Engine.Core
             CanBeLinked = canBeLinked;
 
             _validateMethod = validateMethod;
-            Keyframes = new(validateMethod);
+            if (canBeKeframed)
+                Keyframes = new(validateMethod);
         }
 
         public delegate T Lerp(T a, T b, float t);

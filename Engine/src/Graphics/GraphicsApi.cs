@@ -19,6 +19,78 @@ namespace Engine.Graphics
             GL.Clear(ClearBufferMask.ColorBufferBit);
         }
 
+        private static float[] surfaceVertices = {
+             1f,  1f,   // bottom right
+             1f,  0f,   // top right
+             0f,  0f,   // top left
+             0f,  1f,   // bottom left
+        };
+        private static ShaderProgram surfaceShader;
+        private static VertexArray surfaceVao;
+        private static Buffer<float> surfaceVbo;
+        private static Buffer<uint> surfaceEbo;
+        public static void DrawSurface(Matrix4 transform, Surface surface)
+        {
+            Matrix4 matrix = MatrixBuilder.ToTopLeft(transform);
+            GL.ActiveTexture(TextureUnit.Texture0);
+            surface.Texture.Bind(TextureTarget.Texture2D);
+
+            surfaceShader.Uniform1(surfaceShader.GetUniformLocation("tex"), 0);
+            surfaceShader.UniformMatrix4(surfaceShader.GetUniformLocation("transform"), ref matrix);
+            surfaceShader.Uniform2(surfaceShader.GetUniformLocation("viewport"), surface.ViewportRatio);
+            surfaceShader.Bind();
+            surfaceEbo.Bind();
+            surfaceVao.Bind();
+            GL.DrawElements(BeginMode.Triangles, 6, DrawElementsType.UnsignedInt, 0);
+        }
+        public static void InitSurface()
+        {
+            string vertexShaderSource = @"
+                #version 330 core
+                
+                layout(location = 0) in vec2 aPos;             
+                
+                out vec2 texCoord;
+
+                uniform mat4 transform;
+                uniform vec2 viewport;
+
+                void main()
+                {
+                    vec2 temp = aPos * viewport;
+                    texCoord = vec2(temp.x, 1.0 - temp.y);
+                    gl_Position = vec4(aPos, 0.0, 1.0) * transform;
+                }
+            ";
+            string fragmentShaderSource = @"
+                #version 330 core
+
+                out vec4 FragColor;
+
+                in vec2 texCoord;
+
+                uniform sampler2D tex;
+
+                void main()
+                {
+                    //FragColor = vec4(texCoord, 1, 1);
+                    FragColor = texture(tex, texCoord);
+                }
+            ";
+
+            surfaceShader = new ShaderProgram(vertexShaderSource, fragmentShaderSource);
+
+            surfaceVao = new VertexArray();
+            surfaceVao.Bind();
+
+            surfaceVbo = Buffer<float>.FromData(BufferTarget.ArrayBuffer, surfaceVertices.Length * sizeof(float), surfaceVertices, BufferUsageHint.StaticDraw);
+
+            surfaceEbo = Buffer<uint>.FromData(BufferTarget.ElementArrayBuffer, rectIndices.Length * sizeof(uint), rectIndices, BufferUsageHint.StaticDraw);
+
+            surfaceVao.AttribPointer(surfaceVbo, new(0, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0));
+        }
+
+
         private static float[] textureVertices = {
              1f,  1f, 1.0f, 0.0f,   // bottom right
              1f,  0f, 1.0f, 1.0f,   // top right
@@ -29,7 +101,6 @@ namespace Engine.Graphics
         private static VertexArray textureVao;
         private static Buffer<float> textureVbo;
         private static Buffer<uint> textureEbo;
-
         public static void DrawTexture(Matrix4 transform, Texture texture)
         {
             Matrix4 matrix = MatrixBuilder.ToTopLeft(transform);
@@ -165,6 +236,7 @@ namespace Engine.Graphics
         {
             InitRect();
             InitTexture();
+            InitSurface();
         }
     }
 }

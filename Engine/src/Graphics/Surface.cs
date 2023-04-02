@@ -1,7 +1,10 @@
 ﻿using Engine.OpenGL;
+using OpenTK.Graphics.OpenGL4;
+using System.Numerics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,30 +12,28 @@ using System.Threading.Tasks;
 namespace Engine.Graphics
 {
 
-    public readonly struct Surface : IEquatable<Surface>
+    public class Surface
     {
         public Texture Texture { get; }
         public Framebuffer Framebuffer { get; }
 
-        public Surface(Texture texture, Framebuffer framebuffer)
+        public Size Size { get; }
+        public Size Viewport { get; set; }
+
+        public OpenTK.Mathematics.Vector2 ViewportRatio => new OpenTK.Mathematics.Vector2((float)Viewport.Width / (float)Size.Width, (float)Viewport.Height / (float)Size.Height);
+
+        public Surface(Texture texture, Framebuffer framebuffer, Size size, Size viewport)
         {
             Texture = texture;
             Framebuffer = framebuffer;
+            Size = size;
+            Viewport = viewport;
         }
 
-        public override bool Equals(object? obj)
+        public void Bind(FramebufferTarget target)
         {
-            return base.Equals(obj);
+            GL.Viewport(Viewport);
+            Framebuffer.Bind(target);
         }
-
-        public bool Equals(Surface other)
-        {
-            return Texture == other.Texture && Framebuffer == other.Framebuffer;
-        }
-
-        public static bool operator ==(Surface a, Surface b) => a.Equals(b);
-        public static bool operator !=(Surface a, Surface b) => !(a == b);
-
-        public override int GetHashCode() => (Texture, Framebuffer).GetHashCode();
     }
 }

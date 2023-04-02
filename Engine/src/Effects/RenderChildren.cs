@@ -5,6 +5,7 @@ using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Linq;
 using System.Reflection.Emit;
@@ -22,7 +23,7 @@ namespace Engine.Effects
             Size size = App.Project.ActiveScene.Size;
             Texture texture = Texture.Create(size.Width, size.Height);
             Framebuffer framebuffer = Framebuffer.FromTexture(texture);
-            _groupSurface = new Surface(texture, framebuffer);
+            _groupSurface = new Surface(texture, framebuffer, size, size);
         }
 
         public void Dispose()
@@ -39,20 +40,24 @@ namespace Engine.Effects
                 GraphicsApi.Clear(new Color4(0f, 0f, 0f, 1f));
                 foreach (Layer childLayer in args.Layer.Layers)
                 {
-                    Timecode childTime = args.Time - childLayer.StartTime;
+                    Timecode childTime = args.Time - childLayer.Offset;
                     if (!childLayer.IsActiveAtTime(args.Time))
                         continue;
 
-                    Texture childTexture = Renderer.RenderLayer(new RenderArgs(childTime, childLayer, args.SurfaceA, _groupSurface));
+                    //args.SurfaceA.Viewport = Renderer.ToPreviewSize(childLayer.Size.GetValueAtTime(args.Time));
+                    //_groupSurface.Viewport = Renderer.ToPreviewSize(childLayer.Size.GetValueAtTime(args.Time));
+                    Surface childSurface = Renderer.RenderLayer(new RenderArgs(childTime, childLayer, args.SurfaceA, _groupSurface));
 
-                    args.SurfaceB.Framebuffer.Bind(FramebufferTarget.Framebuffer);
+                    args.SurfaceB.Bind(FramebufferTarget.Framebuffer);
                     GL.BlendFunc(BlendingFactor.One, BlendingFactor.OneMinusSrcAlpha);
-
-                    GraphicsApi.DrawTexture(MatrixBuilder.CreateTransform(childTime, args.Layer.Size.GetValueAtTime(args.Time), childLayer), childTexture);
+                    GraphicsApi.Clear(new Color4((float)childLayer.GetHashCode() / (float)200000000f, 0f, 0f, 1f));
+                    GraphicsApi.DrawSurface(MatrixBuilder.CreateTransform(childTime, args.Layer.Size.GetValueAtTime(args.Time), childLayer), childSurface);
                 }
             }
 
             return new RenderResult(true);
         }
+
+        protected override ParameterList InitParameters() => new ParameterList();
     }
 }

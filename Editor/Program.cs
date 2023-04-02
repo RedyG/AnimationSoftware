@@ -14,8 +14,8 @@ namespace Editor
             Parameter<PointF> param = new SplitableParameter<PointF>(new PointF(20f, 20f));
             var a = param.Value;
 
-            Window window = new Window("Test", 1920, 1080);
-            window.Run();
+            UI.Window = new Window("Test", 1920, 1080);
+            UI.Window.Run();
         }
     }
 }
