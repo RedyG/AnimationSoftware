@@ -31,7 +31,7 @@ namespace Editor
 
                     if (ImGui.CollapsingHeader("Layer Settings"))
                     {
-                        UI.Parameters(layer.GetParameters());
+                        UI.Parameters(ReflectionUtilities.GetParameters(layer));
                     }
 
                     foreach (Effect effect in layer.Effects)

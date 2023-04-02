@@ -12,7 +12,7 @@ namespace Engine.Core
     public abstract class Parameter
     {
         public static Parameter<ParameterList> CreateGroup(params NamedParameter[] parameters) => new Parameter<ParameterList>(new ParameterList(parameters));
-        public static Parameter<ParameterList> CreateGroup(IList<NamedParameter> parameters) => new Parameter<ParameterList>(new ParameterList(parameters));
+        public static Parameter<ParameterList> CreateGroup(List<NamedParameter> parameters) => new Parameter<ParameterList>(new ParameterList(parameters));
 
         // TODO: cache the methods using delegates or just the MethodInfo
         public T1 GetValueAsType<T1>() => GetValueAtTimeAsType<T1>(App.Project.Time);

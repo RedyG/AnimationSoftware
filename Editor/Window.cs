@@ -68,7 +68,7 @@ namespace Editor
             var layer = new Layer("first layer", new PointF(0f, 0f), new System.Drawing.Size(1920, 1080));
             //layer.Size.Keyframes.Add(new Keyframe<SizeF>(Timecode.FromSeconds(0f), new SizeF(1920, 0f), IEasing.Linear));
             //layer.Size.Keyframes.Add(new Keyframe<SizeF>(Timecode.FromSeconds(3f), new SizeF(1920f, 1080f), IEasing.InBounce));
-            layer.Effects.Add(new Engine.Effects.Image());
+            layer.Effects.Add(new Engine.Effects.Rectangle());
             //var child = new Layer("child layer", new PointF(0, 0), new System.Drawing.Size(500, 500));
             //child.Effects.Add(new Engine.Effects.Image());
             //layer.Layers.Add(child);
