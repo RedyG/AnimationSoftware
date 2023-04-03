@@ -19,22 +19,11 @@ namespace Engine.Effects
 {
     public class Rectangle : Effect
     {
-        [Param("aa")]
         public Parameter<PointF> Position { get; set; } = new Parameter<PointF>(new PointF(0f, 0f));
-
-        [Param]
         public Parameter<SizeF> Size { get; set; } = new Parameter<SizeF>(new SizeF(100f, 100f));
-
-        [Param]
         public Parameter<Color4> Color { get; set; } = new Parameter<Color4>(Color4.White);
-
-        [Param]
         public Parameter<bool> FitToLayer { get; set; } = new Parameter<bool>(true);
-
-        [Param]
         public Parameter<float> idk  { get; set; } = new Parameter<float>(20f, true, true, (value) => Math.Max(Math.Min(value, 100f), 0f));
-
-        [Param]
         public Parameter<int> secondIdk { get; set; } = new Parameter<int>(20);
 
 
@@ -63,6 +52,7 @@ namespace Engine.Effects
         public Rectangle()
         {
             secondIdk.LinkedParameter = idk;
+
         }
     }
 }

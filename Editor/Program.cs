@@ -8,11 +8,7 @@ namespace Editor
     {
         static void Main(string[] args)
         {
-            App.Project = new Project("hey");
-            App.Project.ActiveScene = new Scene(50f, new(0, 0), Timecode.FromSeconds(20));
-
-            Parameter<PointF> param = new SplitableParameter<PointF>(new PointF(20f, 20f));
-            var a = param.Value;
+            ParameterBehaviors.Init();
 
             UI.Window = new Window("Test", 1920, 1080);
             UI.Window.Run();

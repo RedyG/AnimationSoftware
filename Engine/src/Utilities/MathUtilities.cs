@@ -13,5 +13,8 @@ namespace Engine.Utilities
         {
             return (value - start1) / (stop1 - start1) * (stop2 - start2) + start2;
         }
+
+        public static float Lerp(float a, float b, float t) => a * (1f - t) + b * t;
+        public static int Lerp(int a, int b, float t) => (int)MathF.Round(Lerp((float)a, (float)b, t));
     }
 }

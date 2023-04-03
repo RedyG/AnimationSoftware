@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -119,8 +120,8 @@ namespace Engine.Core
                 {
                     var timeBetweenKeyframes = MathF.Max(MathUtilities.Map(time.Seconds, firstKeyframe.Time.Seconds, secondKeyframe.Time.Seconds, 0, 1), 0f);
                     var easedTime = firstKeyframe.Easing.Evaluate(timeBetweenKeyframes);
-                    // TODO: _lerp!() will crash if no method is found
-                    return _lerp!(firstKeyframe.Value, secondKeyframe.Value, easedTime);
+
+                    return Lerp(firstKeyframe.Value, secondKeyframe.Value, easedTime);
                 }
             }
             return Keyframes[Keyframes.Count - 1].Value;
@@ -197,44 +198,29 @@ namespace Engine.Core
                 Keyframes = new(validateMethod);
         }
 
-        public delegate T Lerp(T a, T b, float t);
+        private T Lerp(T a, T b, float t)
+        {
+            if (CustomBehavior != null)
+                return CustomBehavior.Lerp(a, b, t);
 
-        public delegate void UI(ref T value);
+            if (DefaultTypeBehavior != null)
+                return DefaultTypeBehavior.Lerp(a, b, t);
 
+            return a;
+        }
 
-        private static UI? _drawUI;
         public override void DrawUI()
         {
-            T initialValue = Value;
-            T afterValue = initialValue;
-            // TODO: will crash if no method is found
-            Parameter<T>._drawUI!(ref afterValue);
-            if (!initialValue!.Equals(afterValue))
-            {
-                Value = afterValue;
-            }
+            if (CustomBehavior != null)
+                CustomBehavior.DrawUI(this);
+            else if (DefaultTypeBehavior != null)
+                DefaultTypeBehavior.DrawUI(this);
+
+            // else -> not drawing anything
         }
 
-        private static Lerp? _lerp;
-
-        public static void RegisterType(Lerp lerp, UI drawUI)
-        {
-            _lerp = lerp;
-            _drawUI = drawUI;
-        }
-    }
-
-    public class SplitableParameter<PointF> : Parameter<PointF>
-    {
-        public override PointF GetValueAtTime(Timecode time)
-        {
-            Console.WriteLine("caca");
-            return base.GetValueAtTime(time);
-        }
-
-        public SplitableParameter(PointF value) : base(value)
-        {
-        }
+        public static IParameterBehavior<T>? DefaultTypeBehavior { get; set; }
+        public IParameterBehavior<T>? CustomBehavior { get; set; }
     }
 
     public class ValueGetterEventArgs : EventArgs
