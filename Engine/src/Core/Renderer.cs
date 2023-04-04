@@ -33,11 +33,11 @@ namespace Engine.Core
 
         private static Texture _textureA = Texture.Create(1920, 1080);
         private static Framebuffer _framebufferA = Framebuffer.FromTexture(_textureA);
-        private static Surface _surfaceA = new(_textureA, _framebufferA, new Size(1920, 1080), new Size(1920, 1080));
+        private static Surface _surfaceA = new(_textureA, _framebufferA, new Size(1920, 1080));
 
         private static Texture _textureB = Texture.Create(1920, 1080);
         private static Framebuffer _framebufferB = Framebuffer.FromTexture(_textureB);
-        private static Surface _surfaceB = new(_textureB, _framebufferB, new Size(1920, 1080), new Size(1920, 1080));
+        private static Surface _surfaceB = new(_textureB, _framebufferB, new Size(1920, 1080));
 
 
         private static Layer _mainLayer = new Layer("__mainLayer__", new(0f, 0f), new Size(0, 0));
@@ -61,8 +61,8 @@ namespace Engine.Core
         {
             // TODO: reuse groups surfaces
             // TODO: optimize if only content effects by drawing directly on surface or stuff like that
-            args.SurfaceA.Viewport = Renderer.ToPreviewSize(args.Layer.Size.GetValueAtTime(args.Time));
-            args.SurfaceB.Viewport = Renderer.ToPreviewSize(args.Layer.Size.GetValueAtTime(args.Time));
+            //args.SurfaceA.Viewport = Renderer.ToPreviewSize(args.Layer.Size.GetValueAtTime(args.Time));
+            //args.SurfaceB.Viewport = Renderer.ToPreviewSize(args.Layer.Size.GetValueAtTime(args.Time));
 
 
             bool swapSurfaces = false;
@@ -71,7 +71,6 @@ namespace Engine.Core
                 Surface activeSurface = swapSurfaces ? args.SurfaceB : args.SurfaceA;
                 Surface secondSurface = swapSurfaces ? args.SurfaceA : args.SurfaceB;
                 activeSurface.Bind(FramebufferTarget.Framebuffer);
-                //GL.Viewport(layer.Size.Value.ToSize());
                 var result = effect.Render(new RenderArgs(args.Time, args.Layer, activeSurface, secondSurface));
                 if (result.SwapSurfaces)
                     swapSurfaces = !swapSurfaces;

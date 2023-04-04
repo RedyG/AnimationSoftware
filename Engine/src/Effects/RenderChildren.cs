@@ -23,7 +23,7 @@ namespace Engine.Effects
             Size size = App.Project.ActiveScene.Size;
             Texture texture = Texture.Create(size.Width, size.Height);
             Framebuffer framebuffer = Framebuffer.FromTexture(texture);
-            _groupSurface = new Surface(texture, framebuffer, size, size);
+            _groupSurface = new Surface(texture, framebuffer, size);
         }
 
         public void Dispose()
@@ -44,13 +44,12 @@ namespace Engine.Effects
                     if (!childLayer.IsActiveAtTime(args.Time))
                         continue;
 
-                    //args.SurfaceA.Viewport = Renderer.ToPreviewSize(childLayer.Size.GetValueAtTime(args.Time));
-                    //_groupSurface.Viewport = Renderer.ToPreviewSize(childLayer.Size.GetValueAtTime(args.Time));
-                    Surface childSurface = Renderer.RenderLayer(new RenderArgs(childTime, childLayer, args.SurfaceA, _groupSurface));
+                    var surfaceA = new Surface(args.SurfaceA.Texture, args.SurfaceA.Framebuffer, args.SurfaceA.Size, Renderer.ToPreviewSize(childLayer.Size.GetValueAtTime(args.Time)));
+                    _groupSurface.Viewport = Renderer.ToPreviewSize(childLayer.Size.GetValueAtTime(args.Time));
+                    Surface childSurface = Renderer.RenderLayer(new RenderArgs(childTime, childLayer, surfaceA, _groupSurface));
 
                     args.SurfaceB.Bind(FramebufferTarget.Framebuffer);
                     GL.BlendFunc(BlendingFactor.One, BlendingFactor.OneMinusSrcAlpha);
-                    GraphicsApi.Clear(new Color4((float)childLayer.GetHashCode() / (float)200000000f, 0f, 0f, 1f));
                     GraphicsApi.DrawSurface(MatrixBuilder.CreateTransform(childTime, args.Layer.Size.GetValueAtTime(args.Time), childLayer), childSurface);
                 }
             }

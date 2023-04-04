@@ -8,19 +8,20 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Engine.Core;
 
 namespace Engine.Graphics
 {
 
-    public class Surface
+    public struct Surface
     {
         public Texture Texture { get; }
         public Framebuffer Framebuffer { get; }
 
-        public Size Size { get; }
+        public Size Size { get; set; }
         public Size Viewport { get; set; }
 
-        public OpenTK.Mathematics.Vector2 ViewportRatio => new OpenTK.Mathematics.Vector2((float)Viewport.Width / (float)Size.Width, (float)Viewport.Height / (float)Size.Height);
+        public OpenTK.Mathematics.Vector2 Ratio => new OpenTK.Mathematics.Vector2((float)Viewport.Width / (float)Size.Width, (float)Viewport.Height / (float)Size.Height);
 
         public Surface(Texture texture, Framebuffer framebuffer, Size size, Size viewport)
         {
@@ -28,6 +29,14 @@ namespace Engine.Graphics
             Framebuffer = framebuffer;
             Size = size;
             Viewport = viewport;
+        }
+
+        public Surface(Texture texture, Framebuffer framebuffer, Size size)
+        {
+            Texture = texture;
+            Framebuffer = framebuffer;
+            Size = size;
+            Viewport = size;
         }
 
         public void Bind(FramebufferTarget target)

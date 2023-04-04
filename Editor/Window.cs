@@ -43,12 +43,13 @@ namespace Editor
             scene = new Scene(60f, new Size(1920, 1080), Timecode.FromSeconds(100f));
             App.Project.ActiveScene = scene;
 
-            /*var group1 = new Layer("group1", new PointF(100, 100), new Size(500, 500));
+            var group1 = new Layer("group1", new PointF(100, 100), new Size(500, 500));
             group1.Offset = Timecode.FromSeconds(3f);
             group1.Position.Keyframes.Add(new Keyframe<PointF>(Timecode.FromSeconds(0), new PointF(100f, 100f), new BezierEasing(new PointF(1f, 0f), new PointF(0f, 1f))));
-            group1.Position.Keyframes.Add(new Keyframe<PointF>(Timecode.FromSeconds(5), new PointF(500f, 500f), EasingPresets.Linear));
+            group1.Position.Keyframes.Add(new Keyframe<PointF>(Timecode.FromSeconds(5), new PointF(500f, 500f), IEasing.Linear));
+            group1.Effects.Add(new Engine.Effects.Rectangle());
             group1.Effects.Add(new RenderChildren());
-            group1.Effects.Add(new NoChange());
+            //group1.Effects.Add(new NoChange());
 
             var layer1 = new Layer("layer1", new PointF(0f, 0f), new Size(200, 200));
             layer1.Effects.Add(new Engine.Effects.Image());
@@ -64,18 +65,7 @@ namespace Editor
             group2.Effects.Add(new Engine.Effects.Image());
 
             App.Project.ActiveScene.Layers.Add(group1);
-            App.Project.ActiveScene.Layers.Add(group2);*/
-            var layer = new Layer("first layer", new PointF(0f, 0f), new System.Drawing.Size(1920, 1080));
-            //layer.Size.Keyframes.Add(new Keyframe<SizeF>(Timecode.FromSeconds(0f), new SizeF(1920, 0f), IEasing.Linear));
-            //layer.Size.Keyframes.Add(new Keyframe<SizeF>(Timecode.FromSeconds(3f), new SizeF(1920f, 1080f), IEasing.InBounce));
-            layer.Effects.Add(new Engine.Effects.Rectangle());
-            //var child = new Layer("child layer", new PointF(0, 0), new System.Drawing.Size(500, 500));
-            //child.Effects.Add(new Engine.Effects.Image());
-            //layer.Layers.Add(child);
-            var ef = new Engine.Effects.Rectangle();
-
-            //layer.Effects.Add(new RenderChildren());
-            App.Project.ActiveScene.Layers.Add(layer);
+            App.Project.ActiveScene.Layers.Add(group2);
             
 
             _controller = new ImGuiController(ClientSize.X, ClientSize.Y);
@@ -151,7 +141,7 @@ namespace Editor
 
         static Texture testTexture = Texture.Create(1920, 1080);
         static Framebuffer testFramebuffer = Framebuffer.FromTexture(testTexture);
-        static Surface testSurface = new Surface(testTexture, testFramebuffer, new System.Drawing.Size(1920, 1080), new System.Drawing.Size((int)(1920f / 0.9f), (int)(1080f / 0.9f)));
+        static Surface testSurface = new Surface(testTexture, testFramebuffer, new System.Drawing.Size(1920, 1080), new System.Drawing.Size(50, 100));
 
         protected override void OnRenderFrame(FrameEventArgs e)
         {
@@ -162,12 +152,13 @@ namespace Editor
             _controller.Update(this, (float)e.Time);
 
             testSurface.Bind(FramebufferTarget.Framebuffer);
+            GraphicsApi.Clear(Color4.Red);
             GraphicsApi.DrawTexture(MatrixBuilder.Empty, fishTexture);
 
             Framebuffer.Unbind(FramebufferTarget.Framebuffer);
-            //GL.Viewport(0, 0, ClientSize.X, ClientSize.Y);
+            GL.Viewport(0, 0, ClientSize.X, ClientSize.Y);
             GraphicsApi.Clear(Color4.Black);
-            GraphicsApi.DrawSurface(Matrix4.CreateScale(0.8f), testSurface);
+            GraphicsApi.DrawSurface(MatrixBuilder.Empty, testSurface);
             ImGui.DockSpaceOverViewport();
             ImGui.ShowDemoWindow();
             UI.EffectsWindow();

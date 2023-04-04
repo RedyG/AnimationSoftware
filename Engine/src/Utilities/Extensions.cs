@@ -14,11 +14,6 @@ namespace Engine.Utilities
 {
     public static class Extensions
     {
-        public static string ToShaderFormat(this Guid guid)
-        {
-            return guid.ToString().Replace("-", "");
-        }
-
         public static float GetAspectRatio(this SizeF size)
         {
             return size.Width / size.Height;
