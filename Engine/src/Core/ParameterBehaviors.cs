@@ -1,5 +1,6 @@
 ﻿using Engine.Core;
 using Engine.Utilities;
+using FFMpegCore.Enums;
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
@@ -10,13 +11,13 @@ using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Editor
+namespace Engine.Core
 {
     public static class ParameterBehaviors
     {
         public static void Init()
         {
-            Parameter<float>.DefaultTypeBehavior = new FloatBehavior { Speed = 1f };
+            Parameter<float>.DefaultTypeBehavior = new FloatBehavior();
             Parameter<int>.DefaultTypeBehavior = new IntBehavior();
 
             Parameter<Vector2>.DefaultTypeBehavior = new Vector2Behavior();
@@ -43,11 +44,13 @@ namespace Editor
     public class FloatBehavior : IParameterBehavior<float>
     {
         public float Speed { get; set; } = 1f;
+        public float Minimum { get; set; } = float.MinValue;
+        public float Maximum { get; set; } = float.MaxValue;
 
         public void DrawUI(Parameter<float> parameter)
         {
             var value = parameter.Value;
-            ImGui.DragFloat("", ref value, Speed);
+            ImGui.DragFloat("", ref value, Speed, Minimum, Maximum);
             parameter.Value = value;
         }
 
@@ -56,11 +59,13 @@ namespace Editor
     public class IntBehavior : IParameterBehavior<int>
     {
         public int Speed { get; set; } = 1;
+        public int Minimum { get; set; } = int.MinValue;
+        public int Maximum { get; set; } = int.MaxValue;
 
         public void DrawUI(Parameter<int> parameter)
         {
             var value = parameter.Value;
-            ImGui.DragInt("", ref value, Speed);
+            ImGui.DragInt("", ref value, Speed, Minimum, Maximum);
             parameter.Value = value;
         }
 
@@ -68,10 +73,14 @@ namespace Editor
     }
     public class PointFBehavior : IParameterBehavior<PointF>
     {
+        public float Speed { get; set; } = 1f;
+        public float Minimum { get; set; } = float.MinValue;
+        public float Maximum { get; set; } = float.MaxValue;
+
         public void DrawUI(Parameter<PointF> parameter)
         {
             var vec = parameter.Value.ToVector2();
-            ImGui.DragFloat2("", ref vec);
+            ImGui.DragFloat2("", ref vec, Speed, Minimum, Maximum);
             parameter.Value = new PointF(vec.X, vec.Y);
         }
 
@@ -79,10 +88,14 @@ namespace Editor
     }
     public class SizeFBehavior : IParameterBehavior<SizeF>
     {
+        public float Speed { get; set; } = 1f;
+        public float Minimum { get; set; } = float.MinValue;
+        public float Maximum { get; set; } = float.MaxValue;
+
         public void DrawUI(Parameter<SizeF> parameter)
         {
             var vec = parameter.Value.ToVector2();
-            ImGui.DragFloat2("", ref vec);
+            ImGui.DragFloat2("", ref vec, Speed, Minimum, Maximum);
             parameter.Value = new SizeF(vec.X, vec.Y);
         }
 
@@ -90,10 +103,14 @@ namespace Editor
     }
     public class Vector2Behavior : IParameterBehavior<Vector2>
     {
+        public float Speed { get; set; } = 1f;
+        public float Minimum { get; set; } = float.MinValue;
+        public float Maximum { get; set; } = float.MaxValue;
+
         public void DrawUI(Parameter<Vector2> parameter)
         {
             var vec = parameter.Value;
-            ImGui.DragFloat2("", ref vec);
+            ImGui.DragFloat2("", ref vec, Speed, Minimum, Maximum);
             parameter.Value = vec;
         }
 

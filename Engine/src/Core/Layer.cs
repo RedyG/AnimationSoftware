@@ -68,6 +68,8 @@ namespace Engine.Core
             Position = new(position);
             Size = new(size);
 
+            Scale.CustomBehavior = new Vector2Behavior { Speed = 0.01f };
+
             Bounds.ValueSetter += (object? sender, ValueSetterEventArgs<RectangleF> args) =>
             {
                 Position.SetValueAtTime(args.Time, args.Value.Location);
