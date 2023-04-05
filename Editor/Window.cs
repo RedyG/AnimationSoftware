@@ -48,6 +48,7 @@ namespace Editor
             group1.Position.Keyframes.Add(new Keyframe<PointF>(Timecode.FromSeconds(0), new PointF(100f, 100f), new BezierEasing(new PointF(1f, 0f), new PointF(0f, 1f))));
             group1.Position.Keyframes.Add(new Keyframe<PointF>(Timecode.FromSeconds(5), new PointF(500f, 500f), IEasing.Linear));
             group1.Effects.Add(new Engine.Effects.Rectangle());
+            group1.Effects.Add(new Engine.Effects.Rectangle());
             group1.Effects.Add(new RenderChildren());
             //group1.Effects.Add(new NoChange());
 
@@ -56,13 +57,13 @@ namespace Editor
             group1.Layers.Add(layer1);
 
             var layer2 = new Layer("layer2", new PointF(250f, 250f), new Size(200, 200));
-            layer2.Effects.Add(new Engine.Effects.Rectangle());
             group1.Layers.Add(layer2);
 
             var group2 = new Layer("group2", new PointF(0f, 0f), new System.Drawing.Size(100, 100));
             group2.Duration = Timecode.FromSeconds(1.5f);
             group2.Offset = Timecode.FromSeconds(0.5f);
             group2.Effects.Add(new Engine.Effects.Image());
+            group2.Effects.Add(new Expression());
 
             App.Project.ActiveScene.Layers.Add(group1);
             App.Project.ActiveScene.Layers.Add(group2);

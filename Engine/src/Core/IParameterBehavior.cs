@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace Engine.Core
 {
-    public interface IParameterBehavior<T>
+    public interface IParameterUI<T>
     {
-        public T Lerp(T a, T b, float t);
-        public void DrawUI(Parameter<T> parameter);
+
+        public void Draw(Parameter<T> parameter);
     }
 }

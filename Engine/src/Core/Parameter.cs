@@ -1,4 +1,5 @@
-﻿using Engine.Utilities;
+﻿using Engine.src.Core;
+using Engine.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -147,6 +148,9 @@ namespace Engine.Core
 
         public override bool IsKeyframedAtTime(Timecode time)
         {
+            if (Keyframes == null)
+                return false;
+
             foreach (var keyframe in Keyframes)
             {
                 if (keyframe.Time == time)
@@ -198,29 +202,33 @@ namespace Engine.Core
                 Keyframes = new(validateMethod);
         }
 
+
+        public delegate T Lerper(T a, T b, float t);
+        public static Lerper? DefaultTypeLerp { get; set; }
+        public Lerper? CustomLerp { get; set; } = DefaultTypeLerp;
         private T Lerp(T a, T b, float t)
         {
-            if (CustomBehavior != null)
-                return CustomBehavior.Lerp(a, b, t);
+            if (CustomLerp != null)
+                return CustomLerp(a, b, t);
 
-            if (DefaultTypeBehavior != null)
-                return DefaultTypeBehavior.Lerp(a, b, t);
+            /*if (DefaultTypeLerp != null)
+                return DefaultTypeLerp(a, b, t);*/
 
+            // basically "Hold" easing.
             return a;
         }
 
+        public static Type? DefaultTypeUI { get; set; }
+        public IParameterUI<T>? CustomUI { get; set; } = DefaultTypeUI != null ? (IParameterUI<T>)Instancer.Create(DefaultTypeUI) : null;
         public override void DrawUI()
         {
-            if (CustomBehavior != null)
-                CustomBehavior.DrawUI(this);
-            else if (DefaultTypeBehavior != null)
-                DefaultTypeBehavior.DrawUI(this);
+            if (CustomUI != null)
+                CustomUI.Draw(this);
+            /*else if (DefaultTypeUI != null)
+                DefaultTypeUI.Draw(this);*/
 
             // else -> not drawing anything
         }
-
-        public static IParameterBehavior<T>? DefaultTypeBehavior { get; set; }
-        public IParameterBehavior<T>? CustomBehavior { get; set; }
     }
 
     public class ValueGetterEventArgs : EventArgs

@@ -52,7 +52,7 @@ namespace Engine.Effects
         public Rectangle()
         {
             secondIdk.LinkedParameter = idk;
-            idk.CustomBehavior = new FloatBehavior() { Speed = 0.5f, Minimum = 0f, Maximum = 100f }; 
+            //idk.CustomBehavior = new FloatBehavior() { Speed = 0.5f, Minimum = 0f, Maximum = 100f }; 
         }
     }
 }
