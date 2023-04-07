@@ -8,6 +8,7 @@
         public Scene ActiveScene { get; set; }
 
         public Timecode Time = Timecode.FromSeconds(0);
+        public bool PreviewPlaying { get; set; }
 
         public Project(string name)
         {

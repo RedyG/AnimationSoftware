@@ -16,5 +16,7 @@ namespace Engine.Utilities
 
         public static float Lerp(float a, float b, float t) => a * (1f - t) + b * t;
         public static int Lerp(int a, int b, float t) => (int)MathF.Round(Lerp((float)a, (float)b, t));
+
+        public static float MinMax(float value, float min, float max) => MathF.Max(MathF.Min(value, max), min);
     }
 }

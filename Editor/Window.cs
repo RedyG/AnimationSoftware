@@ -17,6 +17,8 @@ using Engine.Graphics;
 using Engine.Core;
 using System.Drawing.Drawing2D;
 using OpenTK.Audio.OpenAL.Extensions.Creative.EFX;
+using Engine.UI;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace Editor
 {
@@ -50,6 +52,7 @@ namespace Editor
             group1.Effects.Add(new Engine.Effects.Rectangle());
             group1.Effects.Add(new Engine.Effects.Rectangle());
             group1.Effects.Add(new RenderChildren());
+            group1.Effects.Add(new NoChange());
             //group1.Effects.Add(new NoChange());
 
             var layer1 = new Layer("layer1", new PointF(0f, 0f), new Size(200, 200));
@@ -75,15 +78,15 @@ namespace Editor
             var style = ImGui.GetStyle();
             style.Colors[(int)ImGuiCol.Text] = new System.Numerics.Vector4(1.00f, 1.00f, 1.00f, 1.00f);
             style.Colors[(int)ImGuiCol.TextDisabled] = new System.Numerics.Vector4(0.50f, 0.50f, 0.50f, 1.00f);
-            style.Colors[(int)ImGuiCol.WindowBg] = new System.Numerics.Vector4(0.13f, 0.14f, 0.15f, 1.00f);
-            style.Colors[(int)ImGuiCol.ChildBg] = new System.Numerics.Vector4(0.13f, 0.14f, 0.15f, 1.00f);
+            style.Colors[(int)ImGuiCol.WindowBg] = new System.Numerics.Vector4(0.137f, 0.137f, 0.137f, 1f);//new System.Numerics.Vector4(0.13f, 0.14f, 0.15f, 1.00f);
+            style.Colors[(int)ImGuiCol.ChildBg] = new System.Numerics.Vector4(0f, 0f, 0f, 0f);//new System.Numerics.Vector4(0.13f, 0.14f, 0.15f, 1.00f);
             style.Colors[(int)ImGuiCol.PopupBg] = new System.Numerics.Vector4(0.13f, 0.14f, 0.15f, 1.00f);
             style.Colors[(int)ImGuiCol.Border] = new System.Numerics.Vector4(0.43f, 0.43f, 0.50f, 0.50f);
             style.Colors[(int)ImGuiCol.BorderShadow] = new System.Numerics.Vector4(0.00f, 0.00f, 0.00f, 0.00f);
-            style.Colors[(int)ImGuiCol.FrameBg] = new System.Numerics.Vector4(0.25f, 0.25f, 0.25f, 1.00f);
+            style.Colors[(int)ImGuiCol.FrameBg] = new System.Numerics.Vector4(0.18f, 0.18f, 0.18f, 1.00f); //new System.Numerics.Vector4(0.25f, 0.25f, 0.25f, 1.00f);
             style.Colors[(int)ImGuiCol.FrameBgHovered] = new System.Numerics.Vector4(0.38f, 0.38f, 0.38f, 1.00f);
             style.Colors[(int)ImGuiCol.FrameBgActive] = new System.Numerics.Vector4(0.67f, 0.67f, 0.67f, 0.39f);
-            style.Colors[(int)ImGuiCol.TitleBg] = new System.Numerics.Vector4(0.08f, 0.08f, 0.09f, 1.00f);
+            style.Colors[(int)ImGuiCol.TitleBg] = new System.Numerics.Vector4(0.15f, 0.15f, 0.15f, 1.00f);//new System.Numerics.Vector4(0.08f, 0.08f, 0.09f, 1.00f);
             style.Colors[(int)ImGuiCol.TitleBgActive] = new System.Numerics.Vector4(0.08f, 0.08f, 0.09f, 1.00f);
             style.Colors[(int)ImGuiCol.TitleBgCollapsed] = new System.Numerics.Vector4(0.00f, 0.00f, 0.00f, 0.51f);
             style.Colors[(int)ImGuiCol.MenuBarBg] = new System.Numerics.Vector4(0.14f, 0.14f, 0.14f, 1.00f);
@@ -97,9 +100,9 @@ namespace Editor
             style.Colors[(int)ImGuiCol.Button] = new System.Numerics.Vector4(0.25f, 0.25f, 0.25f, 1.00f);
             style.Colors[(int)ImGuiCol.ButtonHovered] = new System.Numerics.Vector4(0.38f, 0.38f, 0.38f, 1.00f);
             style.Colors[(int)ImGuiCol.ButtonActive] = new System.Numerics.Vector4(0.67f, 0.67f, 0.67f, 0.39f);
-            style.Colors[(int)ImGuiCol.Header] = new System.Numerics.Vector4(0.22f, 0.22f, 0.22f, 1.00f);
-            style.Colors[(int)ImGuiCol.HeaderHovered] = new System.Numerics.Vector4(0.25f, 0.25f, 0.25f, 1.00f);
-            style.Colors[(int)ImGuiCol.HeaderActive] = new System.Numerics.Vector4(0.67f, 0.67f, 0.67f, 0.39f);
+            style.Colors[(int)ImGuiCol.Header] = new System.Numerics.Vector4(0.188f, 0.188f, 0.188f, 1f);//new System.Numerics.Vector4(0.22f, 0.22f, 0.22f, 1.00f);
+            style.Colors[(int)ImGuiCol.HeaderHovered] = new System.Numerics.Vector4(0.35f, 0.35f, 0.35f, 1f);//new System.Numerics.Vector4(0.25f, 0.25f, 0.25f, 1.00f);
+            style.Colors[(int)ImGuiCol.HeaderActive] = new System.Numerics.Vector4(40f, 0.40f, 0.40f, 1f);
             style.Colors[(int)ImGuiCol.Separator] = style.Colors[(int)ImGuiCol.Border];
             style.Colors[(int)ImGuiCol.SeparatorHovered] = new System.Numerics.Vector4(0.41f, 0.42f, 0.44f, 1.00f);
             style.Colors[(int)ImGuiCol.SeparatorActive] = new System.Numerics.Vector4(0.26f, 0.59f, 0.98f, 0.95f);
@@ -123,7 +126,9 @@ namespace Editor
             style.Colors[(int)ImGuiCol.NavWindowingHighlight] = new System.Numerics.Vector4(1.00f, 1.00f, 1.00f, 0.70f);
             style.Colors[(int)ImGuiCol.NavWindowingDimBg] = new System.Numerics.Vector4(0.80f, 0.80f, 0.80f, 0.20f);
             style.Colors[(int)ImGuiCol.ModalWindowDimBg] = new System.Numerics.Vector4(0.80f, 0.80f, 0.80f, 0.35f);
-            style.GrabRounding = style.FrameRounding = 2.3f;
+            style.GrabRounding = style.FrameRounding = 0f;
+            style.WindowPadding = new System.Numerics.Vector2(0f, 0f);
+            style.ChildBorderSize = 1f;
         }
 
         protected override void OnResize(ResizeEventArgs e)
@@ -148,18 +153,15 @@ namespace Editor
         {
             base.OnRenderFrame(e);
 
-            App.Project.Time.Seconds += (float)e.Time;
-
             _controller.Update(this, (float)e.Time);
-
-            testSurface.Bind(FramebufferTarget.Framebuffer);
-            GraphicsApi.Clear(Color4.Red);
-            GraphicsApi.DrawTexture(MatrixBuilder.Empty, fishTexture);
 
             Framebuffer.Unbind(FramebufferTarget.Framebuffer);
             GL.Viewport(0, 0, ClientSize.X, ClientSize.Y);
             GraphicsApi.Clear(Color4.Black);
-            GraphicsApi.DrawSurface(MatrixBuilder.Empty, testSurface);
+
+            UI.PreviewEvents((float)e.Time);
+            UI.ClientSize = (Size)ClientSize;
+
             ImGui.DockSpaceOverViewport();
             ImGui.ShowDemoWindow();
             UI.EffectsWindow();
@@ -168,11 +170,7 @@ namespace Editor
             ImGui.ShowStackToolWindow();
 
             _controller.Render();
-
             ImGuiController.CheckGLError("End of frame");
-            //App.Project.Time.Seconds += (float)e.Time;
-            //if (App.Project.Time.Seconds > 16f)
-                //App.Project.Time.Seconds = 0;
             SwapBuffers();
         }
 

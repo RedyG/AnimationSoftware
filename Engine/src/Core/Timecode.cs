@@ -22,10 +22,7 @@ namespace Engine.Core
         public int GetFrames(float frameRate) => (int)MathF.Round(Seconds * frameRate);
         public void SetFrames(int frames, float frameRate) => Seconds = (frames / (float)frameRate);
 
-        public static Timecode FromFrames(int frames)
-        {
-            return FromFrames(frames, App.Project.ActiveScene.FrameRate);
-        }
+        public static Timecode FromFrames(int frames) => FromFrames(frames, App.Project.ActiveScene.FrameRate);
         public static Timecode FromFrames(int frames, float frameRate)
         {
             var timecode = new Timecode();

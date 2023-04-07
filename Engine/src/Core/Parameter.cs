@@ -1,4 +1,5 @@
 ﻿using Engine.src.Core;
+using Engine.UI;
 using Engine.Utilities;
 using System;
 using System.Collections.Generic;
@@ -24,9 +25,10 @@ namespace Engine.Core
         public abstract T GetValueAtTimeAsType<T>(Timecode time);
         public abstract void SetValueAtTimeAsType<T>(Timecode time, T value);
         public abstract void RemoveNearestKeyframeAtTime(Timecode time);
-        public abstract void AddKeyframeAtTime(Timecode time);
+        public abstract void AddKeyframeAtTime(Timecode time, IEasing easing);
         public abstract bool IsKeyframedAtTime(Timecode time);
         public abstract void DrawUI();
+        public abstract UILocation UILocation { get; }
         public abstract bool CanBeKeyframed { get; }
         public abstract bool IsKeyframed { get; }
         public abstract bool CanBeLinked { get; init; }
@@ -159,10 +161,10 @@ namespace Engine.Core
             return false;
         }
 
-        public override void AddKeyframeAtTime(Timecode time)
+        public override void AddKeyframeAtTime(Timecode time, IEasing easing)
         {
             // TODO: will crash
-            Keyframes!.Add(new Keyframe<T>(time, GetValueAtTime(time), IEasing.Linear));
+            Keyframes!.Add(new Keyframe<T>(time, GetValueAtTime(time), easing));
         }
 
         public override void RemoveNearestKeyframeAtTime(Timecode time)
@@ -224,11 +226,11 @@ namespace Engine.Core
         {
             if (CustomUI != null)
                 CustomUI.Draw(this);
-            /*else if (DefaultTypeUI != null)
-                DefaultTypeUI.Draw(this);*/
 
             // else -> not drawing anything
         }
+
+        public override UILocation UILocation => CustomUI?.Location ?? UILocation.Right;
     }
 
     public class ValueGetterEventArgs : EventArgs

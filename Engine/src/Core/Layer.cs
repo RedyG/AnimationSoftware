@@ -1,4 +1,5 @@
 ﻿using Engine.Attributes;
+using Engine.UI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -14,6 +15,7 @@ namespace Engine.Core
         public List<Effect> Effects { get; set; } = new();
         public List<Layer> Layers { get; set; } = new();
         public bool IsGroup { get => Layers.Count > 0; }
+        public bool Selected { get; set; } = false;
 
         public string Name { get; set; }
 

@@ -11,8 +11,18 @@ namespace Engine.Core
 {
     public class Scene
     {
+        // TODO: might wanna make this a LayerList and move all methods and properties like "SelectedLayers" inside the class.
         public List<Layer> Layers { get; } = new();
 
+        public List<Layer> SelectedLayers
+        {
+            get
+            {
+                var result = new List<Layer>();
+                GetSelectedLayers(Layers, result);
+                return result;
+            }
+        }
 
         public Timecode Duration { get; set; }
         public float FrameRate { get; set; }
@@ -27,6 +37,18 @@ namespace Engine.Core
             FrameRate = frameRate;
             Size = size;
             Duration = duration;
+        }
+
+        private static void GetSelectedLayers(List<Layer> layers, List<Layer> result)
+        {
+            foreach (var layer in layers)
+            {
+                if (layer.Selected)
+                    result.Add(layer);
+
+                if (layer.IsGroup)
+                    GetSelectedLayers(layer.Layers, result);
+            }
         }
     }
 }

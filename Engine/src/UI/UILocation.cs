@@ -4,13 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Editor
+namespace Engine.UI
 {
-    public enum LayerMouseState
+    public enum UILocation
     {
-        None,
-        InPoint,
-        OutPoint,
-        Center
+        Right,
+        Under
     }
 }
