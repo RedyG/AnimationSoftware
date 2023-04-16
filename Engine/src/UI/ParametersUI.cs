@@ -15,9 +15,9 @@ namespace Engine.UI
     {
         public void Draw(Parameter<string> parameter)
         {
-            var value = parameter.Value;
+            var value = parameter.BeginValueChange();
             ImGui.InputTextMultiline("", ref value, 99999, new Vector2(ImGui.GetContentRegionAvail().X, 400));
-            parameter.Value = value;
+            parameter.EndValueChange(value);
         }
     }
     public class FloatUI : IParameterUI<float>
@@ -28,9 +28,9 @@ namespace Engine.UI
 
         public void Draw(Parameter<float> parameter)
         {
-            var value = parameter.Value;
+            var value = parameter.BeginValueChange();
             ImGui.DragFloat("", ref value, Speed, Minimum, Maximum);
-            parameter.Value = value;
+            parameter.EndValueChange(value);
         }
     }
     public class IntUI : IParameterUI<int>
@@ -41,9 +41,9 @@ namespace Engine.UI
 
         public void Draw(Parameter<int> parameter)
         {
-            var value = parameter.Value;
+            var value = parameter.BeginValueChange();
             ImGui.DragInt("", ref value, Speed, Minimum, Maximum);
-            parameter.Value = value;
+            parameter.EndValueChange(value);
         }
     }
     public class PointFUI : IParameterUI<PointF>
@@ -54,9 +54,9 @@ namespace Engine.UI
 
         public void Draw(Parameter<PointF> parameter)
         {
-            var vec = parameter.Value.ToVector2();
+            var vec = parameter.BeginValueChange().ToVector2();
             ImGui.DragFloat2("", ref vec, Speed, Minimum, Maximum);
-            parameter.Value = new PointF(vec.X, vec.Y);
+            parameter.EndValueChange(new PointF(vec.X, vec.Y));
         }
     }
     public class SizeFUI : IParameterUI<SizeF>
@@ -67,9 +67,9 @@ namespace Engine.UI
 
         public void Draw(Parameter<SizeF> parameter)
         {
-            var vec = parameter.Value.ToVector2();
+            var vec = parameter.BeginValueChange().ToVector2();
             ImGui.DragFloat2("", ref vec, Speed, Minimum, Maximum);
-            parameter.Value = new SizeF(vec.X, vec.Y);
+            parameter.EndValueChange(new SizeF(vec.X, vec.Y));
         }
     }
     public class Vector2UI : IParameterUI<Vector2>
@@ -80,37 +80,37 @@ namespace Engine.UI
 
         public void Draw(Parameter<Vector2> parameter)
         {
-            var vec = parameter.Value;
+            var vec = parameter.BeginValueChange();
             ImGui.DragFloat2("", ref vec, Speed, Minimum, Maximum);
-            parameter.Value = vec;
+            parameter.EndValueChange(vec);
         }
     }
     public class Color4UI : IParameterUI<OpenTK.Mathematics.Color4>
     {
         public void Draw(Parameter<OpenTK.Mathematics.Color4> parameter)
         {
-            var value = parameter.Value;
+            var value = parameter.BeginValueChange();
             var vec = new Vector4(value.R, value.G, value.B, value.A);
             ImGui.ColorEdit4("", ref vec);
-            parameter.Value = new OpenTK.Mathematics.Color4(vec.X, vec.Y, vec.Z, vec.W);
+            parameter.EndValueChange(new OpenTK.Mathematics.Color4(vec.X, vec.Y, vec.Z, vec.W));
         }
     }
     public class BoolUI : IParameterUI<bool>
     {
         public void Draw(Parameter<bool> parameter)
         {
-            var value = parameter.Value;
+            var value = parameter.BeginValueChange();
             ImGui.Checkbox("", ref value);
-            parameter.Value = value;
+            parameter.EndValueChange(value);
         }
     }
     public class RotationUI : IParameterUI<float>
     {
         public void Draw(Parameter<float> parameter)
         {
-            var value = parameter.Value;
+            var value = parameter.BeginValueChange();
             ImGui.SliderAngle("", ref value);
-            parameter.Value = value;
+            parameter.EndValueChange(value);
         }
     }
 }

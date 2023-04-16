@@ -34,9 +34,9 @@ namespace Engine.Effects
     {
         public void Draw(Parameter<string> parameter)
         {
-            var value = parameter.Value;
+            var value = parameter.BeginValueChange();
             ImGui.InputTextMultiline("", ref value, 99999, new Vector2(ImGui.GetContentRegionAvail().X, 400));
-            parameter.Value = value;
+            parameter.EndValueChange(value);
         }
 
     }

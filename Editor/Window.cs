@@ -52,8 +52,9 @@ namespace Editor
             group1.Effects.Add(new Engine.Effects.Rectangle());
             group1.Effects.Add(new Engine.Effects.Rectangle());
             group1.Effects.Add(new RenderChildren());
-            group1.Effects.Add(new NoChange());
-            //group1.Effects.Add(new NoChange());
+            /*for (int i = 0; i < 1000; i++)
+                group1.Effects.Add(new NoChange());*/
+            group1.Effects.Add(new  NoChange());
 
             var layer1 = new Layer("layer1", new PointF(0f, 0f), new Size(200, 200));
             layer1.Effects.Add(new Engine.Effects.Image());
@@ -167,6 +168,7 @@ namespace Editor
             UI.EffectsWindow();
             UI.PreviewWindow();
             UI.TimelineWindow();
+            UI.EffectListWindow();
             ImGui.ShowStackToolWindow();
 
             _controller.Render();

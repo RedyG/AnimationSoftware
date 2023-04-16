@@ -274,12 +274,25 @@ namespace Engine.UI
                 }
 
                 ImGuiHelper.MoveCursorBy(offset);
-                ImGui.Image((IntPtr)surface.Texture.Handle, previewSize, new Vector2(0f, 1f), new Vector2(1f, 0f));
+                ImGui.Image((IntPtr)surface.Texture.Handle, previewSize, new Vector2(0f, 1f * Renderer.PreviewRatio), new Vector2(1f * Renderer.PreviewRatio, 0f));
                 ImGui.Separator();
                 ImGui.SliderFloat("quality", ref _renderQuality, 0f, 1f);
                 Renderer.PreviewRatio = MathF.Min(previewSize.X / App.Project.ActiveScene.Size.Width, 1f) * _renderQuality;
                 ImGui.SameLine();
                 ImGui.Text(App.Project.Time.ToString());
+            }
+            ImGui.End();
+        }
+
+        public static void EffectListWindow()
+        {
+            Effect.RefreshEffects();
+            if (ImGui.Begin("Effects list window"))
+            {
+                foreach (Type effect in Effect.Effects)
+                {
+                    ImGui.TreeNode(Effect.GetName(effect));
+                }
             }
             ImGui.End();
         }

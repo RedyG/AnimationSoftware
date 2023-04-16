@@ -47,21 +47,23 @@ namespace Engine.Core
         }
 
         [Param]
-        public Parameter<PointF> Position { get; set; }
+        public Parameter<PointF> Position { get; }
 
         [Param]
-        public Parameter<PointF> Origin { get; set; } = new(new PointF(0f, 0f));
+        public Parameter<PointF> Origin { get; } = new(new PointF(0f, 0f));
 
         [Param]
-        public Parameter<SizeF> Size { get; set; }
+        public Parameter<SizeF> Size { get; }
 
         [Param]
-        public Parameter<Vector2> Scale { get; set; } = new(new Vector2(1f));
+        public Parameter<Vector2> Scale { get; } = new(new Vector2(1f));
 
         [Param]
-        public Parameter<float> Rotation { get; set; } = new(0f);
+        public Parameter<float> Rotation { get;} = new(0f);
 
-        public Parameter<RectangleF> Bounds { get; set; } = new(RectangleF.Empty, false, false);
+        public Parameter<RectangleF> Bounds { get; } = new(RectangleF.Empty, false, false);
+
+        public Parameter<Size> PreviewSize { get; } = new(System.Drawing.Size.Empty, false, false);
 
 
         public Layer(string name, PointF position, Size size)
@@ -78,6 +80,9 @@ namespace Engine.Core
                 Size.SetValueAtTime(args.Time, args.Value.Size);
             };
             Bounds.ValueGetter += (object? sender, ValueGetterEventArgs args) => new RectangleF(Position.GetValueAtTime(args.Time), Size.GetValueAtTime(args.Time));
+
+            PreviewSize.ValueSetter += (object? sender, ValueSetterEventArgs<Size> args) => Size.SetValueAtTime(args.Time, Renderer.FromPreviewSize(args.Value));
+            PreviewSize.ValueGetter += (object? sender, ValueGetterEventArgs args) => Renderer.ToPreviewSize(Size.GetValueAtTime(args.Time));
         }
     }
 }

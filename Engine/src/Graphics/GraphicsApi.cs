@@ -26,60 +26,29 @@ namespace Engine.Graphics
              0f,  0f, 0.0f, 1.0f,   // top left
              0f,  1f, 0.0f, 0.0f    // bottom left
         };
-        private static ShaderProgram surfaceShader;
         private static VertexArray surfaceVao;
         private static Buffer<float> surfaceVbo;
         private static Buffer<uint> surfaceEbo;
         public static void DrawSurface(Matrix4 transform, Surface surface)
         {
+            DrawSurface(transform, surface, Surface.DefaultShader);
+        }
+        public static void DrawSurface(Matrix4 transform, Surface surface, ShaderProgram shader)
+        {
             Matrix4 matrix = MatrixBuilder.ToTopLeft(transform);
             GL.ActiveTexture(TextureUnit.Texture0);
             surface.Texture.Bind(TextureTarget.Texture2D);
 
-            surfaceShader.Uniform1(surfaceShader.GetUniformLocation("tex"), 0);
-            surfaceShader.Uniform2(surfaceShader.GetUniformLocation("ratio"), surface.Ratio);
-            surfaceShader.UniformMatrix4(surfaceShader.GetUniformLocation("transform"), ref matrix);
-            surfaceShader.Bind();
+            shader.Uniform1(shader.GetUniformLocation("tex"), 0);
+            shader.Uniform2(shader.GetUniformLocation("ratio"), surface.Ratio);
+            shader.UniformMatrix4(shader.GetUniformLocation("transform"), ref matrix);
+            shader.Bind();
             surfaceEbo.Bind();
             surfaceVao.Bind();
             GL.DrawElements(BeginMode.Triangles, 6, DrawElementsType.UnsignedInt, 0);
         }
-        public static void InitTexture()
+        public static void InitSurface()
         {
-            string vertexShaderSource = @"
-                #version 330 core
-                
-                layout(location = 0) in vec3 aPos;
-                layout(location = 1) in vec2 aTexCoord;                
-                
-                out vec2 texCoord;
-
-                uniform mat4 transform;
-                uniform vec2 ratio;
-
-                void main()
-                {
-                    texCoord = aTexCoord * ratio;
-                    gl_Position = vec4(aPos, 1.0) * transform;
-                }
-            ";// - vec3(0.5, 0.0, 0.0)
-            string fragmentShaderSource = @"
-                #version 330 core
-
-                out vec4 FragColor;
-
-                in vec2 texCoord;
-
-                uniform sampler2D tex;
-
-                void main()
-                {
-                    FragColor = texture(tex, texCoord);
-                }
-            ";
-
-            surfaceShader = new ShaderProgram(vertexShaderSource, fragmentShaderSource);
-
             surfaceVao = new VertexArray();
             surfaceVao.Bind();
 
@@ -119,7 +88,7 @@ namespace Engine.Graphics
             textureVao.Bind();
             GL.DrawElements(BeginMode.Triangles, 6, DrawElementsType.UnsignedInt, 0);
         }
-        public static void InitSurface()
+        public static void InitTexture()
         {
             string vertexShaderSource = @"
                 #version 330 core

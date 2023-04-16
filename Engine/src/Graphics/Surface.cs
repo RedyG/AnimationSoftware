@@ -41,8 +41,56 @@ namespace Engine.Graphics
 
         public void Bind(FramebufferTarget target)
         {
+           //GL.Scissor(0, 0, Viewport.Width, Viewport.Height);
             GL.Viewport(Viewport);
             Framebuffer.Bind(target);
         }
+
+        /// <summary>
+        /// TODO: THIS.
+        /// </summary>
+        /// <param name="source">
+        /// TODO: THIS.
+        /// </param>
+        /// <returns>The compiled ShaderProgram you can use in GraphicsApi.DrawSurface</returns>
+        public static ShaderProgram CompileShader(string source)
+        {
+            string fragmentShaderSource = $@"
+                #version 330 core
+
+                out vec4 FragColor;
+
+                in vec2 texCoord;
+
+                uniform sampler2D tex;
+                {source}
+                void main()
+                {{
+                    FragColor = surface(texCoord);
+                }}
+            ";
+
+            return new ShaderProgram(vertexShaderSource, fragmentShaderSource);
+        }
+        private static string vertexShaderSource = @"
+                #version 330 core
+                
+                layout(location = 0) in vec3 aPos;
+                layout(location = 1) in vec2 aTexCoord;                
+                
+                out vec2 texCoord;
+
+            
+
+                uniform mat4 transform;
+                uniform vec2 ratio;
+
+                void main()
+                {
+                    texCoord = aTexCoord * ratio;
+                    gl_Position = vec4(aPos, 1.0) * transform;
+                }
+            ";
+        public readonly static ShaderProgram DefaultShader = CompileShader("vec4 surface(vec2 pos) { return texture(tex, pos); }");
     }
 }

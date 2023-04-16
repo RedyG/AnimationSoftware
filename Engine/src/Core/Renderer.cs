@@ -26,8 +26,8 @@ namespace Engine.Core
         public static Size ToPreviewSize(Size size) => new Size((int)(size.Width * PreviewRatio), (int)(size.Height * PreviewRatio));
         public static Size ToPreviewSize(SizeF size) => new Size((int)(size.Width * PreviewRatio), (int)(size.Height * PreviewRatio));
 
-        private static SizeF PreviewSizeF => App.Project.ActiveScene.Size * PreviewRatio;
-        private static Size PreviewSize => new Size((int)(App.Project.ActiveScene.Size.Width * PreviewRatio), (int)(App.Project.ActiveScene.Size.Height * PreviewRatio));
+        public static Size FromPreviewSize(Size size) => new Size((int)(size.Width / PreviewRatio), (int)(size.Height / PreviewRatio));
+        public static Size FromPreviewSize(SizeF size) => new Size((int)(size.Width / PreviewRatio), (int)(size.Height / PreviewRatio));
 
         private static Texture testTexture = Texture.FromImage("Z:\\bliss brother.png", TextureTarget.Texture2D);
 
@@ -61,8 +61,9 @@ namespace Engine.Core
         {
             // TODO: reuse groups surfaces
             // TODO: optimize if only content effects by drawing directly on surface or stuff like that
-            //args.SurfaceA.Viewport = Renderer.ToPreviewSize(args.Layer.Size.GetValueAtTime(args.Time));
-            //args.SurfaceB.Viewport = Renderer.ToPreviewSize(args.Layer.Size.GetValueAtTime(args.Time));
+            Size size = ToPreviewSize(args.Layer.Size.GetValueAtTime(args.Time));
+            args.SurfaceA.Viewport = size;
+            args.SurfaceB.Viewport = size;
 
 
             bool swapSurfaces = false;

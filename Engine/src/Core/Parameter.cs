@@ -148,6 +148,22 @@ namespace Engine.Core
             }
         }
 
+        // TODO: might wanna make this static
+        T _oldValue;
+
+        public T BeginValueChange()
+        {
+            _oldValue = Value;
+            return _oldValue;
+        }
+
+        public void EndValueChange(T value)
+        {
+            // TODO: will crash
+            if (!_oldValue!.Equals(value))
+                Value = value;
+        }
+
         public override bool IsKeyframedAtTime(Timecode time)
         {
             if (Keyframes == null)
