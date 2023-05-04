@@ -13,7 +13,7 @@ using System.Collections.ObjectModel;
 
 namespace Engine.Effects
 {
-    public class Image : Effect, IDisposable
+    public class Image : VideoEffect, IDisposable
     {
         Texture texture;
 

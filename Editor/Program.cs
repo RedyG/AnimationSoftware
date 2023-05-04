@@ -9,7 +9,6 @@ namespace Editor
         static void Main(string[] args)
         {
             ParameterBehaviors.Init();
-
             var window = new Window("Test", 1920, 1080);
             window.Run();
         }

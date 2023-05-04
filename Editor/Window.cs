@@ -19,6 +19,7 @@ using System.Drawing.Drawing2D;
 using OpenTK.Audio.OpenAL.Extensions.Creative.EFX;
 using Engine.UI;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using System.Runtime.CompilerServices;
 
 namespace Editor
 {
@@ -35,76 +36,56 @@ namespace Editor
         {
             base.OnLoad();
 
+            Effect.RefreshEffects();
+
             GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
             GL.Enable(EnableCap.Blend);
 
             int a = GL.GetInteger(GetPName.MaxTextureImageUnits);
-            Console.WriteLine(a);
             //GL.Enable(EnableCap.Multisample);
             App.Project = new Project("a");
             scene = new Scene(60f, new Size(1920, 1080), Timecode.FromSeconds(100f));
             App.Project.ActiveScene = scene;
 
-            var group1 = new Layer("group1", new PointF(100, 100), new Size(500, 500));
-            group1.Offset = Timecode.FromSeconds(3f);
-            group1.Position.Keyframes.Add(new Keyframe<PointF>(Timecode.FromSeconds(0), new PointF(100f, 100f), new BezierEasing(new PointF(1f, 0f), new PointF(0f, 1f))));
-            group1.Position.Keyframes.Add(new Keyframe<PointF>(Timecode.FromSeconds(5), new PointF(500f, 500f), IEasing.Linear));
-            group1.Effects.Add(new Engine.Effects.Rectangle());
-            group1.Effects.Add(new Engine.Effects.Rectangle());
-            group1.Effects.Add(new RenderChildren());
-            /*for (int i = 0; i < 1000; i++)
-                group1.Effects.Add(new NoChange());*/
-            group1.Effects.Add(new  NoChange());
-
-            var layer1 = new Layer("layer1", new PointF(0f, 0f), new Size(200, 200));
-            layer1.Effects.Add(new Engine.Effects.Image());
-            group1.Layers.Add(layer1);
-
-            var layer2 = new Layer("layer2", new PointF(250f, 250f), new Size(200, 200));
-            group1.Layers.Add(layer2);
-
-            var group2 = new Layer("group2", new PointF(0f, 0f), new System.Drawing.Size(100, 100));
-            group2.Duration = Timecode.FromSeconds(1.5f);
-            group2.Offset = Timecode.FromSeconds(0.5f);
-            group2.Effects.Add(new Engine.Effects.Image());
-            group2.Effects.Add(new Expression());
-
+            var group1 = new Layer("Group1", new PointF(0f, 0f), new Size(300, 300));
+            group1.AddEffect(new Engine.Effects.Image());
+            group1.Layers.Add(new Layer("aa", PointF.Empty, new System.Drawing.Size(100, 100)));
             App.Project.ActiveScene.Layers.Add(group1);
-            App.Project.ActiveScene.Layers.Add(group2);
+            
             
 
             _controller = new ImGuiController(ClientSize.X, ClientSize.Y);
 
             // TODO: make my own style, I just copy pasted all that.
             var style = ImGui.GetStyle();
-            style.Colors[(int)ImGuiCol.Text] = new System.Numerics.Vector4(1.00f, 1.00f, 1.00f, 1.00f);
-            style.Colors[(int)ImGuiCol.TextDisabled] = new System.Numerics.Vector4(0.50f, 0.50f, 0.50f, 1.00f);
-            style.Colors[(int)ImGuiCol.WindowBg] = new System.Numerics.Vector4(0.137f, 0.137f, 0.137f, 1f);//new System.Numerics.Vector4(0.13f, 0.14f, 0.15f, 1.00f);
-            style.Colors[(int)ImGuiCol.ChildBg] = new System.Numerics.Vector4(0f, 0f, 0f, 0f);//new System.Numerics.Vector4(0.13f, 0.14f, 0.15f, 1.00f);
-            style.Colors[(int)ImGuiCol.PopupBg] = new System.Numerics.Vector4(0.13f, 0.14f, 0.15f, 1.00f);
-            style.Colors[(int)ImGuiCol.Border] = new System.Numerics.Vector4(0.43f, 0.43f, 0.50f, 0.50f);
-            style.Colors[(int)ImGuiCol.BorderShadow] = new System.Numerics.Vector4(0.00f, 0.00f, 0.00f, 0.00f);
-            style.Colors[(int)ImGuiCol.FrameBg] = new System.Numerics.Vector4(0.18f, 0.18f, 0.18f, 1.00f); //new System.Numerics.Vector4(0.25f, 0.25f, 0.25f, 1.00f);
-            style.Colors[(int)ImGuiCol.FrameBgHovered] = new System.Numerics.Vector4(0.38f, 0.38f, 0.38f, 1.00f);
-            style.Colors[(int)ImGuiCol.FrameBgActive] = new System.Numerics.Vector4(0.67f, 0.67f, 0.67f, 0.39f);
-            style.Colors[(int)ImGuiCol.TitleBg] = new System.Numerics.Vector4(0.15f, 0.15f, 0.15f, 1.00f);//new System.Numerics.Vector4(0.08f, 0.08f, 0.09f, 1.00f);
-            style.Colors[(int)ImGuiCol.TitleBgActive] = new System.Numerics.Vector4(0.08f, 0.08f, 0.09f, 1.00f);
-            style.Colors[(int)ImGuiCol.TitleBgCollapsed] = new System.Numerics.Vector4(0.00f, 0.00f, 0.00f, 0.51f);
-            style.Colors[(int)ImGuiCol.MenuBarBg] = new System.Numerics.Vector4(0.14f, 0.14f, 0.14f, 1.00f);
-            style.Colors[(int)ImGuiCol.ScrollbarBg] = new System.Numerics.Vector4(0.02f, 0.02f, 0.02f, 0.53f);
-            style.Colors[(int)ImGuiCol.ScrollbarGrab] = new System.Numerics.Vector4(0.31f, 0.31f, 0.31f, 1.00f);
-            style.Colors[(int)ImGuiCol.ScrollbarGrabHovered] = new System.Numerics.Vector4(0.41f, 0.41f, 0.41f, 1.00f);
-            style.Colors[(int)ImGuiCol.ScrollbarGrabActive] = new System.Numerics.Vector4(0.51f, 0.51f, 0.51f, 1.00f);
-            style.Colors[(int)ImGuiCol.CheckMark] = new System.Numerics.Vector4(0.26f, 0.59f, 0.98f, 0.95f);
-            style.Colors[(int)ImGuiCol.SliderGrab] = new System.Numerics.Vector4(0.11f, 0.64f, 0.92f, 1.00f);
-            style.Colors[(int)ImGuiCol.SliderGrabActive] = new System.Numerics.Vector4(0.08f, 0.50f, 0.72f, 1.00f);
-            style.Colors[(int)ImGuiCol.Button] = new System.Numerics.Vector4(0.25f, 0.25f, 0.25f, 1.00f);
-            style.Colors[(int)ImGuiCol.ButtonHovered] = new System.Numerics.Vector4(0.38f, 0.38f, 0.38f, 1.00f);
-            style.Colors[(int)ImGuiCol.ButtonActive] = new System.Numerics.Vector4(0.67f, 0.67f, 0.67f, 0.39f);
-            style.Colors[(int)ImGuiCol.Header] = new System.Numerics.Vector4(0.188f, 0.188f, 0.188f, 1f);//new System.Numerics.Vector4(0.22f, 0.22f, 0.22f, 1.00f);
-            style.Colors[(int)ImGuiCol.HeaderHovered] = new System.Numerics.Vector4(0.35f, 0.35f, 0.35f, 1f);//new System.Numerics.Vector4(0.25f, 0.25f, 0.25f, 1.00f);
-            style.Colors[(int)ImGuiCol.HeaderActive] = new System.Numerics.Vector4(40f, 0.40f, 0.40f, 1f);
-            style.Colors[(int)ImGuiCol.Separator] = style.Colors[(int)ImGuiCol.Border];
+            style.Colors[(int)ImGuiCol.Text] = Colors.Text;
+            style.Colors[(int)ImGuiCol.TextDisabled] = Colors.Text;
+            style.Colors[(int)ImGuiCol.WindowBg] = Colors.Background;
+            style.Colors[(int)ImGuiCol.ChildBg] = Colors.Transparent;
+            style.Colors[(int)ImGuiCol.PopupBg] = Colors.Background;
+            style.Colors[(int)ImGuiCol.Border] = Colors.ReallyDarkGray;
+            style.Colors[(int)ImGuiCol.BorderShadow] = Colors.Transparent;
+            style.Colors[(int)ImGuiCol.FrameBg] = Colors.DarkGray;
+            style.Colors[(int)ImGuiCol.FrameBgHovered] = Colors.DarkGrayHovered;
+            style.Colors[(int)ImGuiCol.FrameBgActive] = Colors.DarkGrayHovered;
+            style.Colors[(int)ImGuiCol.TitleBg] = Colors.ReallyDarkGray;
+            style.Colors[(int)ImGuiCol.TitleBgActive] = Colors.ReallyDarkGray;
+            style.Colors[(int)ImGuiCol.TitleBgCollapsed] = Colors.Red;
+            style.Colors[(int)ImGuiCol.MenuBarBg] = Colors.DarkGray;
+            style.Colors[(int)ImGuiCol.ScrollbarBg] = Colors.ReallyDarkGray;
+            style.Colors[(int)ImGuiCol.ScrollbarGrab] = Colors.MidGray;
+            style.Colors[(int)ImGuiCol.ScrollbarGrabHovered] = Colors.MidGrayHovered;
+            style.Colors[(int)ImGuiCol.ScrollbarGrabActive] = Colors.MidGrayHovered;
+            style.Colors[(int)ImGuiCol.CheckMark] = Colors.Blue;
+            style.Colors[(int)ImGuiCol.SliderGrab] = Colors.Blue;
+            style.Colors[(int)ImGuiCol.SliderGrabActive] = Colors.BlueHovered;
+            style.Colors[(int)ImGuiCol.Button] = Colors.DarkGray;
+            style.Colors[(int)ImGuiCol.ButtonHovered] = Colors.DarkGrayHovered;
+            style.Colors[(int)ImGuiCol.ButtonActive] = Colors.DarkGrayHovered;
+            style.Colors[(int)ImGuiCol.Header] = Colors.DarkGray;
+            style.Colors[(int)ImGuiCol.HeaderHovered] = Colors.DarkGrayHovered;
+            style.Colors[(int)ImGuiCol.HeaderActive] = Colors.DarkGrayHovered;
+            style.Colors[(int)ImGuiCol.Separator] = Colors.ReallyDarkGray;
             style.Colors[(int)ImGuiCol.SeparatorHovered] = new System.Numerics.Vector4(0.41f, 0.42f, 0.44f, 1.00f);
             style.Colors[(int)ImGuiCol.SeparatorActive] = new System.Numerics.Vector4(0.26f, 0.59f, 0.98f, 0.95f);
             style.Colors[(int)ImGuiCol.ResizeGrip] = new System.Numerics.Vector4(0.00f, 0.00f, 0.00f, 0.00f);
@@ -130,6 +111,9 @@ namespace Editor
             style.GrabRounding = style.FrameRounding = 0f;
             style.WindowPadding = new System.Numerics.Vector2(0f, 0f);
             style.ChildBorderSize = 1f;
+            style.CellPadding = new System.Numerics.Vector2(0f, 0f);
+            style.ItemSpacing = new System.Numerics.Vector2(4f);
+            //style.Padding = new System.Numerics.Vector2(10f, 10f);
         }
 
         protected override void OnResize(ResizeEventArgs e)

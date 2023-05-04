@@ -18,7 +18,7 @@ namespace Engine.Effects
 {
     // TODO: time displacement with alpha map thingy
 
-    public class NoChange : Effect
+    public class NoChange : VideoEffect
     {
         static ShaderProgram shader = Surface.CompileShader(@"
 vec4 surface(vec2 pos)

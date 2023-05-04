@@ -14,76 +14,132 @@ using Engine.Graphics;
 using System.Drawing;
 using System.Diagnostics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using System.Reflection.Emit;
+using Engine.Effects;
 
 namespace Engine.UI
 {
     public static class UI
     {
+        public static ImFontPtr Font;
         public static Size ClientSize { get; set; }
 
         public static void EffectsWindow()
         {
+
             if (ImGui.Begin("Effects"))
             {
                 // TODO: only for selected layers
-                foreach (Layer layer in App.Project.ActiveScene.Layers)
+                var selectedLayers = App.Project.ActiveScene.Layers.Selected;
+                foreach (Layer layer in selectedLayers)
                 {
-                    ImGui.Text("layer: " + layer.Name);
+                    ImGui.PushFont(Font);
+                    var drawList = ImGui.GetWindowDrawList();
+                    drawList.AddRectFilled(ImGui.GetCursorScreenPos(), ImGui.GetCursorScreenPos() + ImGuiHelper.GetLineSize(), Colors.MidGrayHex);
+                    TextCentered(layer.Name);
+                    ImGui.PopFont();
+
+                    ImGui.Separator();
+
                     ImGui.PushID(layer.GetHashCode());
 
-                    if (ImGui.CollapsingHeader("Layer Settings"))
+                    ImGuiHelper.MoveCursorBy(4f, 0f);
+                    ImGui.Text("Miscellaneous");
+                    
+                    EffectUI(layer.Settings);
+                    foreach (Effect effect in layer.OtherEffects)
                     {
-                        UI.Parameters(ReflectionUtilities.GetParameters(layer));
+                        EffectUI(effect);
                     }
 
-                    foreach (Effect effect in layer.Effects)
+                    if (layer.VideoEffects.Count > 0)
                     {
-                        ImGui.PushID(effect.GetHashCode());
-                        if (ImGui.CollapsingHeader(effect.Name))
-                        {
-                            UI.Parameters(effect.Parameters);
-                        }
-                        ImGui.PopID();
+                        ImGuiHelper.MoveCursorBy(4f, 0f);
+                        ImGui.Text("Video Effects");
+                    }
+
+                    foreach (Effect effect in layer.VideoEffects)
+                    {
+                        EffectUI(effect);
                     }
                     ImGui.PopID();
                 }
+                ImGuiHelper.MoveCursorBy(0, ImGui.GetContentRegionAvail().Y - ImGui.GetFrameHeight());
+                ImGui.DragFloat("Width", ref _parameterWidth);
             }
+
+
             ImGui.End();
         }
 
-        public static void Parameters(ParameterList namedParameters)
+        private static void TextCentered(string text)
         {
-            foreach (NamedParameter namedParameter in namedParameters)
+            var windowWidth = ImGui.GetWindowSize().X;
+            var textWidth = ImGui.CalcTextSize(text).X;
+
+            ImGui.SetCursorPosX((windowWidth - textWidth) * 0.5f);
+            ImGui.Text(text);
+        }
+
+        private static void TextCentered(string text, Vector4 color)
+        {
+            var windowWidth = ImGui.GetWindowSize().X;
+            var textWidth = ImGui.CalcTextSize(text).X;
+
+            ImGui.SetCursorPosX((windowWidth - textWidth) * 0.5f);
+            ImGui.TextColored(color, text);
+        }
+
+        private static float _parameterWidth = 400f;
+        public static void EffectUI(Effect effect)
+        {
+            ImGui.PushID(effect.GetHashCode());
+            string name = effect.Description.Name;
+
+            var headerVisible = ImGui.CollapsingHeader(name);
+
+            if (headerVisible)
             {
-                //UI.KeyframeButton(namedParameter.Parameter);
-                //ImGui.SameLine();
-
-
-                if (namedParameter.Name == "Size")
+                ImGui.TreePush(name);
+                foreach (NamedParameter namedParameter in effect.Parameters)
                 {
-                    ImGuiHelper.MoveCursorBy(new Vector2(-21, 0));
-                    if (ImGui.TreeNode(namedParameter.Name))
+                    ImGui.PushID(namedParameter.Name);
+
+                    UI.KeyframeButton(namedParameter.Parameter);
+                    ImGui.SameLine();
+
+                    if (namedParameter.Parameter.UILocation == UILocation.Under)
                     {
-                        //namedParameter.Parameter.DrawUI();
-                        ImGui.TreePop();
+                        bool opened = namedParameter.Parameter.Opened;
+                        ArrowButton("##opened", ref opened);
+                        ImGui.SameLine(0f, 4f);
+                        namedParameter.Parameter.Opened = opened;
                     }
-                }
-                else
+
                     ImGui.Text(namedParameter.Name);
-                //ImGui.NextColumn();
-                ImGui.SameLine();
 
-                ImGui.PushID(namedParameter.Name);
-                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-                namedParameter.Parameter.DrawUI();
-                ImGui.PopID();
-
-                //ImGui.NextColumn();
+                    if (namedParameter.Parameter.UILocation == UILocation.Right)
+                    {
+                        ImGui.SameLine();
+                        ImGuiHelper.MoveCursorBy(ImGui.GetContentRegionAvail().X - _parameterWidth, 0);
+                        ImGui.SetNextItemWidth(_parameterWidth);
+                        namedParameter.Parameter.DrawUI();
+                    }
+                    else
+                    {
+                        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+                        if (namedParameter.Parameter.Opened)
+                            namedParameter.Parameter.DrawUI();
+                    }
+                    ImGui.PopID();
+                }
+                ImGui.TreePop();
             }
-            ImGui.Columns();
+            ImGui.PopID();
         }
 
         private static LayerMouseState _layerMouseState = LayerMouseState.None;
+        private static bool _dragging = false;
         private static float _timelineZoom = 1f;
         public static void TimelineWindow()
         {
@@ -103,21 +159,63 @@ namespace Engine.UI
 
         public static void TimelineLeft()
         {
-            ImGui.NewLine();
+            ImGui.InvisibleButton("Temporary spacing", ImGuiHelper.GetLineSize());
 
             if (ImGui.BeginChild("LeftChild"))
             {
-                foreach (Layer layer in App.Project.ActiveScene.Layers)
-                {
-                    if (ImGui.CollapsingHeader(layer.Name))
-                    {
-                    }
-                }
+                DrawLayers(App.Project.ActiveScene.Layers);
             }
             ImGui.EndChild();
         }
+
+        private static int _layerDepth = 0;
+        public static void DrawLayers(LayerList layers)
+        {
+            foreach (var layer in layers)
+            {
+                ImGui.PushID(layer.GetHashCode());
+
+                var drawList = ImGui.GetWindowDrawList();
+                drawList.AddRectFilled(ImGui.GetCursorScreenPos(), ImGui.GetCursorScreenPos() + ImGuiHelper.GetLineSize(), Colors.MidGrayHex);
+
+
+                ImGui.Checkbox("##visible", ref layer.Visible);
+                ImGui.SameLine(0f, 2f);
+                ImGuiHelper.MoveCursorBy((ImGui.GetFrameHeight() + 2 ) * _layerDepth, 0f);
+
+                if (layer.IsGroup)
+                {
+                    ArrowButton(layer.Name, ref layer.Opened);
+                    ImGui.SameLine(0f, 2f);
+                }
+                else
+                    ImGuiHelper.MoveCursorBy(ImGui.GetFrameHeight() + 2, 0f);
+
+                ImGui.Text(layer.Name);
+
+                if (layer.Opened)
+                {
+                    _layerDepth++;
+                    DrawLayers(layer.Layers);
+                    _layerDepth--;
+                }
+
+
+                ImGui.PopID();
+            }
+        }
+
+        public static void ArrowButton(string id, ref bool opened)
+        {
+            ImGuiDir arrowDir = opened ? ImGuiDir.Down : ImGuiDir.Right;
+            ImGui.ArrowButton(id, arrowDir);
+            if (ImGui.IsItemClicked())
+                opened = !opened;
+        }
+
         public static void TimelineRight()
         {
+            ImGui.PushStyleColor(ImGuiCol.ChildBg, Colors.MidGray);
             if (ImGui.BeginChild("RightChild", ImGui.GetContentRegionAvail(), false, ImGuiWindowFlags.HorizontalScrollbar))
             {
                 float timeCursorX = App.Project.Time.Seconds / App.Project.ActiveScene.Duration.Seconds * ImGui.GetContentRegionAvail().X;
@@ -125,91 +223,138 @@ namespace Engine.UI
 
                 var cursorPos = ImGui.GetCursorScreenPos();
                 var drawList = ImGui.GetWindowDrawList();
-                foreach (Layer layer in App.Project.ActiveScene.Layers)
-                {
-                    ImGui.PushID(layer.GetHashCode());
 
-                    Vector2 lineSize = ImGuiHelper.GetLineSize();
-                    float layerX = (layer.InPoint.Seconds / App.Project.ActiveScene.Duration.Seconds) * lineSize.X * _timelineZoom;
-                    float layerWidth = (layer.Duration.Seconds / App.Project.ActiveScene.Duration.Seconds) * lineSize.X * _timelineZoom;
-                    Vector2 layerScreenPos = ImGui.GetCursorScreenPos() + new Vector2(layerX, 0f);
-                    Vector2 layerScreenMax = layerScreenPos + new Vector2(layerWidth, lineSize.Y);
+                Vector2 lineSize = ImGuiHelper.GetLineSize();
+                float deltaX = ImGui.GetMouseDragDelta().X / lineSize.X / _timelineZoom;
+                Timecode diffTime = Timecode.FromSeconds(deltaX) * App.Project.ActiveScene.Duration;
 
-                    ImGui.SetCursorScreenPos(layerScreenPos);
-                    ImGui.InvisibleButton("layer", new Vector2(layerWidth, lineSize.Y));
-                    drawList.AddRectFilled(layerScreenPos, layerScreenMax, Color(255, 255, 255, 255), 3f);
+                DrawLayersRight(App.Project.ActiveScene.Layers, drawList, lineSize, diffTime);
 
-                    bool isMouseDown = ImGui.IsMouseDown(ImGuiMouseButton.Left);
-                    if (ImGui.IsItemHovered())
-                    {
-                        LayerMouseState layerMouseState = LayerMouseState.None;
-                        float mouseX = ImGui.GetMousePos().X;
-                        if (mouseX - layerScreenPos.X <= 5f)
-                        {
-                            drawList.AddRectFilled(layerScreenPos, layerScreenPos + new Vector2(5, lineSize.Y), Color(66, 150, 250, 255), 3f);
-                            ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEW);
-                            layerMouseState = LayerMouseState.InPoint;
-                        }
-                        else if ((layerScreenPos.X + layerWidth) - mouseX <= 5f)
-                        {
-                            drawList.AddRectFilled(layerScreenMax - new Vector2(5, lineSize.Y), layerScreenMax, Color(66, 150, 250, 255), 3f);
-                            ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEW);
-                            layerMouseState = LayerMouseState.OutPoint;
-                        }
-                        else
-                            layerMouseState = LayerMouseState.Center;
 
-                        if (isMouseDown && _layerMouseState == LayerMouseState.None)
-                        {
-                            layer.Selected = true;
-                            _layerMouseState = layerMouseState;
-                        }
-                    }
-
-                    if (layer.Selected)
-                    {
-                        if (isMouseDown)
-                        {
-                            float deltaX = ImGui.GetMouseDragDelta().X / lineSize.X / _timelineZoom;
-                            Timecode diffTime = Timecode.FromSeconds(deltaX) * App.Project.ActiveScene.Duration;
-                            if (_layerMouseState == LayerMouseState.Center)
-                            {
-                                layer.Offset += diffTime;
-                            }
-                            else if (_layerMouseState == LayerMouseState.InPoint)
-                            {
-                                drawList.AddRectFilled(layerScreenPos, layerScreenPos + new Vector2(5, lineSize.Y), Color(66, 150, 250, 255), 3f);
-                                ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEW);
-                                layer.InPoint += diffTime;
-                            }
-                            else if (_layerMouseState == LayerMouseState.OutPoint)
-                            {
-                                drawList.AddRectFilled(layerScreenMax - new Vector2(5, lineSize.Y), layerScreenMax, Color(66, 150, 250, 255), 3f);
-                                ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEW);
-                                layer.OutPoint += diffTime;
-                            }
-                            if (deltaX != 0f)
-                                ImGui.ResetMouseDragDelta();
-                        }
-                        else
-                        {
-                            layer.Selected = false;
-                            _layerMouseState = LayerMouseState.None;
-                        }
-                    }
-                    ImGui.PopID();
-                }
+                if (deltaX != 0f)
+                    ImGui.ResetMouseDragDelta();
                 drawList.AddLine(new Vector2(timeCursorX - 0.5f, 0) + cursorPos, new Vector2(timeCursorX - 0.5f, ImGui.GetContentRegionMax().Y) + cursorPos, 0xfff6823b);
             }
-            ImGui.EndChild(); 
+            ImGui.EndChild();
+            ImGui.PopStyleColor();
+
+            if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
+                App.Project.ActiveScene.Layers.UnselectAll();
         }
-        public static void TimeCursor(float x)
+
+        public static void DrawLayersRight(LayerList layers, ImDrawListPtr drawList, Vector2 lineSize, Timecode diffTime)
+        {
+            foreach (Layer layer in layers)
+            {
+                ImGui.PushID(layer.GetHashCode());
+
+                float layerX = (layer.InPoint.Seconds / App.Project.ActiveScene.Duration.Seconds) * lineSize.X * _timelineZoom;
+                float layerWidth = (layer.Duration.Seconds / App.Project.ActiveScene.Duration.Seconds) * lineSize.X * _timelineZoom;
+                Vector2 layerScreenPos = ImGui.GetCursorScreenPos() + new Vector2(layerX, 0f);
+                Vector2 layerScreenMax = layerScreenPos + new Vector2(layerWidth, lineSize.Y);
+
+                ImGui.SetCursorScreenPos(layerScreenPos);
+                ImGui.InvisibleButton("layer", new Vector2(layerWidth, lineSize.Y));
+                drawList.AddRectFilled(layerScreenPos, layerScreenMax, layer.Selected ? Color(255, 0, 0, 255) : Color(255, 255, 255, 255), 3f);
+
+                bool isMouseDown = ImGui.IsMouseDown(ImGuiMouseButton.Left);
+
+                HandleLayerSelection(layer);
+                if (ImGui.IsItemHovered())
+                {
+                    LayerMouseState newLayerMouseState;
+                    float mouseX = ImGui.GetMousePos().X;
+                    if (mouseX - layerScreenPos.X <= 5f)
+                    {
+                        ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEW);
+                        newLayerMouseState = LayerMouseState.InPoint;
+                    }
+                    else if ((layerScreenPos.X + layerWidth) - mouseX <= 5f)
+                    {
+                        ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEW);
+                        newLayerMouseState = LayerMouseState.OutPoint;
+                    }
+                    else
+                        newLayerMouseState = LayerMouseState.Center;
+
+                    if (isMouseDown && _layerMouseState == LayerMouseState.None)
+                    {
+                        _dragging = true;
+                        _layerMouseState = newLayerMouseState;
+                    }
+                }
+
+                if (layer.Selected && _dragging)
+                {
+                    if (isMouseDown)
+                    {
+                        if (_layerMouseState == LayerMouseState.Center)
+                        {
+                            layer.Offset += diffTime;
+                        }
+                        else if (_layerMouseState == LayerMouseState.InPoint)
+                        {
+                            ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEW);
+                            var inPoint = layer.InPoint + diffTime;
+                            if (inPoint < layer.OutPoint)
+                                layer.InPoint = inPoint;
+                        }
+                        else if (_layerMouseState == LayerMouseState.OutPoint)
+                        {
+                            ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEW);
+                            var outPoint = layer.OutPoint + diffTime;
+                            if (outPoint > layer.InPoint)
+                                layer.OutPoint = outPoint;
+                        }
+                    }
+                    else
+                    {
+                        _dragging = false;
+                        _layerMouseState = LayerMouseState.None;
+                    }
+                }
+
+                if (layer.Opened)
+                {
+                    DrawLayersRight(layer.Layers, drawList, lineSize, diffTime);
+                }
+
+                ImGui.PopID();
+            }
+        }
+
+
+        private static void HandleLayerSelection(Layer layer)
+        {
+            if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
+            {
+                if (ImGuiHelper.IsKeyDown(Keys.LeftControl))
+                {
+                    layer.Selected = !layer.Selected;
+                }
+                else if (ImGuiHelper.IsKeyDown(Keys.LeftShift))
+                {
+                    // TODO: support shift select
+                }
+                else
+                {
+                    if (!layer.Selected)
+                    {
+                        App.Project.ActiveScene.Layers.UnselectAll();
+                        layer.Selected = true;
+                    }
+                }
+            }
+        }
+
+        private static void TimeCursor(float x)
         {
             var cursorPos = ImGui.GetCursorScreenPos();
             float frameHeight = ImGui.GetFrameHeight();
             var drawList = ImGui.GetWindowDrawList();
+            drawList.AddRectFilled(cursorPos, cursorPos + ImGuiHelper.GetLineSize(), Colors.BackgroundHex);
 
-            ImGui.InvisibleButton("Timeline Ruler", new Vector2(ImGui.GetContentRegionAvail().X, frameHeight));
+            ImGui.InvisibleButton("Timeline Ruler", ImGuiHelper.GetLineSize());
 
             Vector2 timeBottom = cursorPos + new Vector2(x, frameHeight);
             drawList.PathLineTo(timeBottom + new Vector2(6f, -7f));
@@ -227,6 +372,7 @@ namespace Engine.UI
                     * App.Project.ActiveScene.Duration.Seconds);
             }
         }
+
         public static void PreviewEvents(float delta)
         {
             if (ImGuiHelper.IsKeyPressed(Keys.Left))
@@ -286,12 +432,24 @@ namespace Engine.UI
 
         public static void EffectListWindow()
         {
-            Effect.RefreshEffects();
             if (ImGui.Begin("Effects list window"))
             {
-                foreach (Type effect in Effect.Effects)
+                foreach (var categories in Effect.Effects)
                 {
-                    ImGui.TreeNode(Effect.GetName(effect));
+                    if (ImGui.TreeNode(categories.Key))
+                    {
+                        foreach (var namedEffect in categories.Value)
+                        {
+                            if (ImGui.Button(namedEffect.Key))
+                            {
+                                foreach (Layer layer in App.Project.ActiveScene.Layers.Selected)
+                                {
+                                    layer.AddEffect(Effect.Create(namedEffect.Value));
+                                }
+                            }
+                        }
+                        ImGui.TreePop();
+                    }
                 }
             }
             ImGui.End();
@@ -331,8 +489,7 @@ namespace Engine.UI
             drawList.PathStroke(Color(ImGui.GetStyle().Colors[(int)ImGuiCol.Text]));
         }
 
-
-        public static uint Color(byte r, byte g, byte b, byte a) { uint ret = a; ret <<= 8; ret += b; ret <<= 8; ret += g; ret <<= 8; ret += r; return ret; }
-        public static uint Color(Vector4 vector) => Color((byte)(vector.X * 255f), (byte)(vector.Y * 255f), (byte)(vector.Z * 255f), (byte)(vector.W * 255f));
+        private static uint Color(Vector4 color) => Color((byte)(color.X * 255f), (byte)(color.Y * 255f), (byte)(color.Z * 255f), (byte)(color.W * 255f));
+        private static uint Color(byte r, byte g, byte b, byte a) { uint ret = a; ret <<= 8; ret += b; ret <<= 8; ret += g; ret <<= 8; ret += r; return ret; }
     }
 }

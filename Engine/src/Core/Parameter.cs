@@ -1,5 +1,4 @@
-﻿using Engine.src.Core;
-using Engine.UI;
+﻿using Engine.UI;
 using Engine.Utilities;
 using System;
 using System.Collections.Generic;
@@ -33,6 +32,7 @@ namespace Engine.Core
         public abstract bool IsKeyframed { get; }
         public abstract bool CanBeLinked { get; init; }
         public abstract bool IsLinked { get; }
+        public abstract bool Opened { get; set; }
 
         public Parameter()
         {
@@ -247,6 +247,8 @@ namespace Engine.Core
         }
 
         public override UILocation UILocation => CustomUI?.Location ?? UILocation.Right;
+
+        public override bool Opened { get; set; } = false;
     }
 
     public class ValueGetterEventArgs : EventArgs

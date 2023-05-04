@@ -1,4 +1,5 @@
 ﻿using Engine.Core;
+using Engine.Attributes;
 using Engine.UI;
 using ImGuiNET;
 using System;
@@ -10,14 +11,11 @@ using System.Threading.Tasks;
 
 namespace Engine.Effects
 {
+    [EffectDesc(Category = "Test", Name = "FIOAWHFIWF")]
     public class Expression : Effect
     {
         public Parameter<string> Code { get; } = new Parameter<string>("", false, true);
         public Parameter<object> Value { get; } = new Parameter<object>(new object(), false, false);
-        public override RenderResult Render(RenderArgs args)
-        {
-            return new RenderResult(false);
-        }
 
         protected override ParameterList InitParameters() => new ParameterList(
             new("Code", Code),

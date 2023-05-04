@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Engine.Core
@@ -49,6 +50,22 @@ namespace Engine.Core
         public static Timecode operator -(Timecode a, Timecode b) => Timecode.FromSeconds(a.Seconds - b.Seconds);
         public static Timecode operator *(Timecode a, Timecode b) => Timecode.FromSeconds(a.Seconds* b.Seconds);
         public static Timecode operator /(Timecode a, Timecode b) => Timecode.FromSeconds(a.Seconds / b.Seconds);
+
+        public static Timecode Min(Timecode a, Timecode b)
+        {
+            if (a < b)
+                return a;
+
+            return b;
+        }
+
+        public static Timecode Max(Timecode a, Timecode b)
+        {
+            if (a > b)
+                return a;
+
+            return b;
+        }
 
         public override string ToString()
         {

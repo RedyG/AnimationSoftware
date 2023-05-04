@@ -22,6 +22,8 @@ namespace Engine.UI
     }
     public class FloatUI : IParameterUI<float>
     {
+        public UILocation Location => UILocation.Under;
+
         public float Speed { get; set; } = 1f;
         public float Minimum { get; set; } = float.MinValue;
         public float Maximum { get; set; } = float.MaxValue;
@@ -29,6 +31,7 @@ namespace Engine.UI
         public void Draw(Parameter<float> parameter)
         {
             var value = parameter.BeginValueChange();
+            Console.WriteLine(value);
             ImGui.DragFloat("", ref value, Speed, Minimum, Maximum);
             parameter.EndValueChange(value);
         }

@@ -44,14 +44,14 @@ namespace Engine.Core
 
         static Renderer()
         {
-            _mainLayer.Effects.Add(new RenderChildren());
+            _mainLayer.VideoEffects.Add(new RenderChildren());
         }
 
         public static Surface RenderActiveScene()
         {
  
             _mainLayer.Layers = App.Project.ActiveScene.Layers;
-            _mainLayer.Size.Value = App.Project.ActiveScene.Size;
+            _mainLayer.Settings.Size.Value = App.Project.ActiveScene.Size;
 
             //GL.Viewport(new Point(0, 0), PreviewSize);
             return RenderLayer(new RenderArgs(App.Project.Time, _mainLayer, _surfaceA, _surfaceB));
@@ -61,13 +61,13 @@ namespace Engine.Core
         {
             // TODO: reuse groups surfaces
             // TODO: optimize if only content effects by drawing directly on surface or stuff like that
-            Size size = ToPreviewSize(args.Layer.Size.GetValueAtTime(args.Time));
+            Size size = ToPreviewSize(args.Layer.Settings.Size.GetValueAtTime(args.Time));
             args.SurfaceA.Viewport = size;
             args.SurfaceB.Viewport = size;
 
 
             bool swapSurfaces = false;
-            foreach (Effect effect in args.Layer.Effects)
+            foreach (VideoEffect effect in args.Layer.VideoEffects)
             {
                 Surface activeSurface = swapSurfaces ? args.SurfaceB : args.SurfaceA;
                 Surface secondSurface = swapSurfaces ? args.SurfaceA : args.SurfaceB;

@@ -9,7 +9,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Engine.src.Core
+namespace Engine.Core
 {
     public static class Instancer
     {

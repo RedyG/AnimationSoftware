@@ -9,6 +9,8 @@ using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System.Diagnostics;
 using ErrorCode = OpenTK.Graphics.OpenGL4.ErrorCode;
+using System.Drawing;
+using Engine.UI;
 
 namespace Editor
 {
@@ -53,7 +55,10 @@ namespace Editor
             IntPtr context = ImGui.CreateContext();
             ImGui.SetCurrentContext(context);
             var io = ImGui.GetIO();
-            io.Fonts.AddFontDefault();
+            //io.Fonts.AddFontDefault();
+
+            io.Fonts.AddFontFromFileTTF("C:\\Users\\minio\\OneDrive\\Documents\\NewBlue\\Titler Pro\\Library\\Project Templates\\_LEGACY\\Social Media Collection\\fonts\\Roboto-Regular.ttf", 14f);
+            UI.Font = io.Fonts.AddFontFromFileTTF("C:\\Users\\minio\\OneDrive\\Documents\\NewBlue\\Titler Pro\\Library\\Project Templates\\_LEGACY\\Social Media Collection\\fonts\\Roboto-Regular.ttf", 20f);
 
             io.ConfigFlags |= ImGuiConfigFlags.DockingEnable | ImGuiConfigFlags.NavEnableKeyboard;
             io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;

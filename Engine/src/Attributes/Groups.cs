@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace Engine.Attributes
 {
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public class CustomName : Attribute
+    public class BeginGroup : Attribute
     {
-        public string Name { get; set; }
+        public string Name { get; init; }
 
-        public CustomName(string name)
+        public BeginGroup(string name)
         {
             Name = name;
         }
     }
+    public class EndGroup : Attribute { }
 }

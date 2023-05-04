@@ -11,7 +11,7 @@ using OpenTK.Mathematics;
 
 namespace Engine.Effects
 {
-    public class Shader : Effect
+    public class Shader : VideoEffect
     {
         public Parameter<float> Time { get; } = new Parameter<float>(0f);
         public Parameter<string> Code { get; } = new Parameter<string>(string.Empty, false, true);

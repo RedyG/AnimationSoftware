@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Engine.Effects
 {
-    public class RenderChildren : Effect, IDisposable
+    public class RenderChildren : VideoEffect, IDisposable
     {
         private Surface _groupSurface;
 
@@ -34,30 +34,28 @@ namespace Engine.Effects
 
         public override RenderResult Render(RenderArgs args)
         {
-            if (args.Layer.IsGroup)
+            if (!args.Layer.IsGroup)
+                return new RenderResult(false);
+
+            args.SurfaceB.Framebuffer.Bind(FramebufferTarget.Framebuffer);
+            GraphicsApi.Clear(new Color4(0f, 0f, 0f, 1f));
+            foreach (Layer childLayer in args.Layer.Layers)
             {
-                args.SurfaceB.Framebuffer.Bind(FramebufferTarget.Framebuffer);
-                GraphicsApi.Clear(new Color4(0f, 0f, 0f, 1f));
-                foreach (Layer childLayer in args.Layer.Layers)
-                {
-                    Timecode childTime = args.Time - childLayer.Offset;
-                    if (!childLayer.IsActiveAtTime(args.Time))
-                        continue;
+                Timecode childTime = args.Time - childLayer.Offset;
+                if (!childLayer.IsActiveAtTime(args.Time))
+                    continue;
 
-                    //Size layerSize = Renderer.ToPreviewSize(childLayer.Size.GetValueAtTime(args.Time));
-                    //var surfaceA = new Surface(args.SurfaceA.Texture, args.SurfaceA.Framebuffer, args.SurfaceA.Size, layerSize);
-                    //_groupSurface.Viewport = layerSize;
-                    Surface childSurface = Renderer.RenderLayer(new RenderArgs(childTime, childLayer, args.SurfaceA, _groupSurface));
+                //Size layerSize = Renderer.ToPreviewSize(childLayer.Size.GetValueAtTime(args.Time));
+                //var surfaceA = new Surface(args.SurfaceA.Texture, args.SurfaceA.Framebuffer, args.SurfaceA.Size, layerSize);
+                //_groupSurface.Viewport = layerSize;
+                Surface childSurface = Renderer.RenderLayer(new RenderArgs(childTime, childLayer, args.SurfaceA, _groupSurface));
 
-                    args.SurfaceB.Bind(FramebufferTarget.Framebuffer);
-                    GL.BlendFunc(BlendingFactor.One, BlendingFactor.OneMinusSrcAlpha);
-                    GraphicsApi.DrawSurface(MatrixBuilder.CreateTransform(childTime, args.Layer.Size.GetValueAtTime(args.Time), childLayer), childSurface);
-                }
-
-                return new RenderResult(true);
+                args.SurfaceB.Bind(FramebufferTarget.Framebuffer);
+                GL.BlendFunc(BlendingFactor.One, BlendingFactor.OneMinusSrcAlpha);
+                GraphicsApi.DrawSurface(MatrixBuilder.CreateTransform(childTime, args.Layer.Settings.Size.GetValueAtTime(args.Time), childLayer), childSurface);
             }
 
-            return new RenderResult(false);
+            return new RenderResult(true);
         }
 
         protected override ParameterList InitParameters() => new ParameterList();
