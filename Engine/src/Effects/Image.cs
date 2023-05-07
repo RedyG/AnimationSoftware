@@ -10,9 +10,11 @@ using OpenTK.Mathematics;
 using Engine.OpenGL;
 using OpenTK.Graphics.OpenGL4;
 using System.Collections.ObjectModel;
+using Engine.Attributes;
 
 namespace Engine.Effects
 {
+    [EffectDesc(Category = "Content")]
     public class Image : VideoEffect, IDisposable
     {
         Texture texture;

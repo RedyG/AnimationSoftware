@@ -39,7 +39,9 @@ namespace Engine.Graphics
             GL.ActiveTexture(TextureUnit.Texture0);
             surface.Texture.Bind(TextureTarget.Texture2D);
 
-            shader.Uniform1(shader.GetUniformLocation("tex"), 0);
+            shader.Uniform1(shader.GetUniformLocation("input"), 0);
+            shader.Uniform2(shader.GetUniformLocation("iResolution"), new OpenTK.Mathematics.Vector2(surface.Size.Width, surface.Size.Height));
+            Console.WriteLine(surface.Viewport);
             shader.Uniform2(shader.GetUniformLocation("ratio"), surface.Ratio);
             shader.UniformMatrix4(shader.GetUniformLocation("transform"), ref matrix);
             shader.Bind();

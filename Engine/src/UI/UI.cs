@@ -26,7 +26,6 @@ namespace Engine.UI
 
         public static void EffectsWindow()
         {
-
             if (ImGui.Begin("Effects"))
             {
                 // TODO: only for selected layers
@@ -35,40 +34,39 @@ namespace Engine.UI
                 {
                     ImGui.PushFont(Font);
                     var drawList = ImGui.GetWindowDrawList();
-                    drawList.AddRectFilled(ImGui.GetCursorScreenPos(), ImGui.GetCursorScreenPos() + ImGuiHelper.GetLineSize(), Colors.MidGrayHex);
+                    drawList.AddRectFilled(ImGui.GetCursorScreenPos(), ImGui.GetCursorScreenPos() + ImGuiHelper.GetLineSize() - new Vector2(0f, 4f), Colors.MidGrayHex);
                     TextCentered(layer.Name);
                     ImGui.PopFont();
-
-                    ImGui.Separator();
 
                     ImGui.PushID(layer.GetHashCode());
 
                     ImGuiHelper.MoveCursorBy(4f, 0f);
-                    ImGui.Text("Miscellaneous");
+                    TextCentered("Miscellaneous");
                     
-                    EffectUI(layer.Settings);
+                    EffectUI(layer.Transform);
+
+                    _effectsToDelete.Clear();
+
                     foreach (Effect effect in layer.OtherEffects)
-                    {
                         EffectUI(effect);
-                    }
 
                     if (layer.VideoEffects.Count > 0)
                     {
                         ImGuiHelper.MoveCursorBy(4f, 0f);
-                        ImGui.Text("Video Effects");
+                        TextCentered("Video Effects");
                     }
 
                     foreach (Effect effect in layer.VideoEffects)
-                    {
                         EffectUI(effect);
-                    }
+
+                    foreach (Effect effect in _effectsToDelete)
+                        layer.DeleteEffect(effect);
+
                     ImGui.PopID();
                 }
                 ImGuiHelper.MoveCursorBy(0, ImGui.GetContentRegionAvail().Y - ImGui.GetFrameHeight());
                 ImGui.DragFloat("Width", ref _parameterWidth);
             }
-
-
             ImGui.End();
         }
 
@@ -91,51 +89,76 @@ namespace Engine.UI
         }
 
         private static float _parameterWidth = 400f;
+        private static List<Effect> _effectsToDelete = new();
         public static void EffectUI(Effect effect)
         {
             ImGui.PushID(effect.GetHashCode());
             string name = effect.Description.Name;
 
-            var headerVisible = ImGui.CollapsingHeader(name);
-
-            if (headerVisible)
+            if (ImGui.CollapsingHeader(name))
             {
-                ImGui.TreePush(name);
-                foreach (NamedParameter namedParameter in effect.Parameters)
+                Parameters(effect.Parameters, true);
+            }
+
+            if (ImGui.BeginPopupContextItem())
+            {
+                if (ImGui.MenuItem("Delete"))
                 {
-                    ImGui.PushID(namedParameter.Name);
-
-                    UI.KeyframeButton(namedParameter.Parameter);
-                    ImGui.SameLine();
-
-                    if (namedParameter.Parameter.UILocation == UILocation.Under)
-                    {
-                        bool opened = namedParameter.Parameter.Opened;
-                        ArrowButton("##opened", ref opened);
-                        ImGui.SameLine(0f, 4f);
-                        namedParameter.Parameter.Opened = opened;
-                    }
-
-                    ImGui.Text(namedParameter.Name);
-
-                    if (namedParameter.Parameter.UILocation == UILocation.Right)
-                    {
-                        ImGui.SameLine();
-                        ImGuiHelper.MoveCursorBy(ImGui.GetContentRegionAvail().X - _parameterWidth, 0);
-                        ImGui.SetNextItemWidth(_parameterWidth);
-                        namedParameter.Parameter.DrawUI();
-                    }
-                    else
-                    {
-                        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-                        if (namedParameter.Parameter.Opened)
-                            namedParameter.Parameter.DrawUI();
-                    }
-                    ImGui.PopID();
+                    _effectsToDelete.Add(effect);
                 }
-                ImGui.TreePop();
+
+                ImGui.EndPopup();
             }
             ImGui.PopID();
+        }
+
+        public static void Parameters(ParameterList parameters, bool root = false)
+        {
+            foreach (NamedParameter namedParameter in parameters)
+            {
+                ImGui.PushID(namedParameter.GetHashCode());
+
+                if (namedParameter.Parameter.UILocation == UILocation.Under)
+                {
+                    bool opened = namedParameter.Parameter.Opened;
+                    if (root)
+                        ImGuiHelper.MoveCursorBy(4f, 0f);
+                    ImGui.PushStyleColor(ImGuiCol.Button, Colors.Background);
+                    ArrowButton("##opened", ref opened);
+                    ImGui.PopStyleColor();
+                    ImGui.SameLine(0f, 4f);
+                    namedParameter.Parameter.Opened = opened;
+                }
+                else
+                {
+                    ImGuiHelper.MoveCursorBy(ImGui.GetFrameHeight() + 8f, 0f);
+                }
+
+                UI.KeyframeButton(namedParameter.Parameter);
+                ImGui.SameLine();
+
+
+                ImGui.Text(namedParameter.Name);
+
+                if (namedParameter.Parameter.UILocation == UILocation.Right)
+                {
+                    ImGui.SameLine();
+                    ImGuiHelper.MoveCursorBy(ImGui.GetContentRegionAvail().X - _parameterWidth, 0);
+                    ImGui.SetNextItemWidth(_parameterWidth);
+                    namedParameter.Parameter.DrawUI();
+                }
+                else
+                {
+                    if (namedParameter.Parameter.Opened)
+                    {
+                        ImGui.Indent(ImGui.GetFrameHeight() + 8f);
+                        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+                        namedParameter.Parameter.DrawUI();
+                        ImGui.Unindent(ImGui.GetFrameHeight() + 8f);
+                    }
+                }
+                ImGui.PopID();
+            }
         }
 
         private static LayerMouseState _layerMouseState = LayerMouseState.None;
@@ -178,8 +201,9 @@ namespace Engine.UI
                 var drawList = ImGui.GetWindowDrawList();
                 drawList.AddRectFilled(ImGui.GetCursorScreenPos(), ImGui.GetCursorScreenPos() + ImGuiHelper.GetLineSize(), Colors.MidGrayHex);
 
-
-                ImGui.Checkbox("##visible", ref layer.Visible);
+                var visible = layer.Visible;
+                ImGui.Checkbox("##visible", ref visible);
+                layer.Visible = visible;
                 ImGui.SameLine(0f, 2f);
                 ImGuiHelper.MoveCursorBy((ImGui.GetFrameHeight() + 2 ) * _layerDepth, 0f);
 
@@ -203,6 +227,22 @@ namespace Engine.UI
 
                 ImGui.PopID();
             }
+        }
+
+        public static void CommandHistory()
+        {
+            if (ImGui.Begin("Command History"))
+            {
+                foreach (var redo in CommandManager.RedoGroups.Reverse())
+                {
+                    ImGui.TextColored(Colors.Blue, redo.Name);
+                }
+                foreach (var undo in CommandManager.UndoGroups)
+                {
+                    ImGui.Text(undo.Name);
+                }
+            }
+            ImGui.End();
         }
 
         public static void ArrowButton(string id, ref bool opened)
@@ -373,7 +413,7 @@ namespace Engine.UI
             }
         }
 
-        public static void PreviewEvents(float delta)
+        public static void GlobalEvents(float delta)
         {
             if (ImGuiHelper.IsKeyPressed(Keys.Left))
                 App.Project.Time.Frames -= 1;
@@ -386,6 +426,14 @@ namespace Engine.UI
 
             if (App.Project.PreviewPlaying)
                 App.Project.Time.Seconds = (App.Project.Time.Seconds + delta) % App.Project.ActiveScene.Duration.Seconds;
+
+            if (ImGuiHelper.Shortcut(Keys.Z, Keys.LeftControl))
+            {
+                if (ImGuiHelper.IsKeyDown(Keys.LeftShift))
+                    CommandManager.Redo();
+                else
+                    CommandManager.Undo();
+            }
         }
 
 
@@ -397,7 +445,8 @@ namespace Engine.UI
                 var watch = Stopwatch.StartNew();
                 Surface surface = Renderer.RenderActiveScene();
                 watch.Stop();
-                Console.WriteLine(watch.ElapsedTicks / 10_000f);
+                
+                //Console.WriteLine(watch.ElapsedTicks / 10_000f);
                 GL.Viewport(ClientSize);
                 Framebuffer.Unbind(FramebufferTarget.Framebuffer);
 

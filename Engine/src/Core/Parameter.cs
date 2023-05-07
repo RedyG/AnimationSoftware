@@ -1,5 +1,6 @@
 ﻿using Engine.UI;
 using Engine.Utilities;
+using ImGuiNET;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -13,8 +14,8 @@ namespace Engine.Core
 {
     public abstract class Parameter
     {
-        public static Parameter<ParameterList> CreateGroup(params NamedParameter[] parameters) => new Parameter<ParameterList>(new ParameterList(parameters));
-        public static Parameter<ParameterList> CreateGroup(List<NamedParameter> parameters) => new Parameter<ParameterList>(new ParameterList(parameters));
+        public static Parameter<ParameterList> CreateGroup(params NamedParameter[] parameters) => new Parameter<ParameterList>(new ParameterList(parameters), false, false);
+        public static Parameter<ParameterList> CreateGroup(List<NamedParameter> parameters) => new Parameter<ParameterList>(new ParameterList(parameters), false, false);
 
         // TODO: cache the methods using delegates or just the MethodInfo
         public T1 GetValueAsType<T1>() => GetValueAtTimeAsType<T1>(App.Project.Time);
@@ -149,7 +150,7 @@ namespace Engine.Core
         }
 
         // TODO: might wanna make this static
-        T _oldValue;
+        private T _oldValue;
 
         public T BeginValueChange()
         {
@@ -238,12 +239,37 @@ namespace Engine.Core
 
         public static Type? DefaultTypeUI { get; set; }
         public IParameterUI<T>? CustomUI { get; set; } = DefaultTypeUI != null ? (IParameterUI<T>)Instancer.Create(DefaultTypeUI) : null;
+
+        private Dictionary<object, int> currentItems = new();
+
         public override void DrawUI()
         {
             if (CustomUI != null)
                 CustomUI.Draw(this);
+            else if (typeof(T).IsEnum)
+            {
+                var names = Enum.GetNames(typeof(T));
+                if (!currentItems.TryGetValue(this, out int currentItem))
+                {
+                    var index = Array.IndexOf(Enum.GetValues(typeof(T)), Value);
+                    currentItems.Add(this, index);
+                    currentItem = index;
+                }
 
-            // else -> not drawing anything
+                var beforeCurrent = currentItem;
+                ImGui.Combo("", ref currentItem, names, names.Length);
+
+                if (beforeCurrent != currentItem)
+                {
+                    currentItems[this] = currentItem;
+                    var values = Enum.GetValues(typeof(T));
+                    Value = (T)values.GetValue(currentItem)!;
+                }
+
+
+            }
+            else
+                ImGui.NewLine();
         }
 
         public override UILocation UILocation => CustomUI?.Location ?? UILocation.Right;

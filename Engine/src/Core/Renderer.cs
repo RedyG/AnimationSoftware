@@ -44,14 +44,14 @@ namespace Engine.Core
 
         static Renderer()
         {
-            _mainLayer.VideoEffects.Add(new RenderChildren());
+            _mainLayer.VideoEffects.Add(new Group());
         }
 
         public static Surface RenderActiveScene()
         {
  
             _mainLayer.Layers = App.Project.ActiveScene.Layers;
-            _mainLayer.Settings.Size.Value = App.Project.ActiveScene.Size;
+            _mainLayer.Transform.Size.Value = App.Project.ActiveScene.Size;
 
             //GL.Viewport(new Point(0, 0), PreviewSize);
             return RenderLayer(new RenderArgs(App.Project.Time, _mainLayer, _surfaceA, _surfaceB));
@@ -61,7 +61,7 @@ namespace Engine.Core
         {
             // TODO: reuse groups surfaces
             // TODO: optimize if only content effects by drawing directly on surface or stuff like that
-            Size size = ToPreviewSize(args.Layer.Settings.Size.GetValueAtTime(args.Time));
+            Size size = ToPreviewSize(args.Layer.Transform.Size.GetValueAtTime(args.Time));
             args.SurfaceA.Viewport = size;
             args.SurfaceB.Viewport = size;
 

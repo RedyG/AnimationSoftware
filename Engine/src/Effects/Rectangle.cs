@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 
 namespace Engine.Effects
 {
+    [EffectDesc(Category = "Content")]
     public class Rectangle : VideoEffect
     {
         public Parameter<PointF> Position { get; set; } = new Parameter<PointF>(new PointF(0f, 0f));

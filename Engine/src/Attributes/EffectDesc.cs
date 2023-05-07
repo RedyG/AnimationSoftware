@@ -11,5 +11,6 @@ namespace Engine.Attributes
     {
         public string? Name { get; init; }
         public string? Category { get; init; }
+        public bool Hidden { get; init; } = false;
     }
 }

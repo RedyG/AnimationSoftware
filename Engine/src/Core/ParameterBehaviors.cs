@@ -43,6 +43,8 @@ namespace Engine.Core
             Parameter<bool>.DefaultTypeUI = typeof(BoolUI);
 
             Parameter<string>.DefaultTypeUI = typeof(StringUI);
+
+            Parameter<ParameterList>.DefaultTypeUI = typeof(ParameterListUI);
         }
     }
 }

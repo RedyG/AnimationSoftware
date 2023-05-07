@@ -15,6 +15,19 @@ namespace Engine.UI
         public static bool IsKeyDown(Keys key) => ImGui.IsKeyDown((ImGuiKey)key);
         public static bool IsKeyPressed(Keys key) => ImGui.IsKeyPressed((ImGuiKey)key);
         public static bool IsKeyReleased(Keys key) => ImGui.IsKeyReleased((ImGuiKey)key);
+
+        public static bool Shortcut(Keys mainKey, params Keys[] otherKeys)
+        {
+            foreach (Keys key in otherKeys)
+            {
+                if (!IsKeyDown(key))
+                    return false;
+            }
+
+            return IsKeyPressed(mainKey);
+        }
+
+
         public static void MoveCursorBy(Vector2 translate)
         {
             var cursorPos = ImGui.GetCursorScreenPos();

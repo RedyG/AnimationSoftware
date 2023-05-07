@@ -12,37 +12,37 @@ namespace Engine.Core
     {
         private Func<T, T>? _validateMethod { get; set; }
 
-        private readonly List<Keyframe<T>> list = new();
+        private readonly List<Keyframe<T>> _list = new();
         private int GetClosest(int val1, int val2, Timecode time)
         {
-            if (time - list[val1].Time >= list[val2].Time - time)
+            if (time - _list[val1].Time >= _list[val2].Time - time)
                 return val2;
             else
                 return val1;
         }
         private void SortList()
         {
-            list.Sort((a, b) => a.Time.Seconds.CompareTo(b.Time.Seconds));
+            _list.Sort((a, b) => a.Time.Seconds.CompareTo(b.Time.Seconds));
 
-            if (list.Count <= 1)
+            if (_list.Count <= 1)
                 return;
 
-            for (int i = 1; i < list.Count; i++)
+            for (int i = 1; i < _list.Count; i++)
             {
-                if (list[i - 1].Time == list[i].Time)
-                    list.RemoveAt(i - 1);
+                if (_list[i - 1].Time == _list[i].Time)
+                    _list.RemoveAt(i - 1);
             }
         }
 
         public int NearestIndexAtTime(Timecode time)
         {
 
-            int n = list.Count;
+            int n = _list.Count;
 
             // Corner cases
-            if (time <= list[0].Time)
+            if (time <= _list[0].Time)
                 return 0;
-            if (time >= list[n - 1].Time)
+            if (time >= _list[n - 1].Time)
                 return n - 1;
 
             // Doing binary search
@@ -51,15 +51,15 @@ namespace Engine.Core
             {
                 mid = (i + j) / 2;
 
-                if (list[mid].Time == time)
+                if (_list[mid].Time == time)
                     return mid;
 
                 // If time is less than list element, then search in left
-                if (time < list[mid].Time)
+                if (time < _list[mid].Time)
                 {
 
                     // If time is greater than previous to mid, return closest of two
-                    if (mid > 0 && time > list[mid - 1].Time)
+                    if (mid > 0 && time > _list[mid - 1].Time)
                         return GetClosest(mid - 1,
                                      mid, time);
 
@@ -68,7 +68,7 @@ namespace Engine.Core
                 }
                 else
                 {
-                    if (mid < n - 1 && time < list[mid + 1].Time)
+                    if (mid < n - 1 && time < _list[mid + 1].Time)
                         return GetClosest(mid,
                              mid + 1, time);
                     i = mid + 1; // update i
@@ -80,77 +80,92 @@ namespace Engine.Core
         }
         public int IndexOf(Keyframe<T> keyframe)
         {
-            return list.IndexOf(keyframe);
+            return _list.IndexOf(keyframe);
         }
         public void RemoveNearestAtTime(Timecode time)
         {
-            list.RemoveAt(NearestIndexAtTime(time));
+            _list.RemoveAt(NearestIndexAtTime(time));
         }
         public void RemoveAt(int index)
         {
-            list.RemoveAt(index);
+            _list.RemoveAt(index);
         }
         public void RemoveRange(int index, int count)
         {
-            list.RemoveRange(index, count);
+            _list.RemoveRange(index, count);
         }
         public Keyframe<T> NearestAtTime(Timecode time)
         {
-            return list[NearestIndexAtTime(time)];
+            return _list[NearestIndexAtTime(time)];
         }
         public Keyframe<T> At(int index)
         {
-            return list.ElementAt(0);
+            return _list.ElementAt(0);
         }
         public Keyframe<T> this[int index]
         {
             get
             {
-                return list[index];
+                return _list[index];
             }
             set
             {
-                list[index] = value;
+                _list[index] = value;
             }
         }
 
-        public int Count => list.Count;
+        public int Count => _list.Count;
         public bool IsReadOnly => false;
-        public void Add(Keyframe<T> keyframe)
+        public void Add(Keyframe<T> newKeyframe)
         {
-            keyframe.ValidateMethod = _validateMethod;
+            newKeyframe.TimeChanged += new EventHandler<EventArgs>(Keyframe_TimeChanged);
+            newKeyframe.ValidateMethod = _validateMethod;
+            newKeyframe.Value = newKeyframe.Value; // we do that so the validate method is used
 
-            // we do that so the validate method is used
-            keyframe.Value = keyframe.Value;
+            for (int i = 0; i < _list.Count; i++)
+            {
+                var keyframe = _list[i];
 
-            list.Add(keyframe);
-            SortList();
-            keyframe.TimeChanged += new EventHandler<EventArgs>(Keyframe_TimeChanged);
+                if (keyframe.Time == newKeyframe.Time)
+                {
+                    keyframe.Value = newKeyframe.Value;
+                    return;
+                }
+                
+                if (keyframe.Time > newKeyframe.Time)
+                {
+                    _list.Insert(i - 1, newKeyframe);
+                    return;
+                }
+            }
+
+            _list.Add(newKeyframe);
+
         }
         public void Clear()
         {
-            list.Clear();
+            _list.Clear();
         }
         public bool Contains(Keyframe<T> keyframe)
         {
-            return list.Contains(keyframe);
+            return _list.Contains(keyframe);
         }
         public void CopyTo(Keyframe<T>[] array, int arrayIndex)
         {
-            list.CopyTo(array, arrayIndex);
+            _list.CopyTo(array, arrayIndex);
         }
         public bool Remove(Keyframe<T> keyframe)
         {
-            return list.Remove(keyframe);
+            return _list.Remove(keyframe);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return list.GetEnumerator();
+            return _list.GetEnumerator();
         }
         public IEnumerator<Keyframe<T>> GetEnumerator()
         {
-            return list.GetEnumerator();
+            return _list.GetEnumerator();
         }
 
         private void Keyframe_TimeChanged(object? sender, EventArgs e)
@@ -166,5 +181,6 @@ namespace Engine.Core
         {
             _validateMethod = validateMethod;
         }
+        // TODO: DEMAIN!!!: will not remove because sorted and deleted;
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Engine.Core
 {
-    public class LayerList : List<Layer>
+    public class LayerList : UndoableList<Layer>
     {
         public IEnumerable<Layer> SelectedEnumerable
         {

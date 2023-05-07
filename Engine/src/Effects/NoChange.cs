@@ -21,13 +21,10 @@ namespace Engine.Effects
     public class NoChange : VideoEffect
     {
         static ShaderProgram shader = Surface.CompileShader(@"
-vec4 surface(vec2 pos)
+vec4 surface()
 {
-vec4 color;
-for (float i = 0.0; i < 0.5; i += 0.01)
-    for (float j = 0.0; j < 0.5; j += 0.01)
-        color += texture(tex, pos + vec2(i, j));
-return color;
+vec2 offset = 1.0 / iResolution;
+return texture(input, uv + offset);
 }
         ");
         public override RenderResult Render(RenderArgs args)

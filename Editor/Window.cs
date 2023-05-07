@@ -48,9 +48,23 @@ namespace Editor
             App.Project.ActiveScene = scene;
 
             var group1 = new Layer("Group1", new PointF(0f, 0f), new Size(300, 300));
-            group1.AddEffect(new Engine.Effects.Image());
-            group1.Layers.Add(new Layer("aa", PointF.Empty, new System.Drawing.Size(100, 100)));
+            group1.AddEffect(new Group());
+            group1.AddEffect(new AntiAliasing());
+            var child1 = new Layer("HeyLayer", PointF.Empty, new System.Drawing.Size(100, 100));
+            child1.AddEffect(new Engine.Effects.Rectangle());
+            group1.Layers.Add(child1);
             App.Project.ActiveScene.Layers.Add(group1);
+
+
+            var param = new Parameter<float>(20f);
+            param.Value = 50f;
+            Console.WriteLine(param.Value);
+            param.Keyframes!.Add(new Keyframe<float>(Timecode.Zero, 100f, IEasing.Linear));
+            param.Keyframes!.Add(new Keyframe<float>(Timecode.Zero, 150f, IEasing.Linear));
+            param.Keyframes!.Add(new Keyframe<float>(Timecode.FromSeconds(1f), 200f, IEasing.Linear));
+            param.Keyframes!.Add(new Keyframe<float>(Timecode.FromSeconds(1f), 1000f, IEasing.Linear));
+            param.Keyframes!.Add(new Keyframe<float>(Timecode.FromSeconds(2f), 250f, IEasing.Linear));
+            param.Keyframes!.Add(new Keyframe<float>(Timecode.FromSeconds(3f), 250f, IEasing.Linear));
             
             
 
@@ -144,7 +158,7 @@ namespace Editor
             GL.Viewport(0, 0, ClientSize.X, ClientSize.Y);
             GraphicsApi.Clear(Color4.Black);
 
-            UI.PreviewEvents((float)e.Time);
+            UI.GlobalEvents((float)e.Time);
             UI.ClientSize = (Size)ClientSize;
 
             ImGui.DockSpaceOverViewport();
@@ -153,6 +167,7 @@ namespace Editor
             UI.PreviewWindow();
             UI.TimelineWindow();
             UI.EffectListWindow();
+            UI.CommandHistory();
             ImGui.ShowStackToolWindow();
 
             _controller.Render();

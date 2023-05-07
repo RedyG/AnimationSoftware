@@ -11,6 +11,16 @@ using System.Threading.Tasks;
 
 namespace Engine.UI
 {
+    public class ParameterListUI : IParameterUI<ParameterList>
+    {
+        public UILocation Location => UILocation.Under;
+
+        public void Draw(Parameter<ParameterList> parameter)
+        {
+            UI.Parameters(parameter.Value);
+        }
+    }
+
     public class StringUI : IParameterUI<string>
     {
         public void Draw(Parameter<string> parameter)
@@ -24,6 +34,7 @@ namespace Engine.UI
     {
         public UILocation Location => UILocation.Under;
 
+
         public float Speed { get; set; } = 1f;
         public float Minimum { get; set; } = float.MinValue;
         public float Maximum { get; set; } = float.MaxValue;
@@ -31,8 +42,11 @@ namespace Engine.UI
         public void Draw(Parameter<float> parameter)
         {
             var value = parameter.BeginValueChange();
-            Console.WriteLine(value);
             ImGui.DragFloat("", ref value, Speed, Minimum, Maximum);
+            if (ImGui.IsItemActivated())
+                CommandManager.BeginGroup("Test");
+            if (ImGui.IsItemDeactivatedAfterEdit())
+                CommandManager.EndGroup();
             parameter.EndValueChange(value);
         }
     }
@@ -46,6 +60,7 @@ namespace Engine.UI
         {
             var value = parameter.BeginValueChange();
             ImGui.DragInt("", ref value, Speed, Minimum, Maximum);
+                
             parameter.EndValueChange(value);
         }
     }

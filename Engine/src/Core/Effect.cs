@@ -50,7 +50,12 @@ namespace Engine.Core
                 {
                     if (type.IsSubclassOf(typeof(Effect)))
                     {
+                        if (type.IsAbstract)
+                            continue;
+
                         var description = GetDescription(type);
+                        if (description.Hidden)
+                            continue;
                         if (Effects.TryGetValue(description.Category, out var category))
                         {
                             category[description.Name] = type;
@@ -73,9 +78,11 @@ namespace Engine.Core
                 return cachedDesc;
 
             EffectDesc? descAttribute = type.GetCustomAttribute<EffectDesc>();
+
             var newDescription = new EffectDescription(
                 descAttribute?.Name ?? StringUtilities.UnPascalCase(type.Name),
-                descAttribute?.Category
+                descAttribute?.Category,
+                descAttribute?.Hidden ?? false
             );
 
             EffectDescriptions.Add(type, newDescription);
@@ -98,6 +105,7 @@ namespace Engine.Core
         public const string DefaultCategory = "Global";
 
         public string Name { get; init; }
+        public bool Hidden { get; init; }
 
         private readonly string? _category;
         public string Category
@@ -106,10 +114,11 @@ namespace Engine.Core
             init => _category = value;
         }
 
-        public EffectDescription(string name, string? category = null)
+        public EffectDescription(string name, string? category = null, bool hidden = false)
         {
             Name = name;
             _category = category;
+            Hidden = hidden;
         }
     }
     public struct RenderArgs

@@ -58,7 +58,7 @@ namespace Editor
             //io.Fonts.AddFontDefault();
 
             io.Fonts.AddFontFromFileTTF("C:\\Users\\minio\\OneDrive\\Documents\\NewBlue\\Titler Pro\\Library\\Project Templates\\_LEGACY\\Social Media Collection\\fonts\\Roboto-Regular.ttf", 14f);
-            UI.Font = io.Fonts.AddFontFromFileTTF("C:\\Users\\minio\\OneDrive\\Documents\\NewBlue\\Titler Pro\\Library\\Project Templates\\_LEGACY\\Social Media Collection\\fonts\\Roboto-Regular.ttf", 20f);
+            UI.Font = io.Fonts.AddFontFromFileTTF("C:\\Users\\minio\\OneDrive\\Documents\\NewBlue\\Titler Pro\\Library\\Project Templates\\_LEGACY\\Social Media Collection\\fonts\\Roboto-Regular.ttf", 24f);
 
             io.ConfigFlags |= ImGuiConfigFlags.DockingEnable | ImGuiConfigFlags.NavEnableKeyboard;
             io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;

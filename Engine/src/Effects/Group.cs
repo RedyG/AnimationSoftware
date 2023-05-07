@@ -1,4 +1,5 @@
-﻿using Engine.Core;
+﻿using Engine.Attributes;
+using Engine.Core;
 using Engine.Graphics;
 using Engine.OpenGL;
 using OpenTK.Graphics.OpenGL4;
@@ -14,11 +15,12 @@ using System.Threading.Tasks;
 
 namespace Engine.Effects
 {
-    public class RenderChildren : VideoEffect, IDisposable
+    [EffectDesc(Category = "Content")]
+    public class Group : VideoEffect, IDisposable
     {
         private Surface _groupSurface;
 
-        public RenderChildren()
+        public Group()
         {
             Size size = App.Project.ActiveScene.Size;
             Texture texture = Texture.Create(size.Width, size.Height);
@@ -52,7 +54,7 @@ namespace Engine.Effects
 
                 args.SurfaceB.Bind(FramebufferTarget.Framebuffer);
                 GL.BlendFunc(BlendingFactor.One, BlendingFactor.OneMinusSrcAlpha);
-                GraphicsApi.DrawSurface(MatrixBuilder.CreateTransform(childTime, args.Layer.Settings.Size.GetValueAtTime(args.Time), childLayer), childSurface);
+                GraphicsApi.DrawSurface(MatrixBuilder.CreateTransform(childTime, args.Layer.Transform.Size.GetValueAtTime(args.Time), childLayer), childSurface);
             }
 
             return new RenderResult(true);

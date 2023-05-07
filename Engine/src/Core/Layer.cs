@@ -12,15 +12,20 @@ namespace Engine.Core
 {
     public class Layer
     {
-        public List<Effect> OtherEffects { get; set; } = new();
-        public List<VideoEffect> VideoEffects { get; set; } = new();
+        public UndoableList<Effect> OtherEffects { get; set; } = new();
+        public UndoableList<VideoEffect> VideoEffects { get; set; } = new();
         public LayerList Layers { get; set; } = new();
         public bool IsGroup { get => Layers.Count > 0; }
         public bool Selected { get; set; } = false;
 
         public string Name;
 
-        public bool Visible = true;
+        private bool _visible = true;
+        public bool Visible
+        {
+            get => _visible;
+            set => CommandManager.ExecuteIfNeeded(_visible, value, new VisibleCommand { Layer = this, Visible = value });
+        }
 
         public bool Opened = false;
 
@@ -48,24 +53,24 @@ namespace Engine.Core
 
         public bool IsActiveAtTime(Timecode time) => time >= InPoint && time < OutPoint && Visible;
 
-        public LayerSettings Settings { get; set; }
+        public Transform Transform { get; set; }
 
         public Layer(string name, PointF position, Size size)
         {
             Name = name;
-            Settings = new LayerSettings(position, size);
+            Transform = new Transform(position, size);
 
-            Settings.Scale.CustomUI = new Vector2UI { Speed = 0.01f };
+            Transform.Scale.CustomUI = new Vector2UI { Speed = 0.01f };
 
-            Settings.Bounds.ValueSetter += (object? sender, ValueSetterEventArgs<RectangleF> args) =>
+            Transform.Bounds.ValueSetter += (object? sender, ValueSetterEventArgs<RectangleF> args) =>
             {
-                Settings.Position.SetValueAtTime(args.Time, args.Value.Location);
-                Settings.Size.SetValueAtTime(args.Time, args.Value.Size);
+                Transform.Position.SetValueAtTime(args.Time, args.Value.Location);
+                Transform.Size.SetValueAtTime(args.Time, args.Value.Size);
             };
-            Settings.Bounds.ValueGetter += (object? sender, ValueGetterEventArgs args) => new RectangleF(Settings.Position.GetValueAtTime(args.Time), Settings.Size.GetValueAtTime(args.Time));
+            Transform.Bounds.ValueGetter += (object? sender, ValueGetterEventArgs args) => new RectangleF(Transform.Position.GetValueAtTime(args.Time), Transform.Size.GetValueAtTime(args.Time));
 
-            Settings.PreviewSize.ValueSetter += (object? sender, ValueSetterEventArgs<Size> args) => Settings.Size.SetValueAtTime(args.Time, Renderer.FromPreviewSize(args.Value));
-            Settings.PreviewSize.ValueGetter += (object? sender, ValueGetterEventArgs args) => Renderer.ToPreviewSize(Settings.Size.GetValueAtTime(args.Time));
+            Transform.PreviewSize.ValueSetter += (object? sender, ValueSetterEventArgs<Size> args) => Transform.Size.SetValueAtTime(args.Time, Renderer.FromPreviewSize(args.Value));
+            Transform.PreviewSize.ValueGetter += (object? sender, ValueGetterEventArgs args) => Renderer.ToPreviewSize(Transform.Size.GetValueAtTime(args.Time));
         }
 
         public void AddEffect(Effect effect)
@@ -79,9 +84,40 @@ namespace Engine.Core
                 OtherEffects.Add(effect);
             }
         }
+
+        public bool DeleteEffect(Effect effect)
+        {
+            if (effect is VideoEffect videoEffect)
+            {
+                return VideoEffects.Remove(videoEffect);
+            }
+
+            return OtherEffects.Remove(effect);
+        }
+
+        private class VisibleCommand : ICommand
+        {
+            public Layer Layer;
+            public bool Visible;
+            private bool _lastVisible;
+
+            public string Name => "Layer visibility";
+
+            public void Execute()
+            {
+                _lastVisible = Layer._visible;
+                Layer._visible = Visible;
+            }
+
+            public void Undo()
+            {
+                Layer._visible = _lastVisible;
+            }
+        }
     }
 
-    public class LayerSettings : Effect
+    [EffectDesc(Hidden = true)]
+    public class Transform : Effect
     {
         public Parameter<PointF> Position { get; }
         public Parameter<PointF> Origin { get; } = new(new PointF(0f, 0f));
@@ -91,7 +127,7 @@ namespace Engine.Core
         public Parameter<RectangleF> Bounds { get; } = new(RectangleF.Empty, false, false);
         public Parameter<Size> PreviewSize { get; } = new(System.Drawing.Size.Empty, false, false);
 
-        public LayerSettings(PointF position, SizeF size)
+        public Transform(PointF position, SizeF size)
         {
             Position = new(position);
             Size = new(size);
@@ -102,7 +138,11 @@ namespace Engine.Core
             new("Origin", Origin),
             new("Size", Size),
             new("Scale", Scale),
-            new("Rotation", Rotation)
+            new("Rotation", Rotation),
+            new("Group", Parameter.CreateGroup(
+                new ("a", Rotation),
+                new ("b", Scale)
+            ))
         );
 
     }

@@ -60,13 +60,15 @@ namespace Engine.Graphics
 
                 out vec4 FragColor;
 
-                in vec2 texCoord;
+                in vec2 uv;
 
-                uniform sampler2D tex;
+                uniform sampler2D input;
+                uniform vec2 iResolution;
+
                 {source}
                 void main()
                 {{
-                    FragColor = surface(texCoord);
+                    FragColor = surface();
                 }}
             ";
 
@@ -78,19 +80,17 @@ namespace Engine.Graphics
                 layout(location = 0) in vec3 aPos;
                 layout(location = 1) in vec2 aTexCoord;                
                 
-                out vec2 texCoord;
-
-            
+                out vec2 uv;
 
                 uniform mat4 transform;
                 uniform vec2 ratio;
 
                 void main()
                 {
-                    texCoord = aTexCoord * ratio;
+                    uv = aTexCoord * ratio;
                     gl_Position = vec4(aPos, 1.0) * transform;
                 }
             ";
-        public readonly static ShaderProgram DefaultShader = CompileShader("vec4 surface(vec2 pos) { return texture(tex, pos); }");
+        public readonly static ShaderProgram DefaultShader = CompileShader("vec4 surface() { return texture(input, uv); }");
     }
 }
