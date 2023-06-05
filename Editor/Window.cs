@@ -47,26 +47,34 @@ namespace Editor
             scene = new Scene(60f, new Size(1920, 1080), Timecode.FromSeconds(100f));
             App.Project.ActiveScene = scene;
 
-            var group1 = new Layer("Group1", new PointF(0f, 0f), new Size(300, 300));
+            var group1 = new Layer("Group1", new PointF(0f, 0f), new Size(500, 500));
+            //group1.Transform.Position.Keyframes.Add(new Keyframe<PointF>(Timecode.FromSeconds(1f), PointF.Empty, new BezierEasing(0.92f, 0f, 0.11f, 1f)));
+            //group1.Transform.Position.Keyframes.Add(new Keyframe<PointF>(Timecode.FromSeconds(5f), new PointF(500f, 500f), IEasing.Linear));
+            var rect = new Engine.Effects.Rectangle();
+            rect.Color.Value = Color4.AliceBlue;
+            //group1.AddEffect(rect);
             group1.AddEffect(new Group());
-            group1.AddEffect(new AntiAliasing());
-            var child1 = new Layer("HeyLayer", PointF.Empty, new System.Drawing.Size(100, 100));
-            child1.AddEffect(new Engine.Effects.Rectangle());
-            group1.Layers.Add(child1);
             App.Project.ActiveScene.Layers.Add(group1);
+            var layer1 = new Layer("Layer1", PointF.Empty, new System.Drawing.Size(250, 250));
+            layer1.Transform.Position.Keyframes.Add(new Keyframe<PointF>(Timecode.FromSeconds(1f), new PointF(0, 0), IEasing.OutElastic));
+            layer1.Transform.Position.Keyframes.Add(new Keyframe<PointF>(Timecode.FromSeconds(5f), new PointF(0, 250), IEasing.Linear));
+            var rotation = layer1.Transform.Rotation.Keyframes;
+            rotation.Add(new Keyframe<float>(Timecode.Zero, 0f, new BezierEasing(new PointF(0.6f, 0.2f), new PointF(0.2f, 0.6f))));
+            rotation.Add(new Keyframe<float>(Timecode.FromSeconds(50f), 200f, new BezierEasing(new PointF(0.6f, 0.2f), new PointF(0.2f, 0.6f))));
+            rotation.Add(new Keyframe<float>(Timecode.FromSeconds(80f), 400f, IEasing.Linear));
+            rotation.Add(new Keyframe<float>(Timecode.FromSeconds(100f), 100f, IEasing.InCirc));
+            var layer2 = new Layer("Layer2", new PointF(250, 250), new System.Drawing.Size(250, 250));
+            layer2.Transform.Position.Keyframes.Add(new Keyframe<PointF>(Timecode.FromSeconds(1f), new PointF(250, 250), IEasing.OutBounce));
+            layer2.Transform.Position.Keyframes.Add(new Keyframe<PointF>(Timecode.FromSeconds(5f), new PointF(250, 0), IEasing.Linear));
+            layer1.AddEffect(new Engine.Effects.Image());
+            layer1.AddEffect(new BlackAndWhite());
+            layer2.AddEffect(new Engine.Effects.Rectangle());
+            group1.Layers.Add(layer1);
+            group1.Layers.Add(layer2);
 
 
-            var param = new Parameter<float>(20f);
-            param.Value = 50f;
-            Console.WriteLine(param.Value);
-            param.Keyframes!.Add(new Keyframe<float>(Timecode.Zero, 100f, IEasing.Linear));
-            param.Keyframes!.Add(new Keyframe<float>(Timecode.Zero, 150f, IEasing.Linear));
-            param.Keyframes!.Add(new Keyframe<float>(Timecode.FromSeconds(1f), 200f, IEasing.Linear));
-            param.Keyframes!.Add(new Keyframe<float>(Timecode.FromSeconds(1f), 1000f, IEasing.Linear));
-            param.Keyframes!.Add(new Keyframe<float>(Timecode.FromSeconds(2f), 250f, IEasing.Linear));
-            param.Keyframes!.Add(new Keyframe<float>(Timecode.FromSeconds(3f), 250f, IEasing.Linear));
-            
-            
+
+
 
             _controller = new ImGuiController(ClientSize.X, ClientSize.Y);
 
@@ -76,7 +84,7 @@ namespace Editor
             style.Colors[(int)ImGuiCol.TextDisabled] = Colors.Text;
             style.Colors[(int)ImGuiCol.WindowBg] = Colors.Background;
             style.Colors[(int)ImGuiCol.ChildBg] = Colors.Transparent;
-            style.Colors[(int)ImGuiCol.PopupBg] = Colors.Background;
+            style.Colors[(int)ImGuiCol.PopupBg] = Colors.MidGray;
             style.Colors[(int)ImGuiCol.Border] = Colors.ReallyDarkGray;
             style.Colors[(int)ImGuiCol.BorderShadow] = Colors.Transparent;
             style.Colors[(int)ImGuiCol.FrameBg] = Colors.DarkGray;
@@ -133,7 +141,6 @@ namespace Editor
         protected override void OnResize(ResizeEventArgs e)
         {
             base.OnResize(e);
-
             // Update the opengl viewport
             GL.Viewport(0, 0, ClientSize.X, ClientSize.Y);
 
@@ -151,26 +158,23 @@ namespace Editor
         protected override void OnRenderFrame(FrameEventArgs e)
         {
             base.OnRenderFrame(e);
-
+            var time = Stopwatch.StartNew();
             _controller.Update(this, (float)e.Time);
+
 
             Framebuffer.Unbind(FramebufferTarget.Framebuffer);
             GL.Viewport(0, 0, ClientSize.X, ClientSize.Y);
             GraphicsApi.Clear(Color4.Black);
 
             UI.GlobalEvents((float)e.Time);
-            UI.ClientSize = (Size)ClientSize;
-
-            ImGui.DockSpaceOverViewport();
+            Preview.ClientSize = (Size)ClientSize;
+            MainMenuBar.Draw();
             ImGui.ShowDemoWindow();
-            UI.EffectsWindow();
-            UI.PreviewWindow();
-            UI.TimelineWindow();
-            UI.EffectListWindow();
-            UI.CommandHistory();
             ImGui.ShowStackToolWindow();
-
             _controller.Render();
+            time.Stop();
+            //Console.WriteLine(time.ElapsedTicks / 10_000f);
+
             ImGuiController.CheckGLError("End of frame");
             SwapBuffers();
         }

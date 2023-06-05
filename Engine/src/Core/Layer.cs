@@ -1,7 +1,9 @@
 ﻿using Engine.Attributes;
 using Engine.UI;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
@@ -14,35 +16,93 @@ namespace Engine.Core
     {
         public UndoableList<Effect> OtherEffects { get; set; } = new();
         public UndoableList<VideoEffect> VideoEffects { get; set; } = new();
+
+        public IEnumerable<Effect> Effects
+        {
+            get
+            {
+                yield return Transform;
+                foreach (Effect effect in OtherEffects)
+                {
+                    yield return effect;
+                }
+                foreach (Effect videoEffect in VideoEffects)
+                {
+                    yield return videoEffect;
+                }
+            }
+        }
+
         public LayerList Layers { get; set; } = new();
         public bool IsGroup { get => Layers.Count > 0; }
         public bool Selected { get; set; } = false;
 
-        public string Name;
+        private string _name;
+        public string Name
+        {
+            get => _name;
+            set => CommandManager.ExecuteSetter("Layer name changed", _name, value, name => _name = name);
+        }
 
         private bool _visible = true;
         public bool Visible
         {
             get => _visible;
-            set => CommandManager.ExecuteIfNeeded(_visible, value, new VisibleCommand { Layer = this, Visible = value });
+            set => CommandManager.ExecuteIfNeeded(_visible, value, new VisibleCommand { Layer = this });
         }
 
+        [JsonIgnore]
         public bool Opened = false;
 
-        public Timecode Offset = Timecode.FromSeconds(0);
+        private Timecode _offset = Timecode.FromSeconds(0f);
+        public Timecode Offset
+        {
+            get => _offset;
+            set
+            {
+                Timecode diff = value - _offset;
+                if (diff == Timecode.Zero)
+                    return;
+
+                CommandManager.Execute(new OffsetCommand(this, diff));
+            }
+        }
+
+        public class OffsetCommand : ICommand
+        {
+            private Layer _layer;
+            private Timecode _diff;
+            public string Name => "Layer offset changed";
+
+            public void Execute()
+            {
+                _layer._offset += _diff;
+            }
+
+            public void Undo()
+            {
+                _layer._offset -= _diff;
+            }
+
+            public OffsetCommand(Layer layer, Timecode diff)
+            {
+                _layer = layer;
+                _diff = diff;
+            }
+        }
 
         private Timecode _inPoint = Timecode.FromSeconds(0);
         public Timecode InPoint
         {
             get => _inPoint + Offset;
-            set => _inPoint = value - Offset;
+            set => CommandManager.ExecuteSetter("Layer InPoint changed", _inPoint, value - Offset, newInPoint => _inPoint = newInPoint);
         }
 
         private Timecode _outPoint = App.Project.ActiveScene.Duration;
         public Timecode OutPoint
         {
             get => _outPoint + Offset;
-            set => _outPoint = value - Offset;
+            set => CommandManager.ExecuteSetter("Layer OutPoint changed", _outPoint, value - Offset, newOutPoint => _outPoint = newOutPoint);
         }
 
         public Timecode Duration
@@ -57,7 +117,7 @@ namespace Engine.Core
 
         public Layer(string name, PointF position, Size size)
         {
-            Name = name;
+            _name = name;
             Transform = new Transform(position, size);
 
             Transform.Scale.CustomUI = new Vector2UI { Speed = 0.01f };
@@ -98,20 +158,43 @@ namespace Engine.Core
         private class VisibleCommand : ICommand
         {
             public Layer Layer;
-            public bool Visible;
-            private bool _lastVisible;
 
             public string Name => "Layer visibility";
 
             public void Execute()
             {
-                _lastVisible = Layer._visible;
-                Layer._visible = Visible;
+                Layer._visible = !Layer._visible;
             }
 
             public void Undo()
             {
-                Layer._visible = _lastVisible;
+                Layer._visible = !Layer._visible;
+            }
+        }
+
+        public class NameChangedCommand : ICommand
+        {
+            private Layer _layer;
+            private string _newName;
+            private string _oldName;
+
+            public string Name => "Layer named changed";
+
+            public void Execute()
+            {
+                _oldName = _layer._name;
+                _layer._name = _newName;
+            }
+
+            public void Undo()
+            {
+                _layer._name = _oldName;
+            }
+
+            public NameChangedCommand(Layer layer, string newName)
+            {
+                _layer = layer;
+                _newName = newName;
             }
         }
     }
@@ -124,7 +207,10 @@ namespace Engine.Core
         public Parameter<SizeF> Size { get; }
         public Parameter<Vector2> Scale { get; } = new(new Vector2(1f));
         public Parameter<float> Rotation { get; } = new(0f);
+
+        [JsonIgnore]
         public Parameter<RectangleF> Bounds { get; } = new(RectangleF.Empty, false, false);
+        [JsonIgnore]
         public Parameter<Size> PreviewSize { get; } = new(System.Drawing.Size.Empty, false, false);
 
         public Transform(PointF position, SizeF size)

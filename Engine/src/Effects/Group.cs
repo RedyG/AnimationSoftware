@@ -39,7 +39,7 @@ namespace Engine.Effects
             if (!args.Layer.IsGroup)
                 return new RenderResult(false);
 
-            args.SurfaceB.Framebuffer.Bind(FramebufferTarget.Framebuffer);
+            args.SurfaceA.Framebuffer.Bind(FramebufferTarget.Framebuffer);
             GraphicsApi.Clear(new Color4(0f, 0f, 0f, 1f));
             foreach (Layer childLayer in args.Layer.Layers)
             {
@@ -50,14 +50,14 @@ namespace Engine.Effects
                 //Size layerSize = Renderer.ToPreviewSize(childLayer.Size.GetValueAtTime(args.Time));
                 //var surfaceA = new Surface(args.SurfaceA.Texture, args.SurfaceA.Framebuffer, args.SurfaceA.Size, layerSize);
                 //_groupSurface.Viewport = layerSize;
-                Surface childSurface = Renderer.RenderLayer(new RenderArgs(childTime, childLayer, args.SurfaceA, _groupSurface));
+                Surface childSurface = Renderer.RenderLayer(new RenderArgs(childTime, childLayer, args.SurfaceB, _groupSurface));
 
-                args.SurfaceB.Bind(FramebufferTarget.Framebuffer);
+                args.SurfaceA.Bind(FramebufferTarget.Framebuffer);
                 GL.BlendFunc(BlendingFactor.One, BlendingFactor.OneMinusSrcAlpha);
                 GraphicsApi.DrawSurface(MatrixBuilder.CreateTransform(childTime, args.Layer.Transform.Size.GetValueAtTime(args.Time), childLayer), childSurface);
             }
 
-            return new RenderResult(true);
+            return new RenderResult(false);
         }
 
         protected override ParameterList InitParameters() => new ParameterList();

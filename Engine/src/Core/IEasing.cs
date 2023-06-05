@@ -1,6 +1,10 @@
-﻿using System;
+﻿using Engine.UI;
+using ImGuiNET;
+using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -42,15 +46,46 @@ namespace Engine.Core
         public static readonly InOutBounce InOutBounce = new InOutBounce();
 
         public float Evaluate(float t);
+
+        public void DrawUI(Vector2 first, Vector2 second)
+        {
+            Random random = new Random();
+            var drawList = ImGui.GetWindowDrawList();
+            float yDiff = second.Y - first.Y;
+            float xDiff = second.X - first.X;
+            int steps = (int)Math.Min(Math.Abs(xDiff), Math.Abs(yDiff));
+            float yMult = 1f / steps;
+            float xStep = xDiff / steps;
+
+            var secondPoint = first;
+            for (int i = 0; i < steps; i++)
+            {
+                int next = i + 1;
+                var firstPoint = secondPoint;
+                secondPoint = first + new Vector2(xStep * next, Evaluate(yMult * next) * yDiff);
+                drawList.AddLine(firstPoint, secondPoint, Colors.BlueHex);
+            }
+        }
     }
 
     public class Hold : IEasing
     {
         public float Evaluate(float t) => 0f;
+
+        public void DrawUI(Vector2 first, Vector2 second)
+        {
+            var drawList = ImGui.GetWindowDrawList();
+            drawList.AddLine(first, second, Colors.MidGrayHex);
+        }
     }
     public class Linear : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.Linear(t);
+        public void DrawUI(Vector2 first, Vector2 second)
+        {
+            var drawList = ImGui.GetWindowDrawList();
+            drawList.AddLine(first, second, Colors.BlueHex);
+        }
     }
     public class InQuad : IEasing
     {

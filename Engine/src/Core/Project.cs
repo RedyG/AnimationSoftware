@@ -1,4 +1,6 @@
-﻿namespace Engine.Core
+﻿using Newtonsoft.Json;
+
+namespace Engine.Core
 {
     public class Project
     {
@@ -8,6 +10,8 @@
         public Scene ActiveScene { get; set; }
 
         public Timecode Time = Timecode.FromSeconds(0);
+
+        [JsonIgnore]
         public bool PreviewPlaying { get; set; }
 
         public Project(string name)

@@ -13,8 +13,8 @@ namespace Engine.Effects
     public class AntiAliasing : VideoEffect
     {
         private static ShaderProgram _shader = Surface.CompileShader(@"
-const float FXAA_SPAN_MAX = 8.0;
-const float FXAA_REDUCE_MUL = 1.0/8.0;
+const float FXAA_SPAN_MAX = 2.0;
+const float FXAA_REDUCE_MUL = 1.0/2.0;
 const float FXAA_REDUCE_MIN = 1.0/128.0;
 
 vec4 surface()
@@ -25,7 +25,8 @@ vec4 surface()
     vec3 ne = texture(input, uv + vec2( 1.0, -1.0) * offset).rgb;
     vec3 sw = texture(input, uv + vec2(-1.0,  1.0) * offset).rgb;
     vec3 se = texture(input, uv + vec2( 1.0,  1.0) * offset).rgb;
-    vec3 m  = texture(input, uv).rgb;
+    vec4 color = texture(input, uv);
+    vec3 m = color.rgb;
 
     vec3 luma = vec3(0.299, 0.587, 0.114);
     float lumaNW = dot(nw, luma);
@@ -48,9 +49,9 @@ vec4 surface()
     vec3 rgbB = rgbA * 0.5 + 0.25 * (texture(input, uv + dir * -0.5).xyz + texture(input, uv + dir * 0.5).xyz);
     float lumaB = dot(rgbB, luma);
     if (lumaB < lumaMin || lumaB > lumaMax) {
-        return vec4(rgbA, 1.0);
+        return vec4(rgbA, color.a);
     } else {
-        return vec4(rgbB, 1.0);
+        return vec4(rgbB, color.a);
     }
 }
 ");

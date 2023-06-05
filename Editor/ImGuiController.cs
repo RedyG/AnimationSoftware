@@ -58,7 +58,7 @@ namespace Editor
             //io.Fonts.AddFontDefault();
 
             io.Fonts.AddFontFromFileTTF("C:\\Users\\minio\\OneDrive\\Documents\\NewBlue\\Titler Pro\\Library\\Project Templates\\_LEGACY\\Social Media Collection\\fonts\\Roboto-Regular.ttf", 14f);
-            UI.Font = io.Fonts.AddFontFromFileTTF("C:\\Users\\minio\\OneDrive\\Documents\\NewBlue\\Titler Pro\\Library\\Project Templates\\_LEGACY\\Social Media Collection\\fonts\\Roboto-Regular.ttf", 24f);
+            LayerEffects.BigFont = io.Fonts.AddFontFromFileTTF("C:\\Users\\minio\\OneDrive\\Documents\\NewBlue\\Titler Pro\\Library\\Project Templates\\_LEGACY\\Social Media Collection\\fonts\\Roboto-Regular.ttf", 24f);
 
             io.ConfigFlags |= ImGuiConfigFlags.DockingEnable | ImGuiConfigFlags.NavEnableKeyboard;
             io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
@@ -226,6 +226,7 @@ void main()
 
             _frameBegun = true;
             ImGui.NewFrame();
+            ImGui.DockSpaceOverViewport();
         }
 
         private static Dictionary<ImGuiMouseCursor, MouseCursor> _cursors = new()

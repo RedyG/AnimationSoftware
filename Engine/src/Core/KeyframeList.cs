@@ -1,9 +1,12 @@
-﻿using System;
+﻿using Engine.Utilities;
+using Newtonsoft.Json;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Engine.Core
@@ -12,7 +15,8 @@ namespace Engine.Core
     {
         private Func<T, T>? _validateMethod { get; set; }
 
-        private readonly List<Keyframe<T>> _list = new();
+        [JsonProperty]
+        private readonly UndoableList<Keyframe<T>> _list = new();
         private int GetClosest(int val1, int val2, Timecode time)
         {
             if (time - _list[val1].Time >= _list[val2].Time - time)
@@ -90,10 +94,6 @@ namespace Engine.Core
         {
             _list.RemoveAt(index);
         }
-        public void RemoveRange(int index, int count)
-        {
-            _list.RemoveRange(index, count);
-        }
         public Keyframe<T> NearestAtTime(Timecode time)
         {
             return _list[NearestIndexAtTime(time)];
@@ -120,7 +120,9 @@ namespace Engine.Core
         {
             newKeyframe.TimeChanged += new EventHandler<EventArgs>(Keyframe_TimeChanged);
             newKeyframe.ValidateMethod = _validateMethod;
+            CommandManager.IgnoreStack.Push(true);
             newKeyframe.Value = newKeyframe.Value; // we do that so the validate method is used
+            CommandManager.IgnoreStack.Pop();
 
             for (int i = 0; i < _list.Count; i++)
             {
@@ -134,13 +136,12 @@ namespace Engine.Core
                 
                 if (keyframe.Time > newKeyframe.Time)
                 {
-                    _list.Insert(i - 1, newKeyframe);
+                    _list.Insert(i, newKeyframe);
                     return;
                 }
             }
 
             _list.Add(newKeyframe);
-
         }
         public void Clear()
         {
@@ -173,6 +174,18 @@ namespace Engine.Core
             SortList();
         }
 
+        public IEnumerable<Keyframe<T>> Selected
+        {
+            get
+            {
+                foreach (var keyframe in _list)
+                {
+                    if (keyframe.Selected)
+                        yield return keyframe;
+                }
+            }
+        }
+
         public KeyframeList()
         { 
         }
@@ -181,6 +194,5 @@ namespace Engine.Core
         {
             _validateMethod = validateMethod;
         }
-        // TODO: DEMAIN!!!: will not remove because sorted and deleted;
     }
 }

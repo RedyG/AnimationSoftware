@@ -17,7 +17,7 @@ namespace Engine.UI
 
         public void Draw(Parameter<ParameterList> parameter)
         {
-            UI.Parameters(parameter.Value);
+            LayerEffects.DrawParameters(parameter.Value);
         }
     }
 
@@ -43,10 +43,6 @@ namespace Engine.UI
         {
             var value = parameter.BeginValueChange();
             ImGui.DragFloat("", ref value, Speed, Minimum, Maximum);
-            if (ImGui.IsItemActivated())
-                CommandManager.BeginGroup("Test");
-            if (ImGui.IsItemDeactivatedAfterEdit())
-                CommandManager.EndGroup();
             parameter.EndValueChange(value);
         }
     }
@@ -60,7 +56,6 @@ namespace Engine.UI
         {
             var value = parameter.BeginValueChange();
             ImGui.DragInt("", ref value, Speed, Minimum, Maximum);
-                
             parameter.EndValueChange(value);
         }
     }

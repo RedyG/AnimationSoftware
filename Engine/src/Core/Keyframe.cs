@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Engine.Core
 {
-    public class Keyframe<T>
+    public class Keyframe<T> : IComparable<Keyframe<T>>
     {
         internal Func<T, T>? ValidateMethod { get; set; }
 
@@ -21,16 +21,16 @@ namespace Engine.Core
             }
         }
 
+        public bool Selected { get; set; }
+
         private T _value;
         public T Value
         {
             get => _value;
             set
             {
-                if (ValidateMethod == null)
-                    _value = value;
-                else
-                    _value = ValidateMethod(value);
+                T newValue = ValidateMethod == null ? value : ValidateMethod(value);
+                CommandManager.ExecuteIfNeeded(_value, newValue, new ValueChangedCommand(this, newValue));
             }
         }
         public IEasing Easing { get; set; }
@@ -39,7 +39,7 @@ namespace Engine.Core
         public Keyframe(Timecode time, T value, IEasing easing)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         { 
-            Value = value;
+            _value = value;
             Time = time;
             Easing = easing;
         }
@@ -49,6 +49,35 @@ namespace Engine.Core
         {
             if (TimeChanged != null)
                 TimeChanged(this, e);
+        }
+
+        public int CompareTo(Keyframe<T>? other) => Time.Seconds.CompareTo(other.Time.Seconds);
+
+        public class ValueChangedCommand : ICommand
+        {
+            private Keyframe<T> _keyframe;
+            private T _newValue;
+            private T _oldValue;
+
+            public string Name => "Keyframe value changed";
+
+            public void Execute()
+            {
+                _oldValue = _keyframe._value;
+
+                 _keyframe._value = _newValue;
+            }
+
+            public void Undo()
+            {
+                _keyframe._value = _oldValue;
+            }
+
+            public ValueChangedCommand(Keyframe<T> keyframe, T newValue)
+            {
+                _keyframe = keyframe;
+                _newValue = newValue;
+            }
         }
     }
 }

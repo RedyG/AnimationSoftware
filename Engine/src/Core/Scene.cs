@@ -1,4 +1,5 @@
 ﻿using Engine.Utilities;
+using Newtonsoft.Json;
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,7 @@ namespace Engine.Core
         public Size Size { get; set; }
         public Color4 BackgroundColor { get; set; } = Color4.White;
 
+        [JsonIgnore]
         public float AspectRatio => Size.GetAspectRatio();
 
 

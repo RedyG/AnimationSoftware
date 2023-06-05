@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Engine.UI;
+using ImGuiNET;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -9,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace Engine.Core
 {
+
     public class BezierEasing : IEasing
     {
         private static readonly PointF _p0 = new PointF(0f, 0f);
@@ -25,6 +28,59 @@ namespace Engine.Core
             return FindYForT(t, P0.Y, P1.Y, P2.Y, P3.Y);
         }
 
+        private static BezierEasing? _hoveredEasing;
+        private static Point _hoveredPoint;
+
+        public void DrawUI(Vector2 first, Vector2 second)
+        {
+            var drawList = ImGui.GetWindowDrawList();
+            Vector2 diff = second - first;
+            Vector2 p1 = new Vector2(diff.X * P1.X, diff.Y * P1.Y) + first;
+            Vector2 p2 = new Vector2(diff.X * P2.X, diff.Y * P2.Y) + first;
+            drawList.AddBezierCubic(first, p1, p2, second, Colors.BlueHex, 1f);
+
+            ImGui.SetCursorScreenPos(p1 - new Vector2(4f));
+            ImGui.InvisibleButton($"Handle 1_" + GetHashCode(), new Vector2(8f));
+
+
+            if (ImGui.IsItemHovered())
+            {
+                _hoveredEasing = this;
+                _hoveredPoint = Point.P1;
+            }
+
+            drawList.AddLine(first, p1, Colors.WhiteHex);
+            drawList.AddCircleFilled(p1, 4f, Colors.TextHex);
+
+            ImGui.SetCursorScreenPos(p2 - new Vector2(4f));
+            ImGui.InvisibleButton($"Handle 2_" + GetHashCode(), new Vector2(8f));
+
+
+            if (ImGui.IsItemHovered())
+            {
+                _hoveredEasing = this;
+                _hoveredPoint = Point.P2;
+            }
+
+            if (_hoveredEasing == this)
+            {
+                if (ImGui.IsMouseDown(ImGuiMouseButton.Left))
+                {
+                    Vector2 vec = (ImGui.GetMousePos() - first) / diff;
+                    if (_hoveredPoint == Point.P1)
+                        P1 = new PointF(vec.X, vec.Y);
+                    else
+                        P2 = new PointF(vec.X, vec.Y);
+                }
+                else
+                    _hoveredEasing = null;
+
+            }
+
+            drawList.AddLine(p2, second, Colors.WhiteHex);
+            drawList.AddCircleFilled(p2, 4f, Colors.TextHex);
+        }
+
         public BezierEasing(PointF p1, PointF p2)
         {
             P1 = p1;
@@ -34,6 +90,12 @@ namespace Engine.Core
         {
             P1 = new PointF(p1x, p1y);
             P2 = new PointF(p2x, p2y);
+        }
+
+        private enum Point
+        {
+            P1,
+            P2
         }
 
         // I have no clue how any of this works

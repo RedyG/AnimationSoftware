@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,7 +9,7 @@ namespace Engine.Core
 {
     public class LayerList : UndoableList<Layer>
     {
-        public IEnumerable<Layer> SelectedEnumerable
+        public IEnumerable<Layer> Selected
         {
             get
             {
@@ -18,33 +19,12 @@ namespace Engine.Core
                         yield return layer;
 
                     if (layer.IsGroup)
-                        foreach (var childLayer in layer.Layers.SelectedEnumerable)
+                        foreach (var childLayer in layer.Layers.Selected)
                             yield return childLayer;
                 }
             }
         }
 
-        public IReadOnlyCollection<Layer> Selected
-        {
-            get
-            {
-                var result = new List<Layer>();
-                GetSelectedLayers(this, result);
-                return result.AsReadOnly();
-            }
-        }
-
-        private static void GetSelectedLayers(LayerList layers, List<Layer> result)
-        {
-            foreach (var layer in layers)
-            {
-                if (layer.Selected)
-                    result.Add(layer);
-
-                if (layer.IsGroup)
-                    GetSelectedLayers(layer.Layers, result);
-            }
-        }
 
         public void Traverse(Action<Layer> action)
         {

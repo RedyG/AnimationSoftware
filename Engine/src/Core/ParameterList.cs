@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,6 +11,7 @@ namespace Engine.Core
 {
     public class ParameterList : IReadOnlyList<NamedParameter>
     {
+        [JsonProperty]
         private IReadOnlyList<NamedParameter> _parameters;
 
         public NamedParameter this[int index] => _parameters[index];
@@ -38,6 +40,7 @@ namespace Engine.Core
             _parameters = new List<NamedParameter>(parameters);
         }
 
+        [JsonConstructor]
         public ParameterList(List<NamedParameter> parameters)
         {
             _parameters = parameters;

@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -13,7 +13,11 @@ namespace Engine.Core
         public static Timecode Zero = Timecode.FromSeconds(0);
 
         public float Seconds { get; set; }
+
+        [JsonIgnore]
         public float Milliseconds { get => Seconds * 1000f; set => Seconds = (value / 1000f); }
+
+        [JsonIgnore]
         public int Frames
         {
             get => GetFrames(App.Project.ActiveScene.FrameRate);

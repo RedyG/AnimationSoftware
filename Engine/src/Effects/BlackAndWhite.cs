@@ -45,7 +45,6 @@ namespace Engine.Effects
         public override RenderResult Render(RenderArgs args)
         {
             args.SurfaceB.Bind(FramebufferTarget.Framebuffer);
-            Console.WriteLine(Algorithm.GetValueAtTime(args.Time));
             GraphicsApi.DrawSurface(MatrixBuilder.Empty, args.SurfaceA, _shaders[Algorithm.GetValueAtTime(args.Time)]);
 
             return new RenderResult(true);

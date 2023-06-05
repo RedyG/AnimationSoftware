@@ -2,6 +2,7 @@
 using Engine.Graphics;
 using Engine.OpenGL;
 using Engine.Utilities;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,6 +20,8 @@ namespace Engine.Core
         // TODO: optimize if no need to ping pong
         // TDOO: make the API better
         private ParameterList? _parameters;
+
+        [JsonIgnore]
         public ParameterList Parameters
         {
             get
@@ -29,6 +32,8 @@ namespace Engine.Core
                 return _parameters;
             }
         }
+
+        [JsonIgnore]
         public EffectDescription Description => GetDescription(_type);
 
         protected abstract ParameterList InitParameters();

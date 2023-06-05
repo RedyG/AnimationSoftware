@@ -1,11 +1,14 @@
 ﻿using Engine.UI;
 using Engine.Utilities;
 using ImGuiNET;
+using Newtonsoft.Json;
+using OpenTK.Audio.OpenAL;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Runtime.Serialization;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,12 +31,34 @@ namespace Engine.Core
         public abstract void AddKeyframeAtTime(Timecode time, IEasing easing);
         public abstract bool IsKeyframedAtTime(Timecode time);
         public abstract void DrawUI();
+
+        public abstract float GetEditorHeightAt(int keyframeIndex);
+        public abstract void SetEditorHeightAt(int keyframeIndex, float editorHeight);
+
+        public abstract IEnumerable<KeyframeDefinition> KeyframeDefinitions { get; }
+        public IEnumerable<KeyframeDefinition> SelectedKeyframeDefinitions
+        {
+            get
+            {
+                foreach (var def in KeyframeDefinitions)
+                    if (def.Selected)
+                        yield return def;
+            }
+        }
+
+        [JsonIgnore]
         public abstract UILocation UILocation { get; }
         public abstract bool CanBeKeyframed { get; }
+
+        [JsonIgnore]
         public abstract bool IsKeyframed { get; }
         public abstract bool CanBeLinked { get; init; }
+
+        [JsonIgnore]
         public abstract bool IsLinked { get; }
-        public abstract bool Opened { get; set; }
+
+        [JsonIgnore]
+        public bool Opened { get; set; }
 
         public Parameter()
         {
@@ -43,7 +68,10 @@ namespace Engine.Core
     {
         private Func<T, T>? _validateMethod;
 
+        [JsonProperty]
         private T _unkeyframedValue;
+
+        [JsonIgnore]
         public T Value
         {
             get => GetValueAtTime(App.Project.Time);
@@ -142,16 +170,12 @@ namespace Engine.Core
                 Keyframes!.Add(new Keyframe<T>(time, value, IEasing.Linear));
             else
             {
-                if (_validateMethod == null)
-                    _unkeyframedValue = value;
-                else
-                    _unkeyframedValue = _validateMethod(value);
+                var newValue = _validateMethod == null ? value : _validateMethod(value);
+                CommandManager.ExecuteIfNeeded(_unkeyframedValue, newValue, new ParameterValueChanged(this, newValue));
             }
         }
 
-        // TODO: might wanna make this static
         private T _oldValue;
-
         public T BeginValueChange()
         {
             _oldValue = Value;
@@ -160,9 +184,18 @@ namespace Engine.Core
 
         public void EndValueChange(T value)
         {
-            // TODO: will crash
-            if (!_oldValue!.Equals(value))
-                Value = value;
+            if (_oldValue.Equals(value))
+                return;
+
+            ImGuiHelper.EditValue<T>(value, newValue => Value = newValue);
+        }
+
+        public void EditValue(T value, bool beginEdit, bool endEdit)
+        {
+            if (_oldValue.Equals(value))
+                return;
+
+            ImGuiHelper.EditValue<T>(value, newValue => Value = newValue, beginEdit, endEdit);
         }
 
         public override bool IsKeyframedAtTime(Timecode time)
@@ -196,6 +229,13 @@ namespace Engine.Core
         // TODO: will crash
         public override void SetValueAtTimeAsType<T1>(Timecode time, T1 value) => SetValueAtTime(time, (T)Convert.ChangeType(value, typeof(T))!);
 
+        [JsonConstructor]
+        public Parameter()
+        {
+            Keyframes = new();
+            _unkeyframedValue = default;
+        }
+
         public Parameter(T value)
         {
             Keyframes = new();
@@ -224,6 +264,7 @@ namespace Engine.Core
 
         public delegate T Lerper(T a, T b, float t);
         public static Lerper? DefaultTypeLerp { get; set; }
+        [JsonIgnore]
         public Lerper? CustomLerp { get; set; } = DefaultTypeLerp;
         private T Lerp(T a, T b, float t)
         {
@@ -240,8 +281,7 @@ namespace Engine.Core
         public static Type? DefaultTypeUI { get; set; }
         public IParameterUI<T>? CustomUI { get; set; } = DefaultTypeUI != null ? (IParameterUI<T>)Instancer.Create(DefaultTypeUI) : null;
 
-        private Dictionary<object, int> currentItems = new();
-
+        private static Dictionary<object, int> _currentItems = new();
         public override void DrawUI()
         {
             if (CustomUI != null)
@@ -249,10 +289,10 @@ namespace Engine.Core
             else if (typeof(T).IsEnum)
             {
                 var names = Enum.GetNames(typeof(T));
-                if (!currentItems.TryGetValue(this, out int currentItem))
+                if (!_currentItems.TryGetValue(this, out int currentItem))
                 {
                     var index = Array.IndexOf(Enum.GetValues(typeof(T)), Value);
-                    currentItems.Add(this, index);
+                    _currentItems.Add(this, index);
                     currentItem = index;
                 }
 
@@ -261,7 +301,10 @@ namespace Engine.Core
 
                 if (beforeCurrent != currentItem)
                 {
-                    currentItems[this] = currentItem;
+                    if (beforeCurrent == currentItem)
+                        return;
+
+                    _currentItems[this] = currentItem;
                     var values = Enum.GetValues(typeof(T));
                     Value = (T)values.GetValue(currentItem)!;
                 }
@@ -272,9 +315,81 @@ namespace Engine.Core
                 ImGui.NewLine();
         }
 
+        public override float GetEditorHeightAt(int keyframeIndex)
+        {
+            if (EditorConverter == null || Keyframes == null)
+                return 0f;
+
+            return EditorConverter.ToEditorHeight(Keyframes[keyframeIndex].Value);
+        }
+
+        public override void SetEditorHeightAt(int keyframeIndex, float editorHeight)
+        {
+            if (EditorConverter == null || Keyframes == null)
+                return;
+
+            Keyframes[keyframeIndex].Value = EditorConverter.FromEditorHeight(editorHeight);
+
+        }
+
         public override UILocation UILocation => CustomUI?.Location ?? UILocation.Right;
 
-        public override bool Opened { get; set; } = false;
+        public static IEditorConverter<T>? EditorConverter { get; set; }
+
+        public override IEnumerable<KeyframeDefinition> KeyframeDefinitions
+        {
+            get
+            {
+                if (Keyframes == null)
+                    yield break;
+
+                foreach (var keyframe in Keyframes)
+                    yield return KeyframeDefinition.FromKeyframe(keyframe);
+            }
+        }
+
+
+        public class ParameterValueChanged : ICommand
+        {
+            private Parameter<T> _parameter;
+            private T _newValue;
+            private T _oldValue;
+
+            public string Name => $"Parameter value changed " + typeof(T).Name ;
+
+            public void Execute()
+            {
+                _oldValue = _parameter._unkeyframedValue;
+                _parameter._unkeyframedValue = _newValue;
+            }
+
+            public void Undo()
+            {
+                _parameter._unkeyframedValue = _oldValue;
+            }
+
+            public ParameterValueChanged(Parameter<T> parameter, T newValue)
+            {
+                _parameter = parameter;
+                _newValue = newValue;
+            }
+        }
+    }
+
+    public readonly struct KeyframeDefinition
+    {
+        public Timecode Time { get; }
+        public IEasing Easing { get; }
+        public bool Selected { get; }
+
+        public static KeyframeDefinition FromKeyframe<T>(Keyframe<T> keyframe) => new KeyframeDefinition(keyframe.Time, keyframe.Easing, keyframe.Selected);
+
+        public KeyframeDefinition(Timecode time, IEasing easing, bool selected)
+        {
+            Time = time;
+            Easing = easing;
+            Selected = selected;
+        }
     }
 
     public class ValueGetterEventArgs : EventArgs
