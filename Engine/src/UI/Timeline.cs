@@ -100,7 +100,7 @@ namespace Engine.UI
                 {
                     string name = layer.Name;
                     ImGui.InputText("", ref name, 999);
-                    ImGuiHelper.EditValue<string>(name, (value) => layer.Name = value);
+                    ImGuiHelper.EndValueChange<string>(name, (value) => layer.Name = value);
                     ImGui.SameLine();
                     if (ImGui.Button("Done"))
                     {
@@ -201,21 +201,28 @@ namespace Engine.UI
                 {
                     if (_layerMouseState == LayerMouseState.Center)
                     {
-                        ImGuiHelper.EditValue<Timecode>(layer.Offset + diffTime, newOffset => layer.Offset = newOffset);
+                        ImGuiHelper.BeginValueChange(layer.Offset);
+                        ImGuiHelper.EndValueChange(layer.Offset + diffTime, newOffset => layer.Offset = newOffset);
                     }
                     else if (_layerMouseState == LayerMouseState.InPoint)
                     {
                         ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEW);
                         var inPoint = layer.InPoint + diffTime;
                         if (inPoint < layer.OutPoint)
-                            ImGuiHelper.EditValue<Timecode>(inPoint, newInPoint => layer.InPoint = newInPoint);
+                        {
+                            ImGuiHelper.BeginValueChange(layer.InPoint);
+                            ImGuiHelper.EndValueChange<Timecode>(inPoint, newInPoint => layer.InPoint = newInPoint);
+                        }
                     }
                     else if (_layerMouseState == LayerMouseState.OutPoint)
                     {
                         ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEW);
                         var outPoint = layer.OutPoint + diffTime;
                         if (outPoint > layer.InPoint)
-                            ImGuiHelper.EditValue<Timecode>(outPoint, newOutPoint => layer.OutPoint = newOutPoint);
+                        {
+                            ImGuiHelper.BeginValueChange(layer.OutPoint);
+                            ImGuiHelper.EndValueChange<Timecode>(outPoint, newOutPoint => layer.OutPoint = newOutPoint);
+                        }
                     }
 
                     if (!isMouseDown)

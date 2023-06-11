@@ -46,30 +46,26 @@ namespace Engine.Core
         public static Dictionary<string, Dictionary<string, Type>> Effects { get; } = new();
 
         // TODO: make this per assembly, so each time you load a plugin you add those types to Effects and you don't have to clear it all
-        public static void RefreshEffects()
+        public static void LoadEffectsFromAssembly(Assembly assembly)
         {
-            Effects.Clear();
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            foreach (var type in assembly.GetTypes())
             {
-                foreach (var type in assembly.GetTypes())
+                if (type.IsSubclassOf(typeof(Effect)))
                 {
-                    if (type.IsSubclassOf(typeof(Effect)))
-                    {
-                        if (type.IsAbstract)
-                            continue;
+                    if (type.IsAbstract)
+                        continue;
 
-                        var description = GetDescription(type);
-                        if (description.Hidden)
-                            continue;
-                        if (Effects.TryGetValue(description.Category, out var category))
-                        {
-                            category[description.Name] = type;
-                        }
-                        else
-                        {
-                            Effects.Add(description.Category, new());
-                            Effects[description.Category][description.Name] = type;
-                        }
+                    var description = GetDescription(type);
+                    if (description.Hidden)
+                        continue;
+                    if (Effects.TryGetValue(description.Category, out var category))
+                    {
+                        category[description.Name] = type;
+                    }
+                    else
+                    {
+                        Effects.Add(description.Category, new());
+                        Effects[description.Category][description.Name] = type;
                     }
                 }
             }
@@ -82,7 +78,7 @@ namespace Engine.Core
             if (EffectDescriptions.TryGetValue(type, out EffectDescription cachedDesc))
                 return cachedDesc;
 
-            EffectDesc? descAttribute = type.GetCustomAttribute<EffectDesc>();
+            Description? descAttribute = type.GetCustomAttribute<Description>();
 
             var newDescription = new EffectDescription(
                 descAttribute?.Name ?? StringUtilities.UnPascalCase(type.Name),

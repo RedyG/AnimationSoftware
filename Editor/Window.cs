@@ -20,6 +20,7 @@ using OpenTK.Audio.OpenAL.Extensions.Creative.EFX;
 using Engine.UI;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 
 namespace Editor
 {
@@ -36,10 +37,16 @@ namespace Editor
         {
             base.OnLoad();
 
-            Effect.RefreshEffects();
+            var assembly = typeof(App).Assembly;
 
+            Effect.LoadEffectsFromAssembly(assembly);
+            IEasing.LoadEasingsFromAssembly(assembly);
+
+            GL.Disable(EnableCap.DepthTest);
             GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
             GL.Enable(EnableCap.Blend);
+            GL.BlendEquation(BlendEquationMode.FuncAdd);
+
 
             int a = GL.GetInteger(GetPName.MaxTextureImageUnits);
             //GL.Enable(EnableCap.Multisample);
@@ -47,30 +54,14 @@ namespace Editor
             scene = new Scene(60f, new Size(1920, 1080), Timecode.FromSeconds(100f));
             App.Project.ActiveScene = scene;
 
-            var group1 = new Layer("Group1", new PointF(0f, 0f), new Size(500, 500));
-            //group1.Transform.Position.Keyframes.Add(new Keyframe<PointF>(Timecode.FromSeconds(1f), PointF.Empty, new BezierEasing(0.92f, 0f, 0.11f, 1f)));
-            //group1.Transform.Position.Keyframes.Add(new Keyframe<PointF>(Timecode.FromSeconds(5f), new PointF(500f, 500f), IEasing.Linear));
-            var rect = new Engine.Effects.Rectangle();
-            rect.Color.Value = Color4.AliceBlue;
-            //group1.AddEffect(rect);
-            group1.AddEffect(new Group());
-            App.Project.ActiveScene.Layers.Add(group1);
+
             var layer1 = new Layer("Layer1", PointF.Empty, new System.Drawing.Size(250, 250));
-            layer1.Transform.Position.Keyframes.Add(new Keyframe<PointF>(Timecode.FromSeconds(1f), new PointF(0, 0), IEasing.OutElastic));
-            layer1.Transform.Position.Keyframes.Add(new Keyframe<PointF>(Timecode.FromSeconds(5f), new PointF(0, 250), IEasing.Linear));
-            var rotation = layer1.Transform.Rotation.Keyframes;
-            rotation.Add(new Keyframe<float>(Timecode.Zero, 0f, new BezierEasing(new PointF(0.6f, 0.2f), new PointF(0.2f, 0.6f))));
-            rotation.Add(new Keyframe<float>(Timecode.FromSeconds(50f), 200f, new BezierEasing(new PointF(0.6f, 0.2f), new PointF(0.2f, 0.6f))));
-            rotation.Add(new Keyframe<float>(Timecode.FromSeconds(80f), 400f, IEasing.Linear));
-            rotation.Add(new Keyframe<float>(Timecode.FromSeconds(100f), 100f, IEasing.InCirc));
+            layer1.AddEffect(new Engine.Effects.Rectangle());
+            App.Project.ActiveScene.Layers.Add(layer1);
+
             var layer2 = new Layer("Layer2", new PointF(250, 250), new System.Drawing.Size(250, 250));
-            layer2.Transform.Position.Keyframes.Add(new Keyframe<PointF>(Timecode.FromSeconds(1f), new PointF(250, 250), IEasing.OutBounce));
-            layer2.Transform.Position.Keyframes.Add(new Keyframe<PointF>(Timecode.FromSeconds(5f), new PointF(250, 0), IEasing.Linear));
-            layer1.AddEffect(new Engine.Effects.Image());
-            layer1.AddEffect(new BlackAndWhite());
             layer2.AddEffect(new Engine.Effects.Rectangle());
-            group1.Layers.Add(layer1);
-            group1.Layers.Add(layer2);
+            App.Project.ActiveScene.Layers.Add(layer2);
 
 
 
@@ -131,9 +122,9 @@ namespace Editor
             style.Colors[(int)ImGuiCol.NavWindowingDimBg] = new System.Numerics.Vector4(0.80f, 0.80f, 0.80f, 0.20f);
             style.Colors[(int)ImGuiCol.ModalWindowDimBg] = new System.Numerics.Vector4(0.80f, 0.80f, 0.80f, 0.35f);
             style.GrabRounding = style.FrameRounding = 0f;
-            style.WindowPadding = new System.Numerics.Vector2(0f, 0f);
+            style.WindowPadding = new System.Numerics.Vector2(4f);
             style.ChildBorderSize = 1f;
-            style.CellPadding = new System.Numerics.Vector2(0f, 0f);
+            style.CellPadding = new System.Numerics.Vector2(0f);
             style.ItemSpacing = new System.Numerics.Vector2(4f);
             //style.Padding = new System.Numerics.Vector2(10f, 10f);
         }
@@ -173,7 +164,7 @@ namespace Editor
             ImGui.ShowStackToolWindow();
             _controller.Render();
             time.Stop();
-            //Console.WriteLine(time.ElapsedTicks / 10_000f);
+            Console.WriteLine(time.ElapsedTicks / 10_000f);
 
             ImGuiController.CheckGLError("End of frame");
             SwapBuffers();

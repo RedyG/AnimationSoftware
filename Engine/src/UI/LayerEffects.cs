@@ -108,17 +108,19 @@ namespace Engine.UI
             ImGui.PushID(effect.GetHashCode());
             string name = effect.Description.Name;
 
-            if (ImGui.CollapsingHeader(name))
-            {
-                DrawParameters(effect.Parameters, true);
-            }
-            if (ImGui.BeginPopupContextWindow())
+            bool header = ImGui.CollapsingHeader(name);
+
+            if (ImGuiHelper.BeginContextPopup("Effect Popup"))
             {
                 if (ImGui.MenuItem("Delete"))
                     _effectsToDelete.Add(effect);
 
                 ImGui.EndPopup();
             }
+
+            if (header)
+                DrawParameters(effect.Parameters, true);
+
             ImGui.PopID();
         }
 
@@ -154,7 +156,7 @@ namespace Engine.UI
                         ImGuiHelper.TextCentered("Video Effects");
                     }
 
-                    foreach (Effect effect in layer.VideoEffects)
+                    foreach (VideoEffect effect in layer.VideoEffects)
                         EffectUI(effect);
 
                     foreach (Effect effect in _effectsToDelete)

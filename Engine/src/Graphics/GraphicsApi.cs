@@ -38,7 +38,7 @@ namespace Engine.Graphics
             Matrix4 matrix = MatrixBuilder.ToTopLeft(transform);
             GL.ActiveTexture(TextureUnit.Texture0);
             surface.Texture.Bind(TextureTarget.Texture2D);
-
+             
             shader.Uniform1(shader.GetUniformLocation("input"), 0);
             shader.Uniform2(shader.GetUniformLocation("iResolution"), new OpenTK.Mathematics.Vector2(surface.Size.Width, surface.Size.Height));
             shader.Uniform2(shader.GetUniformLocation("ratio"), surface.Ratio);
@@ -46,6 +46,7 @@ namespace Engine.Graphics
             shader.Bind();
             surfaceEbo.Bind();
             surfaceVao.Bind();
+            GL.BlendFunc(BlendingFactor.One, BlendingFactor.OneMinusSrcAlpha);
             GL.DrawElements(BeginMode.Triangles, 6, DrawElementsType.UnsignedInt, 0);
         }
         public static void InitSurface()

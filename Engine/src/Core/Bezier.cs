@@ -1,4 +1,5 @@
 ﻿using Engine.UI;
+using Engine.Utilities;
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
@@ -8,11 +9,12 @@ using System.Numerics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace Engine.Core
 {
 
-    public class BezierEasing : IEasing
+    public class Bezier : IEasing
     {
         private static readonly PointF _p0 = new PointF(0f, 0f);
         private static readonly PointF _p3 = new PointF(1f, 1f);
@@ -28,7 +30,7 @@ namespace Engine.Core
             return FindYForT(t, P0.Y, P1.Y, P2.Y, P3.Y);
         }
 
-        private static BezierEasing? _hoveredEasing;
+        private static Bezier? _hoveredEasing;
         private static Point _hoveredPoint;
 
         public void DrawUI(Vector2 first, Vector2 second)
@@ -67,10 +69,18 @@ namespace Engine.Core
                 if (ImGui.IsMouseDown(ImGuiMouseButton.Left))
                 {
                     Vector2 vec = (ImGui.GetMousePos() - first) / diff;
+                    if (ImGuiHelper.IsKeyDown(Keys.LeftShift))
+                    {
+                        if (vec.Y > 0.5f)
+                            vec.Y = 1f;
+                        else
+                            vec.Y = 0f;
+                    }
+
                     if (_hoveredPoint == Point.P1)
-                        P1 = new PointF(vec.X, vec.Y);
+                        P1 = new PointF(MathUtilities.MinMax(vec.X, 0f, 1f), vec.Y);
                     else
-                        P2 = new PointF(vec.X, vec.Y);
+                        P2 = new PointF(MathUtilities.MinMax(vec.X, 0f, 1f), vec.Y);
                 }
                 else
                     _hoveredEasing = null;
@@ -81,12 +91,18 @@ namespace Engine.Core
             drawList.AddCircleFilled(p2, 4f, Colors.TextHex);
         }
 
-        public BezierEasing(PointF p1, PointF p2)
+        public Bezier()
+        {
+            P1 = new PointF(0.33f, 0f);
+            P2 = new PointF(0.67f, 1f);
+        }
+
+        public Bezier(PointF p1, PointF p2)
         {
             P1 = p1;
             P2 = p2;
         }
-        public BezierEasing(float p1x, float p1y, float p2x, float p2y)
+        public Bezier(float p1x, float p1y, float p2x, float p2y)
         {
             P1 = new PointF(p1x, p1y);
             P2 = new PointF(p2x, p2y);

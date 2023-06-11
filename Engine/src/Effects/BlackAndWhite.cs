@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Engine.Effects
 {
-    [EffectDesc(Category = "Filters", Name = "Black And White")]
+    [Description(Category = "Filters", Name = "Black And White")]
     public class BlackAndWhite : VideoEffect
     {
         public Parameter<GrayScaleAlgorithm> Algorithm { get; set; } = new (GrayScaleAlgorithm.Luma);
@@ -35,10 +35,67 @@ namespace Engine.Effects
             }
         ");
 
+        private static ShaderProgram _desaturation = Surface.CompileShader(@"
+            vec4 surface()
+            {
+                vec4 color = texture(input, uv);
+                float average = ( max(color.r, max(color.g, color.b)) + min(color.r, min(color.g, color.b)) ) / 2.0;
+                return vec4(vec3(average), color.a);
+            }
+        ");
+
+        private static ShaderProgram _maximumDecomposition = Surface.CompileShader(@"
+            vec4 surface()
+            {
+                vec4 color = texture(input, uv);
+                float average = max(color.r, max(color.g, color.b));
+                return vec4(vec3(average), color.a);
+            }
+        ");
+
+        private static ShaderProgram _minimumDecomposition = Surface.CompileShader(@"
+            vec4 surface()
+            {
+                vec4 color = texture(input, uv);
+                float average = min(color.r, min(color.g, color.b));
+                return vec4(vec3(average), color.a);
+            }
+        ");
+
+        private static ShaderProgram _red = Surface.CompileShader(@"
+            vec4 surface()
+            {
+                vec4 color = texture(input, uv);
+                return vec4(vec3(color.r), color.a);
+            }
+        ");
+
+        private static ShaderProgram _green = Surface.CompileShader(@"
+            vec4 surface()
+            {
+                vec4 color = texture(input, uv);
+                return vec4(vec3(color.g), color.a);
+            }
+        ");
+
+        private static ShaderProgram _blue = Surface.CompileShader(@"
+            vec4 surface()
+            {
+                vec4 color = texture(input, uv);
+                return vec4(vec3(color.b), color.a);
+            }
+        ");
+
         private static Dictionary<GrayScaleAlgorithm, ShaderProgram> _shaders = new Dictionary<GrayScaleAlgorithm, ShaderProgram>()
         {
             { GrayScaleAlgorithm.Average, _average },
-            { GrayScaleAlgorithm.Luma, _luma }
+            { GrayScaleAlgorithm.Luma, _luma },
+            { GrayScaleAlgorithm.Desaturation, _desaturation },
+            { GrayScaleAlgorithm.MaximumDecomposition, _maximumDecomposition },
+            { GrayScaleAlgorithm.MinimumDecomposition, _minimumDecomposition },
+            { GrayScaleAlgorithm.Red, _red },
+            { GrayScaleAlgorithm.Green, _green },
+            { GrayScaleAlgorithm.Blue, _blue },
 
         };
 
@@ -59,5 +116,11 @@ namespace Engine.Effects
     {
         Luma,
         Average,
+        Desaturation,
+        MaximumDecomposition,
+        MinimumDecomposition,
+        Red,
+        Green,
+        Blue
     }
 }

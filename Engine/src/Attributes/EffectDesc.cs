@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Engine.Attributes
 {
     [AttributeUsage(AttributeTargets.Class)]
-    public class EffectDesc : Attribute
+    public class Description : Attribute
     {
         public string? Name { get; init; }
         public string? Category { get; init; }

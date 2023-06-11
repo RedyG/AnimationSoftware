@@ -44,6 +44,10 @@ namespace Engine.Core
 
         static Renderer()
         {
+            var rectangle = new Effects.Rectangle();
+            rectangle.Color.Value = Color4.Black;
+            rectangle.FitToLayer.Value = true;
+            _mainLayer.VideoEffects.Add(rectangle);
             _mainLayer.VideoEffects.Add(new Group());
         }
 
@@ -59,6 +63,9 @@ namespace Engine.Core
 
         public static Surface RenderLayer(RenderArgs args)
         {
+            //GL.Enable(EnableCap.Blend);
+            //GL.Disable(EnableCap.DepthTest); //or glDepthMask(GL_FALSE)? depth tests break blending
+            //GL.BlendFuncSeparate(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha, BlendingFactorSrc.One, BlendingFactorDest.OneMinusSrcAlpha);
             // TODO: reuse groups surfaces
             // TODO: optimize if only content effects by drawing directly on surface or stuff like that
             Size size = ToPreviewSize(args.Layer.Transform.Size.GetValueAtTime(args.Time));
@@ -67,10 +74,15 @@ namespace Engine.Core
 
 
             bool swapSurfaces = false;
+            _surfaceA.Framebuffer.Bind(FramebufferTarget.Framebuffer);
+            GraphicsApi.Clear(new Color4(0f, 0f, 0f, 0f));
+            _surfaceB.Framebuffer.Bind(FramebufferTarget.Framebuffer);
+            GraphicsApi.Clear(new Color4(0f, 0f, 0f, 0f));
             foreach (VideoEffect effect in args.Layer.VideoEffects)
             {
                 Surface activeSurface = swapSurfaces ? args.SurfaceB : args.SurfaceA;
                 Surface secondSurface = swapSurfaces ? args.SurfaceA : args.SurfaceB;
+                
                 activeSurface.Bind(FramebufferTarget.Framebuffer);
                 var result = effect.Render(new RenderArgs(args.Time, args.Layer, activeSurface, secondSurface));
                 if (result.SwapSurfaces)

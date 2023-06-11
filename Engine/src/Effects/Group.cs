@@ -15,9 +15,19 @@ using System.Threading.Tasks;
 
 namespace Engine.Effects
 {
-    [EffectDesc(Category = "Content")]
+    [Description(Category = "Content")]
     public class Group : VideoEffect, IDisposable
     {
+        private static ShaderProgram _discard = Surface.CompileShader(@"
+            vec4 surface()
+{
+vec4 color = texture(input, uv);
+if (color.a < 0.1)
+    discard;
+
+return color;
+}
+        ");
         private Surface _groupSurface;
 
         public Group()
@@ -36,28 +46,20 @@ namespace Engine.Effects
 
         public override RenderResult Render(RenderArgs args)
         {
-            if (!args.Layer.IsGroup)
-                return new RenderResult(false);
 
-            args.SurfaceA.Framebuffer.Bind(FramebufferTarget.Framebuffer);
-            GraphicsApi.Clear(new Color4(0f, 0f, 0f, 1f));
-            foreach (Layer childLayer in args.Layer.Layers)
+            foreach (var childLayer in args.Layer.Layers.Reverse())
             {
                 Timecode childTime = args.Time - childLayer.Offset;
                 if (!childLayer.IsActiveAtTime(args.Time))
                     continue;
 
-                //Size layerSize = Renderer.ToPreviewSize(childLayer.Size.GetValueAtTime(args.Time));
-                //var surfaceA = new Surface(args.SurfaceA.Texture, args.SurfaceA.Framebuffer, args.SurfaceA.Size, layerSize);
-                //_groupSurface.Viewport = layerSize;
-                Surface childSurface = Renderer.RenderLayer(new RenderArgs(childTime, childLayer, args.SurfaceB, _groupSurface));
-
+                Surface result = Renderer.RenderLayer(new RenderArgs(childTime, childLayer, args.SurfaceB, _groupSurface));
                 args.SurfaceA.Bind(FramebufferTarget.Framebuffer);
-                GL.BlendFunc(BlendingFactor.One, BlendingFactor.OneMinusSrcAlpha);
-                GraphicsApi.DrawSurface(MatrixBuilder.CreateTransform(childTime, args.Layer.Transform.Size.GetValueAtTime(args.Time), childLayer), childSurface);
+                //GL.BlendFunc(BlendingFactor.One, BlendingFactor.OneMinusSrcAlpha);
+                GraphicsApi.DrawSurface(MatrixBuilder.CreateTransform(childTime, args.Layer.Transform.Size.GetValueAtTime(args.Time), childLayer), result);
             }
 
-            return new RenderResult(false);
+            return new(false);
         }
 
         protected override ParameterList InitParameters() => new ParameterList();

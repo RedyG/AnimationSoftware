@@ -26,7 +26,7 @@ namespace Engine.Core
                 {
                     yield return effect;
                 }
-                foreach (Effect videoEffect in VideoEffects)
+                foreach (VideoEffect videoEffect in VideoEffects)
                 {
                     yield return videoEffect;
                 }
@@ -199,7 +199,7 @@ namespace Engine.Core
         }
     }
 
-    [EffectDesc(Hidden = true)]
+    [Description(Hidden = true)]
     public class Transform : Effect
     {
         public Parameter<PointF> Position { get; }

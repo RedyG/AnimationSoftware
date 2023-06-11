@@ -1,10 +1,15 @@
-﻿using Engine.UI;
+﻿using Engine.Attributes;
+using Engine.Effects;
+using Engine.UI;
+using Engine.Utilities;
 using ImGuiNET;
+using OpenTK.Windowing.Desktop;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -49,7 +54,6 @@ namespace Engine.Core
 
         public void DrawUI(Vector2 first, Vector2 second)
         {
-            Random random = new Random();
             var drawList = ImGui.GetWindowDrawList();
             float yDiff = second.Y - first.Y;
             float xDiff = second.X - first.X;
@@ -57,16 +61,75 @@ namespace Engine.Core
             float yMult = 1f / steps;
             float xStep = xDiff / steps;
 
-            var secondPoint = first;
             for (int i = 0; i < steps; i++)
+                drawList.PathLineTo(first + new Vector2(xStep * i, Evaluate(yMult * i) * yDiff));
+
+            drawList.PathStroke(Colors.BlueHex);
+        }
+
+        public static List<EasingGroup> Easings { get; } = new();
+
+        public static void LoadEasingsFromAssembly(Assembly assembly)
+        {
+            foreach (var type in assembly.GetTypes())
             {
-                int next = i + 1;
-                var firstPoint = secondPoint;
-                secondPoint = first + new Vector2(xStep * next, Evaluate(yMult * next) * yDiff);
-                drawList.AddLine(firstPoint, secondPoint, Colors.BlueHex);
+                if (type.GetInterfaces().Contains(typeof(IEasing)))
+                {
+                    if (type.IsAbstract || type.IsInterface)
+                        continue;
+
+                    var description = type.GetCustomAttribute<Description>();
+
+                    string name = description?.Name ?? StringUtilities.UnPascalCase(type.Name);
+                    var easing = new EasingGroup(name, type);
+
+                    if (description == null)
+                    {
+                        Easings.Add(easing);
+                        continue;
+                    }
+
+                    if (description.Hidden)
+                        continue;
+
+                    if (description.Category == null)
+                    {
+                        Easings.Add(easing);
+                        continue;
+                    }
+
+                    var group = Easings.Find(group => group.Name == description.Category);
+                    if (group == null)
+                    {
+                        group = new EasingGroup(description.Category);
+                        group.Easings = new();
+                        Easings.Add(group);
+                    }
+
+                    group.Easings!.Add(easing);
+                }
             }
         }
     }
+
+    public class EasingGroup
+    {
+        public string Name { get; set; }
+        public Type? Type { get; set; } = null;
+        public List<EasingGroup>? Easings { get; set; } = null;
+
+        public EasingGroup(string name)
+        {
+            Name = name;
+        }
+
+        public EasingGroup(string name, Type type)
+        {
+            Name = name;
+            Type = type;
+        }
+    }
+
 
     public class Hold : IEasing
     {
@@ -75,7 +138,10 @@ namespace Engine.Core
         public void DrawUI(Vector2 first, Vector2 second)
         {
             var drawList = ImGui.GetWindowDrawList();
-            drawList.AddLine(first, second, Colors.MidGrayHex);
+            drawList.PathLineTo(first);
+            drawList.PathLineTo(new Vector2(second.X, first.Y));
+            drawList.PathLineTo(second);
+            drawList.PathStroke(Colors.BlueHex);
         }
     }
     public class Linear : IEasing
@@ -87,122 +153,161 @@ namespace Engine.Core
             drawList.AddLine(first, second, Colors.BlueHex);
         }
     }
+
+    [Description(Category = "Quad", Name = "In")]
     public class InQuad : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.InQuad(t);
     }
+
+    [Description(Category = "Quad", Name = "Out")]
     public class OutQuad : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.OutQuad(t);
     }
+
+    [Description(Category = "Quad", Name = "InOut")]
     public class InOutQuad : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.InOutQuad(t);
     }
+
+    [Description(Category = "Cubic", Name = "In")]
     public class InCubic : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.InCubic(t);
     }
+
+    [Description(Category = "Cubic", Name = "Out")]
     public class OutCubic : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.OutCubic(t);
     }
+
+    [Description(Category = "Cubic", Name = "InOut")]
     public class InOutCubic : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.InOutCubic(t);
     }
+
+    [Description(Category = "Quart", Name = "In")]
     public class InQuart : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.InQuart(t);
     }
+
+    [Description(Category = "Quart", Name = "Out")]
     public class OutQuart : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.OutQuart(t);
     }
+
+    [Description(Category = "Quart", Name = "InOut")]
     public class InOutQuart : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.InOutQuart(t);
     }
+    [Description(Category = "Quint", Name = "In")]
     public class InQuint : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.InQuint(t);
     }
+    [Description(Category = "Quint", Name = "Out")]
     public class OutQuint : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.OutQuint(t);
     }
+    [Description(Category = "Quint", Name = "InOut")]
     public class InOutQuint : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.InOutQuint(t);
     }
+    [Description(Category = "Sine", Name = "In")]
     public class InSine : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.InSine(t);
     }
+    [Description(Category = "Sine", Name = "Out")]
     public class OutSine : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.OutSine(t);
     }
+    [Description(Category = "Sine", Name = "InOut")]
     public class InOutSine : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.InOutSine(t);
     }
+    [Description(Category = "Expo", Name = "In")]
     public class InExpo : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.InExpo(t);
     }
+    [Description(Category = "Expo", Name = "Out")]
     public class OutExpo : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.OutExpo(t);
     }
+    [Description(Category = "Expo", Name = "InOut")]
     public class InOutExpo : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.InOutExpo(t);
     }
+    [Description(Category = "Circ", Name = "In")]
     public class InCirc : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.InCirc(t);
     }
+    [Description(Category = "Circ", Name = "Out")]
     public class OutCirc : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.OutCirc(t);
     }
+    [Description(Category = "Circ", Name = "InOut")]
     public class InOutCirc : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.InOutCirc(t);
     }
+    [Description(Category = "Elastic", Name = "In")]
     public class InElastic : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.InElastic(t);
     }
+    [Description(Category = "Elastic", Name = "Out")]
     public class OutElastic : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.OutElastic(t);
     }
+    [Description(Category = "Elastic", Name = "InOut")]
     public class InOutElastic : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.InOutElastic(t);
     }
+    [Description(Category = "Back", Name = "In")]
     public class InBack : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.InBack(t);
     }
+    [Description(Category = "Back", Name = "Out")]
     public class OutBack : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.OutBack(t);
     }
+    [Description(Category = "Back", Name = "InOut")]
     public class InOutBack : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.InOutBack(t);
     }
+    [Description(Category = "Bounce", Name = "In")]
     public class InBounce : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.InBounce(t);
     }
+    [Description(Category = "Bounce", Name = "Out")]
     public class OutBounce : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.OutBounce(t);
     }
+    [Description(Category = "Bounce", Name = "InOut")]
     public class InOutBounce : IEasing
     {
         public float Evaluate(float t) => EasingFunctions.InOutBounce(t);
@@ -244,7 +349,7 @@ namespace Engine.Core
             return 1 - InQuint((1 - t) * 2) / 2;
         }
 
-        public static float InSine(float t) => (float)-Math.Cos(t * Math.PI / 2);
+        public static float InSine(float t) => (1f - MathF.Cos((t * MathF.PI) / 2f));
         public static float OutSine(float t) => (float)Math.Sin(t * Math.PI / 2);
         public static float InOutSine(float t) => (float)(Math.Cos(t * Math.PI) - 1) / -2;
 

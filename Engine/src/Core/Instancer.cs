@@ -14,13 +14,17 @@ namespace Engine.Core
     public static class Instancer
     {
         // optimize this with IL or Expression if it becomes an issue ( it won't )
-        public static object Create(Type type)
+        public static object? Create(Type type)
         {
-            var activator = Activator.CreateInstance(type);
-            if (activator != null)
-                return activator;
-
-            return FormatterServices.GetUninitializedObject(type);
+            try
+            {
+                var activator = Activator.CreateInstance(type);
+                return activator!;
+            }
+            catch (Exception ex)
+            {
+                return FormatterServices.GetUninitializedObject(type);
+            }
         }
 
     }

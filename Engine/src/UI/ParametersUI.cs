@@ -32,9 +32,6 @@ namespace Engine.UI
     }
     public class FloatUI : IParameterUI<float>
     {
-        public UILocation Location => UILocation.Under;
-
-
         public float Speed { get; set; } = 1f;
         public float Minimum { get; set; } = float.MinValue;
         public float Maximum { get; set; } = float.MaxValue;
@@ -43,6 +40,8 @@ namespace Engine.UI
         {
             var value = parameter.BeginValueChange();
             ImGui.DragFloat("", ref value, Speed, Minimum, Maximum);
+            if (ImGui.IsItemActivated())
+                Console.WriteLine("aAAFDAW");
             parameter.EndValueChange(value);
         }
     }
@@ -108,6 +107,18 @@ namespace Engine.UI
             parameter.EndValueChange(new OpenTK.Mathematics.Color4(vec.X, vec.Y, vec.Z, vec.W));
         }
     }
+
+    public class NoAlphaColor4UI : IParameterUI<OpenTK.Mathematics.Color4>
+    {
+        public void Draw(Parameter<OpenTK.Mathematics.Color4> parameter)
+        {
+            var value = parameter.BeginValueChange();
+            var vec = new Vector4(value.R, value.G, value.B, value.A);
+            ImGui.ColorEdit4("", ref vec, ImGuiColorEditFlags.NoAlpha);
+            parameter.EndValueChange(new OpenTK.Mathematics.Color4(vec.X, vec.Y, vec.Z, vec.W));
+        }
+    }
+
     public class BoolUI : IParameterUI<bool>
     {
         public void Draw(Parameter<bool> parameter)

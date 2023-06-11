@@ -30,26 +30,41 @@ namespace Engine.UI
 
 
         private static object _firstValue = new object();
-        public static void EditValue<T>(object value, Action<T> setValue)
+        private static object _lastValue = new object();
+
+        public static void BeginValueChange<T>(T value)
         {
-            EditValue(value, setValue, ImGui.IsItemActivated(), ImGui.IsItemDeactivated());
+            _lastValue = value;
         }
-        public static void EditValue<T>(object value, Action<T> setValue, bool beginEdit, bool endEdit)
+
+        public static void EndValueChange<T>(T value, Action<T> setValue)
+        {
+            EndValueChange(value, setValue, ImGui.IsItemActivated(), ImGui.IsItemDeactivated());
+        }
+        public static void EndValueChange<T>(T value, Action<T> setValue, bool beginEdit, bool endEdit)
         {
             if (beginEdit)
             {
-                _firstValue = value;
+                _firstValue = _lastValue;
                 CommandManager.IgnoreStack.Push(true);
             }
+
             if (endEdit)
             {
                 setValue((T)_firstValue);
                 CommandManager.IgnoreStack.Push(false);
-                setValue((T)value);
+                if (!_firstValue.Equals(value))
+                    setValue((T)value);
                 CommandManager.IgnoreStack.Pop();
                 CommandManager.IgnoreStack.Pop();
+                return;
             }
-            setValue((T)value);
+
+
+            if (!_lastValue.Equals(value))
+                setValue((T)value);
+
+            _lastValue = value;
         }
 
         public static void MoveCursorBy(Vector2 translate)
@@ -88,6 +103,35 @@ namespace Engine.UI
             if (ImGui.IsItemClicked())
                 opened = !opened;
         }
+
+        public static bool BeginContextPopup(string id)
+        {
+            if (ImGui.IsItemHovered() && ImGui.IsMouseClicked(ImGuiMouseButton.Right))
+                ImGui.OpenPopup(id);
+
+            return ImGui.BeginPopup(id);
+        }
+
+        private static string _textInput = String.Empty;
+
+        public static string? TextInputPopup(string name, uint maxLength = uint.MaxValue)
+        {
+            bool returnText = false;
+            if (ImGui.BeginPopupModal(name))
+            {
+                ImGui.InputText("", ref _textInput, maxLength);
+                ImGui.SameLine();
+                if (ImGui.Button("Done"))
+                {
+                    returnText = true;
+                    ImGui.CloseCurrentPopup();
+                }
+
+                ImGui.EndPopup();
+            }
+
+            return returnText ? _textInput : null;
+        }
     }
 
     public static class DrawListExtension
@@ -109,5 +153,6 @@ namespace Engine.UI
             drawList.PathLineTo(pos + new Vector2(-size, 0));
             drawList.PathStroke(color, ImDrawFlags.None, thickness);
         }
+
     }
 }

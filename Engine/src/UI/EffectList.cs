@@ -24,7 +24,7 @@ namespace Engine.UI
                     {
                         foreach (var namedEffect in categories.Value)
                         {
-                            if (ImGui.Button(namedEffect.Key))
+                            if (ImGui.MenuItem(namedEffect.Key))
                             {
                                 foreach (Layer layer in App.Project.ActiveScene.Layers.Selected)
                                 {

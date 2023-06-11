@@ -14,7 +14,7 @@ using Engine.Attributes;
 
 namespace Engine.Effects
 {
-    [EffectDesc(Category = "Content")]
+    [Description(Category = "Content")]
     public class Image : VideoEffect, IDisposable
     {
         Texture texture;

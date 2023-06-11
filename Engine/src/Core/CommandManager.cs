@@ -11,13 +11,6 @@ using System.Xml.Linq;
 
 namespace Engine.Core
 {
-    public interface ICommand
-    {
-        string Name { get; }
-        void Execute();
-        void Undo();
-    }
-
     public static class CommandManager
     {
         // TODO: limit size with deque
@@ -113,10 +106,15 @@ namespace Engine.Core
         public static void ExecuteIfNeeded<T>(T oldValue, T newValue, ICommand command)
         {
             // TODO: can crash
-            if (oldValue.Equals(newValue))
-                return;
+            var equal = oldValue?.Equals(newValue);
+            if (equal == null)
+            {
+                Execute(command);
+            }
+            else if (!(bool)equal)
+                Execute(command);
+            
 
-            Execute(command);
         }
 
         public static void BeginGroup(string name)

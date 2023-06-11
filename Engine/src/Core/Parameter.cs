@@ -34,6 +34,8 @@ namespace Engine.Core
 
         public abstract float GetEditorHeightAt(int keyframeIndex);
         public abstract void SetEditorHeightAt(int keyframeIndex, float editorHeight);
+        public abstract void SetEasingAt(int keyframeIndex, IEasing easing);
+        public abstract IEasing GetEasingAt(int keyframeIndex);
 
         public abstract IEnumerable<KeyframeDefinition> KeyframeDefinitions { get; }
         public IEnumerable<KeyframeDefinition> SelectedKeyframeDefinitions
@@ -105,14 +107,7 @@ namespace Engine.Core
                     return;
                 }
 
-                try
-                {
-                    var temp = value.GetValueAtTimeAsType<T>(App.Project.Time);
-                }
-                catch
-                {
-                    throw new Exception("Couldn't cast.");
-                }
+                var temp = value.GetValueAtTimeAsType<T>(App.Project.Time);
 
                 _linkedParameter = value;
             }
@@ -171,31 +166,23 @@ namespace Engine.Core
             else
             {
                 var newValue = _validateMethod == null ? value : _validateMethod(value);
-                CommandManager.ExecuteIfNeeded(_unkeyframedValue, newValue, new ParameterValueChanged(this, newValue));
+                if (_unkeyframedValue.Equals(newValue))
+                    return;
+
+                CommandManager.Execute(new ParameterValueChanged(this, newValue));
             }
         }
 
-        private T _oldValue;
         public T BeginValueChange()
         {
-            _oldValue = Value;
-            return _oldValue;
+            T value = Value;
+            ImGuiHelper.BeginValueChange(value);
+            return value;
         }
 
         public void EndValueChange(T value)
         {
-            if (_oldValue.Equals(value))
-                return;
-
-            ImGuiHelper.EditValue<T>(value, newValue => Value = newValue);
-        }
-
-        public void EditValue(T value, bool beginEdit, bool endEdit)
-        {
-            if (_oldValue.Equals(value))
-                return;
-
-            ImGuiHelper.EditValue<T>(value, newValue => Value = newValue, beginEdit, endEdit);
+            ImGuiHelper.EndValueChange(value, newValue => Value = newValue);
         }
 
         public override bool IsKeyframedAtTime(Timecode time)
@@ -289,27 +276,17 @@ namespace Engine.Core
             else if (typeof(T).IsEnum)
             {
                 var names = Enum.GetNames(typeof(T));
-                if (!_currentItems.TryGetValue(this, out int currentItem))
-                {
-                    var index = Array.IndexOf(Enum.GetValues(typeof(T)), Value);
-                    _currentItems.Add(this, index);
-                    currentItem = index;
-                }
+                var values = Enum.GetValues(typeof(T));
+                var value = Value;
+                var index = Array.IndexOf(values, value);
 
-                var beforeCurrent = currentItem;
-                ImGui.Combo("", ref currentItem, names, names.Length);
+                var beforeIndex = index;
+                ImGui.Combo("", ref index, names, names.Length);
 
-                if (beforeCurrent != currentItem)
-                {
-                    if (beforeCurrent == currentItem)
-                        return;
+                if (beforeIndex == index)
+                    return;
 
-                    _currentItems[this] = currentItem;
-                    var values = Enum.GetValues(typeof(T));
-                    Value = (T)values.GetValue(currentItem)!;
-                }
-
-
+                Value = (T)values.GetValue(index);
             }
             else
                 ImGui.NewLine();
@@ -330,6 +307,22 @@ namespace Engine.Core
 
             Keyframes[keyframeIndex].Value = EditorConverter.FromEditorHeight(editorHeight);
 
+        }
+
+        public override void SetEasingAt(int keyframeIndex, IEasing easing)
+        {
+            if (Keyframes == null)
+                return;
+
+            Keyframes[keyframeIndex].Easing = easing;
+        }
+
+        public override IEasing GetEasingAt(int keyframeIndex)
+        {
+            if (Keyframes == null)
+                throw new Exception("This is not a keyframed parameter");
+
+            return Keyframes[keyframeIndex].Easing;
         }
 
         public override UILocation UILocation => CustomUI?.Location ?? UILocation.Right;
@@ -355,7 +348,7 @@ namespace Engine.Core
             private T _newValue;
             private T _oldValue;
 
-            public string Name => $"Parameter value changed " + typeof(T).Name ;
+            public string Name => $"Parameter value changed";
 
             public void Execute()
             {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace Engine.Core
 {
@@ -33,7 +34,13 @@ namespace Engine.Core
                 CommandManager.ExecuteIfNeeded(_value, newValue, new ValueChangedCommand(this, newValue));
             }
         }
-        public IEasing Easing { get; set; }
+
+        private IEasing _easing;
+        public IEasing Easing
+        {
+            get => _easing;
+            set => CommandManager.ExecuteSetter($"Keyframe Easing Changed", _easing, value, easing => _easing = easing);
+        }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public Keyframe(Timecode time, T value, IEasing easing)
@@ -41,7 +48,7 @@ namespace Engine.Core
         { 
             _value = value;
             Time = time;
-            Easing = easing;
+            _easing = easing;
         }
 
         public event EventHandler<EventArgs>? TimeChanged;
