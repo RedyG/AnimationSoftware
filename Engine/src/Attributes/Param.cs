@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Engine.Attributes
 {
     // TODO: support fields too
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
     public class Param : Attribute
     {
         public Param([CallerLineNumber] int order = 0)

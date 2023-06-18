@@ -15,7 +15,7 @@ namespace Engine.Effects
     [Description(Category = "Filters", Name = "Black And White")]
     public class BlackAndWhite : VideoEffect
     {
-        public Parameter<GrayScaleAlgorithm> Algorithm { get; set; } = new (GrayScaleAlgorithm.Luma);
+        [Param] public Parameter<GrayScaleAlgorithm> Algorithm { get; } = new (GrayScaleAlgorithm.Luma);
 
         private static ShaderProgram _average = Surface.CompileShader(@"
             vec4 surface()
@@ -106,10 +106,6 @@ namespace Engine.Effects
 
             return new RenderResult(true);
         }
-
-        protected override ParameterList InitParameters() => new(
-            new NamedParameter("Algorithm", Algorithm)
-        );
     }
 
     public enum GrayScaleAlgorithm

@@ -25,7 +25,6 @@ namespace Engine.Core
             }
         }
 
-
         public void Traverse(Action<Layer> action)
         {
             foreach (var layer in this)

@@ -37,7 +37,7 @@ namespace Engine.UI
         public static readonly uint TextHex = ToHex(Text);
 
         private static Vector4 ToHovered(Vector4 color) => color + new Vector4(0.1f, 0.1f, 0.1f, 0f);
-        private static uint ToHex(Vector4 color) => Color((byte)(color.X * 255f), (byte)(color.Y * 255f), (byte)(color.Z * 255f), (byte)(color.W * 255f));
+        public static uint ToHex(Vector4 color) => Color((byte)(color.X * 255f), (byte)(color.Y * 255f), (byte)(color.Z * 255f), (byte)(color.W * 255f));
         private static uint Color(byte r, byte g, byte b, byte a) { uint ret = a; ret <<= 8; ret += b; ret <<= 8; ret += g; ret <<= 8; ret += r; return ret; }
     }
 }

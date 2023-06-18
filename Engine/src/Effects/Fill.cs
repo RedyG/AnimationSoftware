@@ -33,10 +33,6 @@ namespace Engine.Effects
             return new RenderResult(true);
         }
 
-        protected override ParameterList InitParameters() => new ParameterList(
-            new NamedParameter("Color", Color)
-        );
-
         public Fill()
         {
             Color.CustomUI = new NoAlphaColor4UI();

@@ -17,8 +17,10 @@ namespace Engine.Core
 {
     public abstract class Parameter
     {
-        public static Parameter<ParameterList> CreateGroup(params NamedParameter[] parameters) => new Parameter<ParameterList>(new ParameterList(parameters), false, false);
-        public static Parameter<ParameterList> CreateGroup(List<NamedParameter> parameters) => new Parameter<ParameterList>(new ParameterList(parameters), false, false);
+        public abstract Parameter? LinkedParameter { get; set; }
+
+        /*public static Parameter<ParameterList> CreateGroup(params UIParameter[] parameters) => new Parameter<ParameterList>(new ParameterList(parameters), false, false);
+        public static Parameter<ParameterList> CreateGroup(List<UIParameter> parameters) => new Parameter<ParameterList>(new ParameterList(parameters), false, false);*/
 
         // TODO: cache the methods using delegates or just the MethodInfo
         public T1 GetValueAsType<T1>() => GetValueAtTimeAsType<T1>(App.Project.Time);
@@ -93,7 +95,7 @@ namespace Engine.Core
 
 
         private Parameter? _linkedParameter;
-        public Parameter? LinkedParameter
+        public override Parameter? LinkedParameter
         {
             get => _linkedParameter;
             set
@@ -107,7 +109,7 @@ namespace Engine.Core
                     return;
                 }
 
-                var temp = value.GetValueAtTimeAsType<T>(App.Project.Time);
+                _ = value.GetValueAtTimeAsType<T>(App.Project.Time);
 
                 _linkedParameter = value;
             }
@@ -236,6 +238,17 @@ namespace Engine.Core
             CanBeKeyframed = canBeKeframed;
             CanBeLinked = canBeLinked;
         }
+
+        public Parameter(T value, bool canBeKeframed, bool canBeLinked, IParameterUI<T>? customUI)
+        {
+            if (canBeKeframed)
+                Keyframes = new();
+            _unkeyframedValue = value;
+            CanBeKeyframed = canBeKeframed;
+            CanBeLinked = canBeLinked;
+            CustomUI = customUI;
+        }
+
 
         public Parameter(T value, bool canBeKeframed, bool canBeLinked, Func<T, T> validateMethod)
         {

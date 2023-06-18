@@ -35,7 +35,5 @@ return texture(input, uv + offset);
 
             return new RenderResult(true);
         }
-
-        protected override ParameterList InitParameters() => new ParameterList();
     }
 }

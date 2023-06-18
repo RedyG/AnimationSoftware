@@ -74,16 +74,16 @@ namespace Engine.Core
 
 
             bool swapSurfaces = false;
-            _surfaceA.Framebuffer.Bind(FramebufferTarget.Framebuffer);
-            GraphicsApi.Clear(new Color4(0f, 0f, 0f, 0f));
-            _surfaceB.Framebuffer.Bind(FramebufferTarget.Framebuffer);
-            GraphicsApi.Clear(new Color4(0f, 0f, 0f, 0f));
             foreach (VideoEffect effect in args.Layer.VideoEffects)
             {
                 Surface activeSurface = swapSurfaces ? args.SurfaceB : args.SurfaceA;
                 Surface secondSurface = swapSurfaces ? args.SurfaceA : args.SurfaceB;
-                
+
+                secondSurface.Framebuffer.Bind(FramebufferTarget.Framebuffer);
+                GraphicsApi.Clear(new Color4(0f, 0f, 0f, 0f));
+
                 activeSurface.Bind(FramebufferTarget.Framebuffer);
+
                 var result = effect.Render(new RenderArgs(args.Time, args.Layer, activeSurface, secondSurface));
                 if (result.SwapSurfaces)
                     swapSurfaces = !swapSurfaces;

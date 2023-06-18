@@ -33,8 +33,6 @@ namespace Engine.Effects
             texture.Dispose();
         }
 
-        protected override ParameterList InitParameters() => new ParameterList();
-
         public Image()
         {
             texture = Texture.FromImage("Z:\\1.jpg", TextureTarget.Texture2D);

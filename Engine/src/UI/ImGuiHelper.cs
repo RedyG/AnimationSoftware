@@ -7,6 +7,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace Engine.UI
 {
@@ -132,6 +133,40 @@ namespace Engine.UI
 
             return returnText ? _textInput : null;
         }
+
+        private static readonly Dictionary<string, bool> _groups = new();
+
+        public static void Group(string name, Action? child)
+        {
+            if (!_groups.TryGetValue(name, out bool opened))
+            {
+                opened = false;
+                _groups.Add(name, opened);
+            }
+
+            ImGui.PushStyleColor(ImGuiCol.Button, Colors.Background);
+            ArrowButton("##opened", ref opened);
+            ImGui.PopStyleColor();
+
+            ImGui.SameLine();
+
+            ImGui.Text(name);
+
+            if (opened)
+            {
+                ImGui.Indent(ImGui.GetFrameHeight());
+                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+                child?.Invoke();
+                ImGui.Unindent(ImGui.GetFrameHeight());
+            }
+
+            _groups[name] = opened;
+        }
+
+        public static void Offset(float mult = 1f)
+        {
+            MoveCursorBy(ImGui.GetFrameHeight() * mult, 0f);
+        }
     }
 
     public static class DrawListExtension
@@ -151,7 +186,7 @@ namespace Engine.UI
             drawList.PathLineTo(pos + new Vector2(size, 0));
             drawList.PathLineTo(pos + new Vector2(0, size));
             drawList.PathLineTo(pos + new Vector2(-size, 0));
-            drawList.PathStroke(color, ImDrawFlags.None, thickness);
+            drawList.PathStroke(color, ImDrawFlags.Closed, thickness);
         }
 
     }

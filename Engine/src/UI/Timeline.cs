@@ -27,7 +27,7 @@ namespace Engine.UI
 
             if (ImGui.BeginChild("LeftChild"))
             {
-                DrawLayers(App.Project.ActiveScene.Layers);
+                DrawLayersLeft(App.Project.ActiveScene.Layers);
             }
             if (ImGui.BeginPopupContextWindow())
             {
@@ -57,7 +57,7 @@ namespace Engine.UI
 
         public string Name => "Timeline";
 
-        public void DrawLayers(LayerList layers)
+        public void DrawLayersLeft(LayerList layers)
         {
             foreach (var layer in layers)
             {
@@ -66,7 +66,7 @@ namespace Engine.UI
                 ImGui.BeginChild("LayerLeft", ImGuiHelper.GetLineSize());
 
                 var drawList = ImGui.GetWindowDrawList();
-                drawList.AddRectFilled(ImGui.GetCursorScreenPos(), ImGui.GetCursorScreenPos() + ImGuiHelper.GetLineSize(), Colors.MidGrayHex);
+                drawList.AddRectFilled(ImGui.GetCursorScreenPos(), ImGui.GetCursorScreenPos() + ImGuiHelper.GetLineSize(), Colors.ToHex(ImGui.GetStyle().Colors[(int)ImGuiCol.PlotLinesHovered]));
 
                 var visible = layer.Visible;
                 ImGui.Checkbox("##visible", ref visible);
@@ -114,7 +114,7 @@ namespace Engine.UI
                 {
                     _layerDepth++;
 
-                    DrawLayers(layer.Layers);
+                    DrawLayersLeft(layer.Layers);
                     _layerDepth--;
                 }
 

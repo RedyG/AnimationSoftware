@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Engine.Attributes
 {
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Field, AllowMultiple = true)]
     public class BeginGroup : Attribute
     {
         public string Name { get; init; }
@@ -15,5 +16,7 @@ namespace Engine.Attributes
             Name = name;
         }
     }
+
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Field, AllowMultiple = true)]
     public class EndGroup : Attribute { }
 }

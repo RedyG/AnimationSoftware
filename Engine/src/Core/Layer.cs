@@ -22,14 +22,12 @@ namespace Engine.Core
             get
             {
                 yield return Transform;
+
                 foreach (Effect effect in OtherEffects)
-                {
                     yield return effect;
-                }
+
                 foreach (VideoEffect videoEffect in VideoEffects)
-                {
                     yield return videoEffect;
-                }
             }
         }
 
@@ -202,11 +200,11 @@ namespace Engine.Core
     [Description(Hidden = true)]
     public class Transform : Effect
     {
-        public Parameter<PointF> Position { get; }
-        public Parameter<PointF> Origin { get; } = new(new PointF(0f, 0f));
-        public Parameter<SizeF> Size { get; }
-        public Parameter<Vector2> Scale { get; } = new(new Vector2(1f));
-        public Parameter<float> Rotation { get; } = new(0f);
+        [Param] public Parameter<PointF> Position { get; }
+        [Param] public Parameter<PointF> Origin { get; } = new(new PointF(0f, 0f));
+        [Param] public Parameter<SizeF> Size { get; }
+        [Param] public Parameter<Vector2> Scale { get; } = new(new Vector2(1f));
+        [Param] public Parameter<float> Rotation { get; } = new(0f);
 
         [JsonIgnore]
         public Parameter<RectangleF> Bounds { get; } = new(RectangleF.Empty, false, false);
@@ -218,18 +216,6 @@ namespace Engine.Core
             Position = new(position);
             Size = new(size);
         }
-
-        protected override ParameterList InitParameters() => new(
-            new("Position", Position),
-            new("Origin", Origin),
-            new("Size", Size),
-            new("Scale", Scale),
-            new("Rotation", Rotation),
-            new("Group", Parameter.CreateGroup(
-                new ("a", Rotation),
-                new ("b", Scale)
-            ))
-        );
 
     }
 }

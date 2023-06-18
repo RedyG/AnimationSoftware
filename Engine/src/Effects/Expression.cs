@@ -24,17 +24,11 @@ namespace Engine.Effects
         [JsonProperty]
         private Guid _id;
 
-        public Parameter<string> Code { get; } = new Parameter<string>("", false, true);
-        public Parameter<object> Value { get; } = new Parameter<object>(new object(), false, false);
+        [Param] public Parameter<string> Code { get; } = new Parameter<string>("", false, true);
+        [Param] public Parameter<object> Value { get; } = new Parameter<object>(new object(), false, false);
 
         private readonly ExpressionCodeUI _valueUI = new ExpressionCodeUI();
 
-        protected override ParameterList InitParameters() => new ParameterList(
-            new("Code", Code),
-            new("Value", Value)
-        );
-
-        [UIMethod(1)]
         private void CompileButton()
         {
 

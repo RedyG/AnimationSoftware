@@ -40,11 +40,24 @@ namespace Engine.UI
         {
             var value = parameter.BeginValueChange();
             ImGui.DragFloat("", ref value, Speed, Minimum, Maximum);
-            if (ImGui.IsItemActivated())
-                Console.WriteLine("aAAFDAW");
             parameter.EndValueChange(value);
         }
     }
+
+    public class DoubleUI : IParameterUI<double>
+    {
+        public float Speed { get; set; } = 1f;
+        public float Minimum { get; set; } = float.MinValue;
+        public float Maximum { get; set; } = float.MaxValue;
+
+        public void Draw(Parameter<double> parameter)
+        {
+            float value = (float)parameter.BeginValueChange();
+            ImGui.DragFloat("", ref value, Speed, Minimum, Maximum);
+            parameter.EndValueChange((double)value);
+        }
+    }
+
     public class IntUI : IParameterUI<int>
     {
         public int Speed { get; set; } = 1;

@@ -58,12 +58,12 @@ vec4 surface()
 
         public override RenderResult Render(RenderArgs args)
         {
+
             args.SurfaceB.Bind(FramebufferTarget.Framebuffer);
+            GraphicsApi.Clear(new OpenTK.Mathematics.Color4(0f, 0f, 0f, 0f));
             GraphicsApi.DrawSurface(MatrixBuilder.Empty, args.SurfaceA, _shader);
 
             return new RenderResult(true);
         }
-
-        protected override ParameterList InitParameters() => new();
     }
 }

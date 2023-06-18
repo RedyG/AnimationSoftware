@@ -16,6 +16,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Include="..\.editorconfig" Link=".editorconfig" />
+	</ItemGroup>
+
+	<ItemGroup>
     <PackageReference Include="ImGui.NET" Version="1.89.4" />
     <PackageReference Include="OpenTK" Version="4.7.7" />
   </ItemGroup>

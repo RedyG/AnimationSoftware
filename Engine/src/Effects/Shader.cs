@@ -465,9 +465,5 @@ void main()
 
             textureVao.AttribPointers(textureVbo, attribs);
         }
-
-        protected override ParameterList InitParameters() => new ParameterList(
-            new NamedParameter("Time", Time)
-        );
     }
 }

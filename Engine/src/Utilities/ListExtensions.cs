@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Engine.Core;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,6 +30,14 @@ namespace Engine.Utilities
         {
             return list.OrderBy(t => t, new ComparisonComparer<T>(comparison));
         }
+
+        public static IEnumerable<T> Reversed<T>(this IList<T> list)
+        {
+            for (int i = list.Count - 1; i >= 0; i--)
+                yield return list[i];
+        }
+         
+
     }
 
     // Wraps a generic Comparison<T> delegate in an IComparer to make it easy

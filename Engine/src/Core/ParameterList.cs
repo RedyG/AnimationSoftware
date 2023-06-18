@@ -4,49 +4,50 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Engine.Core
 {
-    public class ParameterList : IReadOnlyList<NamedParameter>
+    public class ParameterList : IReadOnlyList<UIParameter>
     {
         [JsonProperty]
-        private IReadOnlyList<NamedParameter> _parameters;
+        private IReadOnlyList<UIParameter> _parameters;
 
-        public NamedParameter this[int index] => _parameters[index];
+        public UIParameter this[int index] => _parameters[index];
 
         public int Count => _parameters.Count;
 
         IEnumerator IEnumerable.GetEnumerator() => _parameters.GetEnumerator();
 
-        public IEnumerator<NamedParameter> GetEnumerator() => _parameters.GetEnumerator();
+        public IEnumerator<UIParameter> GetEnumerator() => _parameters.GetEnumerator();
 
         // Not using a hashmap because we need this to be ordered and 99% of the time we will only
         // iterate over the list to draw the UI so a list makes way more sense. Also these O(n)
         // methods will rarely be used. ( if ever )
-        public Parameter? Get(string name)
+        public Parameter? Get(string fullName)
         {
-            foreach (NamedParameter namedParameter in _parameters)
+            foreach (UIParameter uiParameter in _parameters)
             {
-                if (namedParameter.Name == name)
-                    return namedParameter.Parameter;
+                if (uiParameter.FullName == fullName)
+                    return uiParameter.Parameter;
             }
             return null;
         }
 
-        public ParameterList(params NamedParameter[] parameters)
+        public ParameterList(params UIParameter[] parameters)
         {
-            _parameters = new List<NamedParameter>(parameters);
+            _parameters = new List<UIParameter>(parameters);
         }
 
         [JsonConstructor]
-        public ParameterList(List<NamedParameter> parameters)
+        public ParameterList(List<UIParameter> parameters)
         {
             _parameters = parameters;
         }
 
-        public ParameterList(IReadOnlyList<NamedParameter> parameters)
+        public ParameterList(IReadOnlyList<UIParameter> parameters)
         {
             _parameters = parameters;
         }

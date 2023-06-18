@@ -26,6 +26,8 @@ namespace Engine.Core
             Parameter<float>.DefaultTypeLerp = (a, b, t) => Lerp(a, b, t);
             Parameter<float>.EditorConverter = new FloatConverter();
 
+            Parameter<double>.DefaultTypeUI = typeof(DoubleUI);
+
             Parameter<int>.DefaultTypeUI = typeof(IntUI);
             Parameter<int>.DefaultTypeLerp = (a, b, t) => Lerp(a, b, t);
 

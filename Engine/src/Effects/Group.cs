@@ -2,6 +2,7 @@
 using Engine.Core;
 using Engine.Graphics;
 using Engine.OpenGL;
+using Engine.Utilities;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System;
@@ -18,6 +19,8 @@ namespace Engine.Effects
     [Description(Category = "Content")]
     public class Group : VideoEffect, IDisposable
     {
+        private readonly Color4 _transparent = new Color4(0f, 0f, 0f, 0f);
+
         private static ShaderProgram _discard = Surface.CompileShader(@"
             vec4 surface()
 {
@@ -46,13 +49,16 @@ return color;
 
         public override RenderResult Render(RenderArgs args)
         {
-
-            foreach (var childLayer in args.Layer.Layers.Reverse())
+            foreach (var childLayer in args.Layer.Layers.Reversed())
             {
                 Timecode childTime = args.Time - childLayer.Offset;
                 if (!childLayer.IsActiveAtTime(args.Time))
                     continue;
 
+                _groupSurface.Framebuffer.Bind(FramebufferTarget.Framebuffer);
+                GraphicsApi.Clear(_transparent);
+
+                // SurfaceB already gets cleared in the Renderer before getting passed in this effect
                 Surface result = Renderer.RenderLayer(new RenderArgs(childTime, childLayer, args.SurfaceB, _groupSurface));
                 args.SurfaceA.Bind(FramebufferTarget.Framebuffer);
                 //GL.BlendFunc(BlendingFactor.One, BlendingFactor.OneMinusSrcAlpha);
@@ -61,7 +67,5 @@ return color;
 
             return new(false);
         }
-
-        protected override ParameterList InitParameters() => new ParameterList();
     }
 }

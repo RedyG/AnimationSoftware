@@ -28,5 +28,6 @@ namespace Engine.Utilities
         {
             return vector.X / vector.Y;
         }
+
     }
 }

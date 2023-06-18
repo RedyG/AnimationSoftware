@@ -77,7 +77,7 @@ namespace Engine.UI
                     var layer = selectedLayers[0];
                     foreach (Effect effect in layer.Effects)
                     {
-                        foreach (NamedParameter namedParameter in effect.Parameters)
+                        foreach (UIParameter namedParameter in effect.Parameters)
                         {
                             var parameter = namedParameter.Parameter;
 

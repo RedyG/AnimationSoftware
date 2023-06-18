@@ -55,14 +55,17 @@ namespace Editor
             App.Project.ActiveScene = scene;
 
 
+            var group = new Layer("Group", PointF.Empty, new System.Drawing.Size(500, 500));
+
             var layer1 = new Layer("Layer1", PointF.Empty, new System.Drawing.Size(250, 250));
             layer1.AddEffect(new Engine.Effects.Rectangle());
-            App.Project.ActiveScene.Layers.Add(layer1);
+            group.Layers.Add(layer1);
 
             var layer2 = new Layer("Layer2", new PointF(250, 250), new System.Drawing.Size(250, 250));
             layer2.AddEffect(new Engine.Effects.Rectangle());
-            App.Project.ActiveScene.Layers.Add(layer2);
+            group.Layers.Add (layer2);
 
+            App.Project.ActiveScene.Layers.Add(group);
 
 
 
@@ -112,7 +115,7 @@ namespace Editor
             style.Colors[(int)ImGuiCol.DockingPreview] = new System.Numerics.Vector4(0.26f, 0.59f, 0.98f, 0.70f);
             style.Colors[(int)ImGuiCol.DockingEmptyBg] = new System.Numerics.Vector4(0.20f, 0.20f, 0.20f, 1.00f);
             style.Colors[(int)ImGuiCol.PlotLines] = new System.Numerics.Vector4(0.61f, 0.61f, 0.61f, 1.00f);
-            style.Colors[(int)ImGuiCol.PlotLinesHovered] = new System.Numerics.Vector4(1.00f, 0.43f, 0.35f, 1.00f);
+            style.Colors[(int)ImGuiCol.PlotLinesHovered] = Colors.MidGray;//new System.Numerics.Vector4(1.00f, 0.43f, 0.35f, 1.00f);
             style.Colors[(int)ImGuiCol.PlotHistogram] = new System.Numerics.Vector4(0.90f, 0.70f, 0.00f, 1.00f);
             style.Colors[(int)ImGuiCol.PlotHistogramHovered] = new System.Numerics.Vector4(1.00f, 0.60f, 0.00f, 1.00f);
             style.Colors[(int)ImGuiCol.TextSelectedBg] = new System.Numerics.Vector4(0.26f, 0.59f, 0.98f, 0.35f);
@@ -164,7 +167,7 @@ namespace Editor
             ImGui.ShowStackToolWindow();
             _controller.Render();
             time.Stop();
-            Console.WriteLine(time.ElapsedTicks / 10_000f);
+            //Console.WriteLine(time.ElapsedTicks / 10_000f);
 
             ImGuiController.CheckGLError("End of frame");
             SwapBuffers();
