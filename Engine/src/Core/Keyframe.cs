@@ -7,9 +7,8 @@ using System.Xml.Linq;
 
 namespace Engine.Core
 {
-    public class Keyframe<T> : IComparable<Keyframe<T>>
+    public class Keyframe : IComparable<Keyframe>
     {
-        internal Func<T, T>? ValidateMethod { get; set; }
 
         private Timecode _time;
         public Timecode Time
@@ -22,18 +21,6 @@ namespace Engine.Core
             }
         }
 
-        public bool Selected { get; set; }
-
-        private T _value;
-        public T Value
-        {
-            get => _value;
-            set
-            {
-                T newValue = ValidateMethod == null ? value : ValidateMethod(value);
-                CommandManager.ExecuteIfNeeded(_value, newValue, new ValueChangedCommand(this, newValue));
-            }
-        }
 
         private IEasing _easing;
         public IEasing Easing
@@ -42,11 +29,10 @@ namespace Engine.Core
             set => CommandManager.ExecuteSetter($"Keyframe Easing Changed", _easing, value, easing => _easing = easing);
         }
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public Keyframe(Timecode time, T value, IEasing easing)
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+        public bool Selected { get; set; }
+
+        public Keyframe(Timecode time, IEasing easing)
         { 
-            _value = value;
             Time = time;
             _easing = easing;
         }
@@ -58,33 +44,6 @@ namespace Engine.Core
                 TimeChanged(this, e);
         }
 
-        public int CompareTo(Keyframe<T>? other) => Time.Seconds.CompareTo(other.Time.Seconds);
-
-        public class ValueChangedCommand : ICommand
-        {
-            private Keyframe<T> _keyframe;
-            private T _newValue;
-            private T _oldValue;
-
-            public string Name => "Keyframe value changed";
-
-            public void Execute()
-            {
-                _oldValue = _keyframe._value;
-
-                 _keyframe._value = _newValue;
-            }
-
-            public void Undo()
-            {
-                _keyframe._value = _oldValue;
-            }
-
-            public ValueChangedCommand(Keyframe<T> keyframe, T newValue)
-            {
-                _keyframe = keyframe;
-                _newValue = newValue;
-            }
-        }
+        public int CompareTo(Keyframe? other) => Time.Seconds.CompareTo(other.Time.Seconds);
     }
 }

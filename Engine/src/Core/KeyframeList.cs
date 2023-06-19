@@ -11,12 +11,10 @@ using System.Threading.Tasks;
 
 namespace Engine.Core
 {
-    public class KeyframeList<T> : ICollection<Keyframe<T>>
+    public class KeyframeList : ICollection<Keyframe>
     {
-        private Func<T, T>? _validateMethod { get; set; }
-
         [JsonProperty]
-        private readonly UndoableList<Keyframe<T>> _list = new();
+        private readonly UndoableList<Keyframe> _list = new();
         private int GetClosest(int val1, int val2, Timecode time)
         {
             if (time - _list[val1].Time >= _list[val2].Time - time)
@@ -82,27 +80,33 @@ namespace Engine.Core
             // Only single element left after search
             return mid;
         }
-        public int IndexOf(Keyframe<T> keyframe)
+        public int IndexOf(Keyframe keyframe)
         {
             return _list.IndexOf(keyframe);
         }
         public void RemoveNearestAtTime(Timecode time)
         {
-            _list.RemoveAt(NearestIndexAtTime(time));
+            int index = NearestIndexAtTime(time);
+
+            OnRemovingKeyframe(new KeyframeEventArgs(_list[index]));
+
+            _list.RemoveAt(index);
         }
         public void RemoveAt(int index)
         {
+            OnRemovingKeyframe(new KeyframeEventArgs(_list[index]));
+
             _list.RemoveAt(index);
         }
-        public Keyframe<T> NearestAtTime(Timecode time)
+        public Keyframe NearestAtTime(Timecode time)
         {
             return _list[NearestIndexAtTime(time)];
         }
-        public Keyframe<T> At(int index)
+        public Keyframe At(int index)
         {
             return _list.ElementAt(0);
         }
-        public Keyframe<T> this[int index]
+        public Keyframe this[int index]
         {
             get
             {
@@ -116,13 +120,17 @@ namespace Engine.Core
 
         public int Count => _list.Count;
         public bool IsReadOnly => false;
-        public void Add(Keyframe<T> newKeyframe)
+
+        /// <summary>
+        /// Adds a keyframe to the list. If there is already a keyframe at the new keyframe's time, it will replace the old one.
+        /// </summary>
+        /// <param name="newKeyframe">The keyframe to add to the list</param>
+        /// <remarks>Warning: use Parameter.AddKeyframe Instead of this method to ensure the keyframe has a value.</remarks>
+        public void Add(Keyframe newKeyframe)
         {
+            OnAddingKeyframe(new KeyframeEventArgs(newKeyframe));
+
             newKeyframe.TimeChanged += new EventHandler<EventArgs>(Keyframe_TimeChanged);
-            newKeyframe.ValidateMethod = _validateMethod;
-            CommandManager.IgnoreStack.Push(true);
-            newKeyframe.Value = newKeyframe.Value; // we do that so the validate method is used
-            CommandManager.IgnoreStack.Pop();
 
             for (int i = 0; i < _list.Count; i++)
             {
@@ -130,7 +138,7 @@ namespace Engine.Core
 
                 if (keyframe.Time == newKeyframe.Time)
                 {
-                    keyframe.Value = newKeyframe.Value;
+                    _list[i] = newKeyframe;
                     return;
                 }
                 
@@ -145,18 +153,22 @@ namespace Engine.Core
         }
         public void Clear()
         {
+            OnClearingKeyframes();
+
             _list.Clear();
         }
-        public bool Contains(Keyframe<T> keyframe)
+        public bool Contains(Keyframe keyframe)
         {
             return _list.Contains(keyframe);
         }
-        public void CopyTo(Keyframe<T>[] array, int arrayIndex)
+        public void CopyTo(Keyframe[] array, int arrayIndex)
         {
             _list.CopyTo(array, arrayIndex);
         }
-        public bool Remove(Keyframe<T> keyframe)
+        public bool Remove(Keyframe keyframe)
         {
+            OnRemovingKeyframe(new KeyframeEventArgs(keyframe));
+
             return _list.Remove(keyframe);
         }
 
@@ -164,7 +176,7 @@ namespace Engine.Core
         {
             return _list.GetEnumerator();
         }
-        public IEnumerator<Keyframe<T>> GetEnumerator()
+        public IEnumerator<Keyframe> GetEnumerator()
         {
             return _list.GetEnumerator();
         }
@@ -174,7 +186,7 @@ namespace Engine.Core
             SortList();
         }
 
-        public IEnumerable<Keyframe<T>> Selected
+        public IEnumerable<Keyframe> Selected
         {
             get
             {
@@ -190,9 +202,33 @@ namespace Engine.Core
         { 
         }
 
-        public KeyframeList(Func<T, T> validateMethod)
+        public event EventHandler<KeyframeEventArgs> AddingKeyframe;
+        public event EventHandler<KeyframeEventArgs> RemovingKeyframe;
+        public event EventHandler ClearingKeyframes;
+
+        private void OnAddingKeyframe(KeyframeEventArgs e)
         {
-            _validateMethod = validateMethod;
+            AddingKeyframe?.Invoke(this, e);
+        }
+
+        private void OnRemovingKeyframe(KeyframeEventArgs e)
+        {
+            RemovingKeyframe?.Invoke(this, e);
+        }
+
+        private void OnClearingKeyframes()
+        {
+            ClearingKeyframes?.Invoke(this, EventArgs.Empty);
+        }
+
+    }
+    public class KeyframeEventArgs : EventArgs
+    {
+        public Keyframe Keyframe { get; }
+
+        public KeyframeEventArgs(Keyframe keyframe)
+        {
+            Keyframe = keyframe;
         }
     }
 }

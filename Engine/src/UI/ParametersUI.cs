@@ -11,16 +11,6 @@ using System.Threading.Tasks;
 
 namespace Engine.UI
 {
-    public class ParameterListUI : IParameterUI<ParameterList>
-    {
-        public UILocation Location => UILocation.Under;
-
-        public void Draw(Parameter<ParameterList> parameter)
-        {
-            LayerEffects.DrawParameters(parameter.Value);
-        }
-    }
-
     public class StringUI : IParameterUI<string>
     {
         public void Draw(Parameter<string> parameter)

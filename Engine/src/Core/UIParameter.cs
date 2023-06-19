@@ -131,7 +131,7 @@ namespace Engine.Core
                 if (keyframed)
                     Parameter.RemoveNearestKeyframeAtTime(App.Project.Time);
                 else
-                    Parameter.AddKeyframeAtTime(App.Project.Time, IEasing.Linear);
+                    Parameter.AddKeyframe(new(App.Project.Time, IEasing.Linear));
             }
 
             if (ImGui.IsItemHovered())

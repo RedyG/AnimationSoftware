@@ -2,6 +2,7 @@
 using Engine.Utilities;
 using ImGuiNET;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Bson;
 using OpenTK.Audio.OpenAL;
 using System;
 using System.Collections.Generic;
@@ -22,33 +23,24 @@ namespace Engine.Core
         /*public static Parameter<ParameterList> CreateGroup(params UIParameter[] parameters) => new Parameter<ParameterList>(new ParameterList(parameters), false, false);
         public static Parameter<ParameterList> CreateGroup(List<UIParameter> parameters) => new Parameter<ParameterList>(new ParameterList(parameters), false, false);*/
 
-        // TODO: cache the methods using delegates or just the MethodInfo
         public T1 GetValueAsType<T1>() => GetValueAtTimeAsType<T1>(App.Project.Time);
 
         public void SetValueAsType<T1>(T1 value) => SetValueAtTimeAsType(App.Project.Time, value);
 
         public abstract T GetValueAtTimeAsType<T>(Timecode time);
         public abstract void SetValueAtTimeAsType<T>(Timecode time, T value);
-        public abstract void RemoveNearestKeyframeAtTime(Timecode time);
-        public abstract void AddKeyframeAtTime(Timecode time, IEasing easing);
-        public abstract bool IsKeyframedAtTime(Timecode time);
+        public abstract void RemoveNearestKeyframeAtTime(Timecode time); // go
+        public abstract void AddKeyframe(Keyframe keyframe);
+        public abstract bool IsKeyframedAtTime(Timecode time); // maybe go
         public abstract void DrawUI();
+
+        public abstract KeyframeList? Keyframes { get; }
 
         public abstract float GetEditorHeightAt(int keyframeIndex);
         public abstract void SetEditorHeightAt(int keyframeIndex, float editorHeight);
-        public abstract void SetEasingAt(int keyframeIndex, IEasing easing);
-        public abstract IEasing GetEasingAt(int keyframeIndex);
+        public abstract void SetEasingAt(int keyframeIndex, IEasing easing); // go
+        public abstract IEasing GetEasingAt(int keyframeIndex); // go
 
-        public abstract IEnumerable<KeyframeDefinition> KeyframeDefinitions { get; }
-        public IEnumerable<KeyframeDefinition> SelectedKeyframeDefinitions
-        {
-            get
-            {
-                foreach (var def in KeyframeDefinitions)
-                    if (def.Selected)
-                        yield return def;
-            }
-        }
 
         [JsonIgnore]
         public abstract UILocation UILocation { get; }
@@ -63,11 +55,8 @@ namespace Engine.Core
 
         [JsonIgnore]
         public bool Opened { get; set; }
-
-        public Parameter()
-        {
-        }
     }
+
     public class Parameter<T> : Parameter
     {
         private Func<T, T>? _validateMethod;
@@ -82,7 +71,7 @@ namespace Engine.Core
             set => SetValueAtTime(App.Project.Time, value);
         }
 
-        public KeyframeList<T>? Keyframes { get; }
+        public override KeyframeList? Keyframes { get; }
 
         public override bool CanBeKeyframed { get; } = true;
         public override bool IsKeyframed => Keyframes != null && Keyframes.Count != 0;
@@ -150,10 +139,10 @@ namespace Engine.Core
                     var timeBetweenKeyframes = MathF.Max(MathUtilities.Map(time.Seconds, firstKeyframe.Time.Seconds, secondKeyframe.Time.Seconds, 0, 1), 0f);
                     var easedTime = firstKeyframe.Easing.Evaluate(timeBetweenKeyframes);
 
-                    return Lerp(firstKeyframe.Value, secondKeyframe.Value, easedTime);
+                    return Lerp(GetKeyframeValue(firstKeyframe), GetKeyframeValue(secondKeyframe), easedTime);
                 }
             }
-            return Keyframes[Keyframes.Count - 1].Value;
+            return GetKeyframeValue(Keyframes[Keyframes.Count - 1]);
         }
         public void SetValueAtTime(Timecode time, T value)
         {
@@ -164,7 +153,7 @@ namespace Engine.Core
             }
 
             if (IsKeyframed)
-                Keyframes!.Add(new Keyframe<T>(time, value, IEasing.Linear));
+                AddKeyframe(new Keyframe(time, IEasing.Linear), value);
             else
             {
                 var newValue = _validateMethod == null ? value : _validateMethod(value);
@@ -200,15 +189,52 @@ namespace Engine.Core
             return false;
         }
 
-        public override void AddKeyframeAtTime(Timecode time, IEasing easing)
+        public override void AddKeyframe(Keyframe keyframe)
         {
-            // TODO: will crash
-            Keyframes!.Add(new Keyframe<T>(time, GetValueAtTime(time), easing));
+            if (Keyframes == null)
+                return;
+
+            T value = GetValueAtTime(keyframe.Time);
+            Keyframes.Add(keyframe);
+            SetKeyframeValue(keyframe, value);
         }
+
+        public void AddKeyframe(Keyframe keyframe, T value)
+        {
+            if (Keyframes == null)
+                return;
+
+            Keyframes.Add(keyframe);
+            SetKeyframeValue(keyframe, value);
+        }
+
+        private Dictionary<Keyframe, T>? _keyframeValues;
+
+        /// <summary>Set the keyframe's value</summary>
+        /// <param name="keyframe"></param>
+        /// <exception cref="KeyNotFoundException"></exception>
+        /// <exception cref="NullReferenceException"></exception>
+        public void SetKeyframeValue(Keyframe keyframe, T value)
+        {
+            if (!Keyframes!.Contains(keyframe))
+                throw new KeyNotFoundException();
+
+            T validatedValue = _validateMethod == null ? value : _validateMethod(value);
+            if (_keyframeValues!.ContainsKey(keyframe))
+                _keyframeValues[keyframe] = validatedValue;
+            else
+                _keyframeValues.Add(keyframe, validatedValue);
+        }
+
+        /// <param name="keyframe"></param>
+        /// <returns>The value of the keyframe</returns>
+        /// <exception cref="KeyNotFoundException"></exception>
+        /// <exception cref="NullReferenceException"></exception>
+        public T GetKeyframeValue(Keyframe keyframe) => _keyframeValues![keyframe];
 
         public override void RemoveNearestKeyframeAtTime(Timecode time)
         {
-            Keyframes.RemoveNearestAtTime(time);
+            Keyframes?.RemoveNearestAtTime(time);
         }
 
 
@@ -218,22 +244,23 @@ namespace Engine.Core
         // TODO: will crash
         public override void SetValueAtTimeAsType<T1>(Timecode time, T1 value) => SetValueAtTime(time, (T)Convert.ChangeType(value, typeof(T))!);
 
-        [JsonConstructor]
-        public Parameter()
-        {
-            Keyframes = new();
-            _unkeyframedValue = default;
-        }
 
         public Parameter(T value)
         {
             Keyframes = new();
+            _keyframeValues = new();
+            SetupEvents();
+
             _unkeyframedValue = value;
         }
         public Parameter(T value, bool canBeKeframed, bool canBeLinked)
         {
             if (canBeKeframed)
+            {
                 Keyframes = new();
+                _keyframeValues = new();
+                SetupEvents();
+            }
             _unkeyframedValue = value;
             CanBeKeyframed = canBeKeframed;
             CanBeLinked = canBeLinked;
@@ -242,7 +269,11 @@ namespace Engine.Core
         public Parameter(T value, bool canBeKeframed, bool canBeLinked, IParameterUI<T>? customUI)
         {
             if (canBeKeframed)
+            {
                 Keyframes = new();
+                _keyframeValues = new();
+                SetupEvents();
+            }
             _unkeyframedValue = value;
             CanBeKeyframed = canBeKeframed;
             CanBeLinked = canBeLinked;
@@ -252,15 +283,44 @@ namespace Engine.Core
 
         public Parameter(T value, bool canBeKeframed, bool canBeLinked, Func<T, T> validateMethod)
         {
+            if (canBeKeframed)
+            {
+                Keyframes = new();
+                _keyframeValues = new();
+                SetupEvents();
+            }
+
             _unkeyframedValue = value;
             CanBeKeyframed = canBeKeframed;
             CanBeLinked = canBeLinked;
-
             _validateMethod = validateMethod;
-            if (canBeKeframed)
-                Keyframes = new(validateMethod);
+
         }
 
+        private void SetupEvents()
+        {
+            if (Keyframes == null)
+                throw new NullReferenceException();
+
+            Keyframes.AddingKeyframe += OnAddingKeyframe;
+            Keyframes.RemovingKeyframe += OnRemovingKeyframe;
+            Keyframes.ClearingKeyframes += OnClearingKeyframes;
+        }
+
+        private void OnAddingKeyframe(object? sender, KeyframeEventArgs args)
+        {
+            _keyframeValues!.Add(args.Keyframe, GetValueAtTime(args.Keyframe.Time));
+        }
+
+        private void OnRemovingKeyframe(object? sender, KeyframeEventArgs args)
+        {
+            _keyframeValues!.Remove(args.Keyframe);
+        }
+
+        private void OnClearingKeyframes(object? sender, EventArgs args)
+        {
+            _keyframeValues!.Clear();
+        }
 
         public delegate T Lerper(T a, T b, float t);
         public static Lerper? DefaultTypeLerp { get; set; }
@@ -281,7 +341,6 @@ namespace Engine.Core
         public static Type? DefaultTypeUI { get; set; }
         public IParameterUI<T>? CustomUI { get; set; } = DefaultTypeUI != null ? (IParameterUI<T>)Instancer.Create(DefaultTypeUI) : null;
 
-        private static Dictionary<object, int> _currentItems = new();
         public override void DrawUI()
         {
             if (CustomUI != null)
@@ -299,7 +358,7 @@ namespace Engine.Core
                 if (beforeIndex == index)
                     return;
 
-                Value = (T)values.GetValue(index);
+                Value = (T)values.GetValue(index)!;
             }
             else
                 ImGui.NewLine();
@@ -310,7 +369,7 @@ namespace Engine.Core
             if (EditorConverter == null || Keyframes == null)
                 return 0f;
 
-            return EditorConverter.ToEditorHeight(Keyframes[keyframeIndex].Value);
+            return EditorConverter.ToEditorHeight(GetKeyframeValue(Keyframes[keyframeIndex]));
         }
 
         public override void SetEditorHeightAt(int keyframeIndex, float editorHeight)
@@ -318,7 +377,7 @@ namespace Engine.Core
             if (EditorConverter == null || Keyframes == null)
                 return;
 
-            Keyframes[keyframeIndex].Value = EditorConverter.FromEditorHeight(editorHeight);
+            SetKeyframeValue(Keyframes[keyframeIndex], EditorConverter.FromEditorHeight(editorHeight));
 
         }
 
@@ -342,17 +401,6 @@ namespace Engine.Core
 
         public static IEditorConverter<T>? EditorConverter { get; set; }
 
-        public override IEnumerable<KeyframeDefinition> KeyframeDefinitions
-        {
-            get
-            {
-                if (Keyframes == null)
-                    yield break;
-
-                foreach (var keyframe in Keyframes)
-                    yield return KeyframeDefinition.FromKeyframe(keyframe);
-            }
-        }
 
 
         public class ParameterValueChanged : ICommand
@@ -379,22 +427,6 @@ namespace Engine.Core
                 _parameter = parameter;
                 _newValue = newValue;
             }
-        }
-    }
-
-    public readonly struct KeyframeDefinition
-    {
-        public Timecode Time { get; }
-        public IEasing Easing { get; }
-        public bool Selected { get; }
-
-        public static KeyframeDefinition FromKeyframe<T>(Keyframe<T> keyframe) => new KeyframeDefinition(keyframe.Time, keyframe.Easing, keyframe.Selected);
-
-        public KeyframeDefinition(Timecode time, IEasing easing, bool selected)
-        {
-            Time = time;
-            Easing = easing;
-            Selected = selected;
         }
     }
 

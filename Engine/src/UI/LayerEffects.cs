@@ -18,13 +18,6 @@ namespace Engine.UI
         public static ImFontPtr BigFont;
         public static float ParameterWidth = 400f;
 
-        public static void DrawParameters(ParameterList parameters, bool root = false)
-        {
-            foreach (UIParameter namedParameter in parameters)
-            {
-            }
-        }
-
         public string Name => "Layer Effects";
 
         private List<Effect> _effectsToDelete = new();

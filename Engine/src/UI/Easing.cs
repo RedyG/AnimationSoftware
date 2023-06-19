@@ -83,7 +83,7 @@ namespace Engine.UI
 
                             if (parameter.IsKeyframed)
                             {
-                                List<KeyframeDefinition> keyframes = parameter.KeyframeDefinitions.ToList();
+                                var keyframes = parameter.Keyframes!;
 
                                 Vector2 secondPoint = bottomLeft + new Vector2(keyframes[0].Time.Seconds * timeRatio, -parameter.GetEditorHeightAt(0));
                                 for (int i = 0; i < keyframes.Count - 1; i++)
