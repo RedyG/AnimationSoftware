@@ -30,6 +30,18 @@ namespace Engine.Core
                     yield return videoEffect;
             }
         }
+        public IEnumerable<UIParameter> KeyframedParameters
+        {
+            get
+            {
+                foreach (Effect effect in Effects)
+                {
+                    foreach (UIParameter UIParameter in effect.Parameters)
+                        if (UIParameter.Parameter.IsKeyframed)
+                            yield return UIParameter;
+                }
+            }
+        }
 
         public LayerList Layers { get; set; } = new();
         public bool IsGroup { get => Layers.Count > 0; }
@@ -92,15 +104,15 @@ namespace Engine.Core
         private Timecode _inPoint = Timecode.FromSeconds(0);
         public Timecode InPoint
         {
-            get => _inPoint + Offset;
-            set => CommandManager.ExecuteSetter("Layer InPoint changed", _inPoint, value - Offset, newInPoint => _inPoint = newInPoint);
+            get => _inPoint;
+            set => CommandManager.ExecuteSetter("Layer InPoint changed", _inPoint, value, newInPoint => _inPoint = newInPoint);
         }
 
         private Timecode _outPoint = App.Project.ActiveScene.Duration;
         public Timecode OutPoint
         {
-            get => _outPoint + Offset;
-            set => CommandManager.ExecuteSetter("Layer OutPoint changed", _outPoint, value - Offset, newOutPoint => _outPoint = newOutPoint);
+            get => _outPoint;
+            set => CommandManager.ExecuteSetter("Layer OutPoint changed", _outPoint, value, newOutPoint => _outPoint = newOutPoint);
         }
 
         public Timecode Duration

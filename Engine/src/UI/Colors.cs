@@ -39,5 +39,10 @@ namespace Engine.UI
         private static Vector4 ToHovered(Vector4 color) => color + new Vector4(0.1f, 0.1f, 0.1f, 0f);
         public static uint ToHex(Vector4 color) => Color((byte)(color.X * 255f), (byte)(color.Y * 255f), (byte)(color.Z * 255f), (byte)(color.W * 255f));
         private static uint Color(byte r, byte g, byte b, byte a) { uint ret = a; ret <<= 8; ret += b; ret <<= 8; ret += g; ret <<= 8; ret += r; return ret; }
+
+        public static readonly Vector4 Gray700 = new Vector4(0.25f, 0.25f, 0.25f, 1f);
+        public static readonly Vector4 Gray800 = new Vector4(0.15f, 0.15f, 0.15f, 1f);
+        public static readonly Vector4 Gray850 = new Vector4(0.12f, 0.12f, 0.12f, 1f);
+        public static readonly Vector4 Gray900 = new Vector4(0.09f, 0.09f, 0.09f, 1f);
     }
 }

@@ -20,7 +20,8 @@ namespace Engine.Effects
     [Description(Category = "Content")]
     public class Rectangle : VideoEffect
     {
-        [Param] public Parameter<PointF> Position { get; set; } = new Parameter<PointF>(new PointF(0f, 0f));
+        [Param] public Parameter<float> PositionX { get; set; } = new(0f);
+        [Param] public Parameter<float> PositionY { get; set; } = new(0f);
         [Param] public Parameter<SizeF> Size { get; set; } = new Parameter<SizeF>(new SizeF(100f, 100f));
         [Param] public Parameter<OpenTK.Mathematics.Color4> Color { get; set; } = new(OpenTK.Mathematics.Color4.White);
         [Param] public Parameter<bool> FitToLayer { get; set; } = new Parameter<bool>(true);
@@ -31,7 +32,7 @@ namespace Engine.Effects
            // GraphicsApi.Clear(Color.Value);
                if (FitToLayer.GetValueAtTime(args.Time))
                    GraphicsApi.Clear(Color.GetValueAtTime(args.Time));
-               else
+               /*else
                    GraphicsApi.DrawRect(
                        MatrixBuilder.CreateTransform(
                            args.Layer.Transform.Size.GetValueAtTime(args.Time),
@@ -42,7 +43,7 @@ namespace Engine.Effects
                            0f
                        ),
                        Color.GetValueAtTime(args.Time)
-                   );
+                   );*/
                
             return new(false);
         }

@@ -64,8 +64,8 @@ namespace Engine.Core
             {
                 KeyframeButton();
             }
+            ImGui.SameLine();
 
-                ImGui.SameLine();
             Vector2 begRect = ImGui.GetCursorPos();
             float endRect = 0f;
 
@@ -122,16 +122,16 @@ namespace Engine.Core
         {
             var drawList = ImGui.GetWindowDrawList();
             var cursorPos = ImGui.GetCursorScreenPos();
-            var keyframed = Parameter.IsKeyframedAtTime(App.Project.Time);
+            var keyframed = Parameter.Keyframes!.IsKeyframedAtTime(App.Project.Time);
             Vector2 size = new(ImGui.GetFrameHeight());
             Vector2 center = cursorPos + new Vector2(size.X / 2);
 
             if (ImGui.InvisibleButton(Parameter.GetHashCode().ToString(), size))
             {
                 if (keyframed)
-                    Parameter.RemoveNearestKeyframeAtTime(App.Project.Time);
+                    Parameter.Keyframes.RemoveNearestAtTime(App.Project.Time);
                 else
-                    Parameter.AddKeyframe(new(App.Project.Time, IEasing.Linear));
+                    Parameter.Keyframes.Add(new(App.Project.Time, IEasing.Linear));
             }
 
             if (ImGui.IsItemHovered())
@@ -141,19 +141,6 @@ namespace Engine.Core
             }
             drawList.AddDiamondFilled(center, 5f, keyframed ? Colors.BlueHex : Colors.DarkGrayHex);
             drawList.AddDiamond(center, 5f, 1f, Colors.TextHex);
-            /*drawList.PathLineTo(cursorPos + new Vector2(8, 3));
-            drawList.PathLineTo(cursorPos + new Vector2(13, 8));
-            drawList.PathLineTo(cursorPos + new Vector2(8, 13));
-            drawList.PathLineTo(cursorPos + new Vector2(3, 8));
-            var color = Colors.BlueHex;
-            drawList.PathFillConvex(keyframed ? color : Colors.DarkGrayHex);
-
-            drawList.PathLineTo(cursorPos + new Vector2(8, 3));
-            drawList.PathLineTo(cursorPos + new Vector2(13, 8));
-            drawList.PathLineTo(cursorPos + new Vector2(8, 13));
-            drawList.PathLineTo(cursorPos + new Vector2(3, 8));
-            drawList.PathLineTo(cursorPos + new Vector2(8, 3));
-            drawList.PathStroke(Colors.TextHex);*/
         }
 
 

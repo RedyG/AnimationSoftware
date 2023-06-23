@@ -197,6 +197,15 @@ namespace Engine.Core
                 }
             }
         }
+        public bool IsKeyframedAtTime(Timecode time)
+        {
+            foreach (var keyframe in _list)
+            {
+                if (keyframe.Time == time)
+                    return true;
+            }
+            return false;
+        }
 
         public KeyframeList()
         { 

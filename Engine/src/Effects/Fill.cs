@@ -14,7 +14,7 @@ namespace Engine.Effects
 {
     public class Fill : VideoEffect
     {
-        public Parameter<Color4> Color { get; } = new();
+        public Parameter<Color4> Color { get; } = new(Color4.White);
 
         private static ShaderProgram _shader = Surface.CompileShader(@"
             uniform vec4 fillColor;

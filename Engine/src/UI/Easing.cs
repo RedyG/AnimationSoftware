@@ -24,7 +24,7 @@ namespace Engine.UI
                 if (group.Easings == null)
                 {
                     if (ImGui.MenuItem(group.Name))
-                        parameter.SetEasingAt(index, (IEasing)Instancer.Create(group.Type!)!);
+                        parameter.Keyframes![index].Easing = (IEasing)Instancer.Create(group.Type!)!;
                 }
                 else
                 {

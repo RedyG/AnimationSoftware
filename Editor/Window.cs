@@ -76,12 +76,12 @@ namespace Editor
             var style = ImGui.GetStyle();
             style.Colors[(int)ImGuiCol.Text] = Colors.Text;
             style.Colors[(int)ImGuiCol.TextDisabled] = Colors.Text;
-            style.Colors[(int)ImGuiCol.WindowBg] = Colors.Background;
+            style.Colors[(int)ImGuiCol.WindowBg] = Colors.Background;//Colors.Background;
             style.Colors[(int)ImGuiCol.ChildBg] = Colors.Transparent;
             style.Colors[(int)ImGuiCol.PopupBg] = Colors.MidGray;
             style.Colors[(int)ImGuiCol.Border] = Colors.ReallyDarkGray;
             style.Colors[(int)ImGuiCol.BorderShadow] = Colors.Transparent;
-            style.Colors[(int)ImGuiCol.FrameBg] = Colors.DarkGray;
+            style.Colors[(int)ImGuiCol.FrameBg] = Colors.DarkGray;//Colors.DarkGray;
             style.Colors[(int)ImGuiCol.FrameBgHovered] = Colors.DarkGrayHovered;
             style.Colors[(int)ImGuiCol.FrameBgActive] = Colors.DarkGrayHovered;
             style.Colors[(int)ImGuiCol.TitleBg] = Colors.ReallyDarkGray;

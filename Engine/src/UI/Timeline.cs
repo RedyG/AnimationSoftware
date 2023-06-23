@@ -112,8 +112,15 @@ namespace Engine.UI
 
                 if (layer.Opened)
                 {
-                    _layerDepth++;
+                    //drawList = ImGui.GetWindowDrawList();
+                    foreach (var UIParam in layer.KeyframedParameters)
+                    {
+                        //drawList.AddRectFilled(ImGui.GetCursorScreenPos(), ImGui.GetCursorScreenPos() + ImGuiHelper.GetLineSize(), Colors.ToHex(ImGui.GetStyle().Colors[(int)ImGuiCol.PlotLinesHovered]));
+                        UIParam.DrawUI();
+                    }
 
+
+                    _layerDepth++;
                     DrawLayersLeft(layer.Layers);
                     _layerDepth--;
                 }
@@ -168,7 +175,7 @@ namespace Engine.UI
                 ImGui.SetCursorScreenPos(layerScreenPos);
                 ImGui.InvisibleButton("layer", new Vector2(layerWidth, lineSize.Y));
 
-                drawList.AddRectFilled(layerScreenPos, layerScreenMax, layer.Selected ? Colors.BlueHex : Colors.WhiteHex, 3f);
+                drawList.AddRectFilled(layerScreenPos, layerScreenMax, layer.Selected ? Colors.BlueHex : Colors.TextHex, 3f);
 
                 bool isMouseDown = ImGui.IsMouseDown(ImGuiMouseButton.Left);
 
@@ -234,6 +241,25 @@ namespace Engine.UI
 
                 if (layer.Opened)
                 {
+                    drawList = ImGui.GetWindowDrawList();
+                    foreach (var UIParam in layer.KeyframedParameters)
+                    {
+                        var parameter = UIParam.Parameter;
+                        if (parameter.Keyframes == null)
+                            throw new Exception("'Keyframes' is null on a keyframed parameter");
+
+                        ImGui.PushID(parameter.GetHashCode());
+                        var cursorPos = ImGui.GetCursorScreenPos();
+                        foreach (var Keyframe in parameter.Keyframes)
+                        {
+                            float normalizedTime = (Keyframe.Time.Seconds + layer.Offset.Seconds) / App.Project.ActiveScene.Duration.Seconds * _timelineZoom;
+                            Vector2 posCenter = cursorPos + new Vector2(normalizedTime * lineSize.X, lineSize.Y / 2f);
+                            drawList.AddDiamondFilled(posCenter, 6f, Colors.TextHex);
+                            ImGui.SetCursorScreenPos(posCenter - new Vector2(10f, lineSize.Y /2f));
+                            ImGui.InvisibleButton(Keyframe.GetHashCode().ToString(), new Vector2(20f));
+                        }
+                        ImGui.PopID();
+                    }
                     DrawLayersRight(layer.Layers, drawList, lineSize, diffTime);
                 }
 

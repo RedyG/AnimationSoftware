@@ -57,11 +57,11 @@ namespace Engine.Core
             var drawList = ImGui.GetWindowDrawList();
             float yDiff = second.Y - first.Y;
             float xDiff = second.X - first.X;
-            int steps = (int)Math.Min(Math.Abs(xDiff), Math.Abs(yDiff));
+            int steps = (int)Math.Max(Math.Min(Math.Abs(xDiff), Math.Abs(yDiff)), 2f);
             float yMult = 1f / steps;
             float xStep = xDiff / steps;
 
-            for (int i = 0; i < steps; i++)
+            for (int i = 0; i < steps + 1; i++)
                 drawList.PathLineTo(first + new Vector2(xStep * i, Evaluate(yMult * i) * yDiff));
 
             drawList.PathStroke(Colors.BlueHex);
